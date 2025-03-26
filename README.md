@@ -1,6 +1,6 @@
 ## Ultra Lord Ui Library
 
-# Iniializ the library
+# Initialize the library
 
 ```local UltraLordLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/Ultra-Lord-Hub/Ultra-Lord-Ui-library/refs/heads/main/Source')))()```
 
