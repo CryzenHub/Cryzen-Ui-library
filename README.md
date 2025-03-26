@@ -2,7 +2,7 @@
 
 # Iniializ the library
 
-```local UltraLordLib = loadstring(game:HttpGet(('main.lua')))()```
+```local UltraLordLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/Ultra-Lord-Hub/Ultra-Lord-Ui-library/refs/heads/main/Source')))()```
 
 # Create Window 
 
