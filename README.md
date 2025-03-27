@@ -1,42 +1,44 @@
-## Ultra Lord Ui Library
-
-# Initialize the library
-
-```local UltraLordLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/Ultra-Lord-Hub/Ultra-Lord-Ui-library/refs/heads/main/Source')))()```
-
-# Create Window 
-
-``local Window = UltraLordLib:MakeWindow({
+-- Creating a Window
+local Window = UltraLordLib:MakeWindow({
     Name = "My Window",
-    Theme = "UltraLordV2",
-    Font = "Gotham" -- Any of the valid fonts listed above
-})``
+    Theme = "UltraLordV2", -- Themes: UltraLordV2, UltraSpaceV2, UltraDarkV2, UltraLegend
+    Font = "FredokaOne" -- Fonts: FredokaOne, GothamBold, SourceSansBold
+})
 
-# Notification
+-- Creating a Tab
+local Tab = Window:CreateTab("Main", "rbxassetid://4384401360") -- Name, Icon ID
 
-``UltraLordLib:MakeNotification({
-    Name = "Title",
-    Content = "Message content",
-    Image = "rbxassetid://4384403532",
+-- Creating a Button
+local Button = Tab:CreateButton("Click Me", function()
+    print("Button clicked!")
+end)
+
+-- Creating a Toggle
+local Toggle = Tab:CreateToggle("Toggle Me", false, function(Value)
+    print("Toggle state:", Value)
+end)
+
+-- Creating a Slider
+local Slider = Tab:CreateSlider("Adjust Value", 0, 100, 50, function(Value)
+    print("Slider value:", Value)
+end)
+
+-- Creating a Notification
+UltraLordLib:MakeNotification({
+    Name = "Hello!",
+    Content = "This is a notification",
+    Image = "rbxassetid://4384401360",
     Time = 5
-})``
+})
 
-# Create Button
+-- Toggle UI Visibility
+-- Press RightControl to toggle the UI
+-- Or click the menu toggle button in top-right corner
 
-``local Button = UltraLordLib.Elements.Button()
-Button.Text = "Click Me"
-Button.MouseButton1Click:Connect(function()
-    print("Clicked!")
-end)``
-
-# Create Silder (Fixes!)
-
-``CreateSlider(Parent, 0, 100, 50, function(value)
-    print("Value:", value)
-end)``
-
-# Create Toggle
-
-``CreateToggle(Parent, false, function(state)
-    print("State:", state)
-end)``
+-- Theme Colors:
+-- Main: Background color
+-- Second: Secondary elements color
+-- Stroke: Border color
+-- Divider: Separator color
+-- Text: Primary text color
+-- TextDark: Secondary text color
