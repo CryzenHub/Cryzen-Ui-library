@@ -192,7 +192,7 @@ local function CreateSlider(Parent, Min, Max, Default, Callback)
         Size = UDim2.new(1, -20, 0, 40),
         Position = UDim2.new(0, 10, 0, 0),
     }, {
-        Create("UICorner", { CornerRadius = UDim.new(0, 6) }),
+        Create("UICorner", { CornerRadius = UDim.new(0, 5) }),
         Create("UIStroke", {
             Color = Color3.fromRGB(60, 60, 100),
             Thickness = 1
@@ -427,13 +427,13 @@ MenuToggleButton.MouseButton1Click:Connect(function()
     TweenService:Create(MenuToggleButton, TweenInfo.new(0.2), {
         Rotation = WindowVisible and 0 or 180
     }):Play()
-    
+
     UltraLordLib:MakeNotification({
         Name = "Menu Toggle",
         Content = WindowVisible and "Menu Opened" or "Menu Closed",
         Time = 2
     })
-    
+
     if WindowVisible then
         MainUI.Enabled = true
         for _, window in ipairs(MainUI:GetChildren()) do
@@ -686,7 +686,7 @@ function UltraLordLib:MakeNotification(NotificationConfig)
 			Parent = NotificationHolder
 		})
 
-		local NotificationFrame = SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(20, 20, 35), 0, 8), {
+		local NotificationFrame = SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(20, 20, 35), 0, 5), {
 			Parent = NotificationParent, 
 			Size = UDim2.new(1, 0, 0, 0),
 			Position = UDim2.new(1, -55, 0, 0),
@@ -785,22 +785,204 @@ local function CreateWindow(Config)
 		})
 	})
 
-	local TabContainer = Create("ScrollingFrame", {
-		Name = "TabContainer",
-		Parent = Window,
-		BackgroundTransparency = 1,
-		Position = UDim2.new(0, 0, 0, 40),
-		Size = UDim2.new(0, 150, 1, -40),
-		ScrollBarThickness = 0
-	})
+local TabContainer = Create("ScrollingFrame", {
+    Name = "TabContainer",
+    Parent = Window,
+    BackgroundTransparency = 1,
+    Position = UDim2.new(0, 0, 0, 40),
+    Size = UDim2.new(0, 150, 1, -40),
+    ScrollBarThickness = 0,
+    CanvasSize = UDim2.new(0, 0, 0, 0),
+    ScrollingDirection = Enum.ScrollingDirection.Y,
+    BorderSizePixel = 0,
+    ScrollBarImageColor3 = Color3.fromRGB(60, 60, 100)
+}, {
+    Create("UIListLayout", {
+        Padding = UDim.new(0, 5),
+        SortOrder = Enum.SortOrder.LayoutOrder
+    }),
+    Create("UIPadding", {
+        PaddingTop = UDim.new(0, 5),
+        PaddingLeft = UDim.new(0, 5),
+        PaddingRight = UDim.new(0, 5)
+    })
+})
 
-	local ContentContainer = Create("Frame", {
-		Name = "ContentContainer",
-		Parent = Window,
-		BackgroundTransparency = 1,
-		Position = UDim2.new(0, 150, 0, 40),
-		Size = UDim2.new(1, -150, 1, -40)
-	})
+local ContentContainer = Create("Frame", {    Name = "ContentContainer",
+    Parent = Window,
+    BackgroundTransparency = 1,
+    Position = UDim2.new(0, 150, 0, 40),
+    Size = UDim2.new(1, -150, 1, -40),
+    ClipsDescendants = true
+})
+
+--[[
+    Ultra Lord UI Library V2 Guide
+
+    -- Creating a Window:
+    local Window = UltraLordLib:MakeWindow({
+        Name = "My Window",
+        Theme = "UltraLordV2", -- Available themes: UltraLordV2, UltraSpaceV2, UltraDarkV2, UltraLegend
+        Font = "FredokaOne" -- Available fonts: FredokaOne, GothamBold, SourceSansBold
+    })
+
+    -- Creating a Tab:
+    local Tab = Window:CreateTab("TabName", "rbxassetid://4384401360") -- Name, Icon ID
+
+    -- Creating Elements:
+    local Button = Tab:CreateButton("ButtonName", function()
+        -- Button click callback
+    end)
+
+    local Toggle = Tab:CreateToggle("ToggleName", false, function(Value)
+        -- Toggle callback
+    end)
+
+    local Slider = Tab:CreateSlider("SliderName", 0, 100, 50, function(Value)
+        -- Slider callback
+    end)
+
+    -- Creating Notifications:
+    UltraLordLib:MakeNotification({
+        Name = "Notification Title",
+        Content = "Notification Message",
+        Image = "rbxassetid://4384401360",
+        Time = 5
+    })
+]]
+
+local function CreateTab(Name, Icon)
+    local Tab = Create("TextButton", {
+        Name = Name,
+        Size = UDim2.new(1, 0, 0, 32),
+        BackgroundColor3 = Color3.fromRGB(30, 30, 45),
+        AutoButtonColor = false,
+        Font = Enum.Font.FredokaOne,
+        TextColor3 = Color3.fromRGB(200, 200, 200),
+        TextSize = 14,
+        Text = Name,
+        TextXAlignment = Enum.TextXAlignment.Left
+    }, {
+        Create("UICorner", {
+            CornerRadius = UDim.new(0, 5)
+        }),
+        Create("UIPadding", {
+            PaddingLeft = UDim.new(0, 30)
+        }),
+        Create("ImageLabel", {
+            Size = UDim2.new(0, 16, 0, 16),
+            Position = UDim2.new(0, -22, 0.5, -8),
+            BackgroundTransparency = 1,
+            Image = Icon or "rbxassetid://4384401360",
+            ImageColor3 = Color3.fromRGB(200, 200, 200)
+        })
+    })
+
+    local Content = Create("ScrollingFrame", {
+        Name = "Content",
+        Parent = ContentContainer,
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 1, 0),
+        ScrollBarThickness = 4,
+        ScrollBarImageColor3 = Color3.fromRGB(60, 60, 100),
+        Visible = false,
+        CanvasSize = UDim2.new(0, 0, 0, 0),
+        ScrollingDirection = Enum.ScrollingDirection.Y
+    }, {
+        Create("UIListLayout", {
+            Padding = UDim.new(0, 5),
+            SortOrder = Enum.SortOrder.LayoutOrder
+        }),
+        Create("UIPadding", {
+            PaddingTop = UDim.new(0, 5),
+            PaddingLeft = UDim.new(0, 5),
+            PaddingRight = UDim.new(0, 5),
+            PaddingBottom = UDim.new(0, 5)
+        })
+    })
+
+    Tab.MouseEnter:Connect(function()
+        TweenService:Create(Tab, TweenInfo.new(0.2), {
+            BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+        }):Play()
+    end)
+
+    Tab.MouseLeave:Connect(function()
+        if Content.Visible then return end
+        TweenService:Create(Tab, TweenInfo.new(0.2), {
+            BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+        }):Play()
+    end)
+
+    -- Enhanced tab animations and interactions
+    Tab.MouseButton1Click:Connect(function()
+        -- Ripple effect
+        local Ripple = Create("Frame", {
+            Parent = Tab,
+            BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+            BackgroundTransparency = 0.8,
+            Position = UDim2.new(0, 0, 0, 0),
+            Size = UDim2.new(0, 0, 1, 0),
+            AnchorPoint = Vector2.new(0, 0.5)
+        }, {
+            Create("UICorner", {
+                CornerRadius = UDim.new(0, 5)
+            })
+        })
+
+        TweenService:Create(Ripple, TweenInfo.new(0.5), {
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundTransparency = 1
+        }):Play()
+
+        game.Debris:AddItem(Ripple, 0.5)
+
+        for _, otherTab in pairs(TabContainer:GetChildren()) do
+            if otherTab:IsA("TextButton") then
+                TweenService:Create(otherTab, TweenInfo.new(0.2), {
+                    BackgroundColor3 = Color3.fromRGB(30, 30, 45),
+                    TextColor3 = Color3.fromRGB(200, 200, 200)
+                }):Play()
+                TweenService:Create(otherTab:FindFirstChildOfClass("ImageLabel"), TweenInfo.new(0.2), {
+                    ImageColor3 = Color3.fromRGB(200, 200, 200)
+                }):Play()
+            end
+        end
+
+        for _, content in pairs(ContentContainer:GetChildren()) do
+            if content:IsA("ScrollingFrame") then
+                content.Visible = false
+            end
+        end
+
+        TweenService:Create(Tab, TweenInfo.new(0.2), {
+            BackgroundColor3 = Color3.fromRGB(50, 50, 80),
+            TextColor3 = Color3.fromRGB(240, 240, 255)
+        }):Play()
+        TweenService:Create(Tab:FindFirstChildOfClass("ImageLabel"), TweenInfo.new(0.2), {
+            ImageColor3 = Color3.fromRGB(240, 240, 255)
+        }):Play()
+
+        Content.Visible = true
+        Content:TweenPosition(UDim2.new(0, 0, 0, 0), "Out", "Quart", 0.4, true)
+		
+		-- Remove loading screen with fade animation
+		local LoadingScreen = MainUI:FindFirstChild("LoadingScreen")
+		if LoadingScreen then
+			TweenService:Create(LoadingScreen, TweenInfo.new(0.5), {
+				BackgroundTransparency = 1
+			}):Play()
+			wait(0.5)
+			LoadingScreen:Destroy()
+		end
+    end)
+
+    if #TabContainer:GetChildren() == 2 then -- UIListLayout and UIPadding
+        Tab.MouseButton1Click:Fire()
+    end
+
+    return Content
+end
 
 	local Dragging = false
 	local DragStart = nil
