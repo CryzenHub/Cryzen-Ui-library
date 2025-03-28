@@ -1,150 +1,136 @@
-# UltraLord UI Library V2
+# Ultra Lord UI Library V2
 
-A modern, feature-rich UI library for Roblox with smooth animations, dynamic themes, and an intuitive API.
+A modern, feature-rich UI Library for Roblox with smooth animations, notifications, and clean design.
 
 ## Features
 
-- 🎨 Multiple built-in themes (UltraLordV2, UltraSpaceV2, UltraDarkV2, UltraLegend)
+- 🎨 Modern and clean design
 - ✨ Smooth animations and transitions
-- 🎯 Customizable fonts
-- 📢 Modern notification system
-- 📑 Tab-based interface
-- 🔄 Draggable windows
-- 🛡️ UICorner standardization
-- 📱 Touch support
-- 🎮 Menu toggle functionality
-- 🖱️ Configurable drag controls
+- 🔔 Customizable notifications with timer
+- 🎯 Draggable window interface
+- 🔄 UI visibility toggle
+- 📱 Responsive design
+- 🎭 Theme customization
+- 🔤 Font configuration
 
 ## Quick Start
 
+1. Load the library:
 ```lua
-local UltraLordLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Ultra-Lord-Hub/Ultra-Lord-Ui-library/refs/heads/main/Source"))()
-
--- Create a window
-local Window = UltraLordLib:MakeWindow({
-    Name = "My Window",
-    Theme = "UltraLordV2",
-    Font = "FredokaOne",
-    SaveConfig = true,
-    ConfigFolder = "UltraLordConfig"
-})
-
--- Create a tab
-local Tab = Window:CreateTab("Main", "rbxassetid://4384401360")
-
--- Add elements
-local Button = Tab:CreateButton("Click Me", function()
-    print("Button clicked!")
-end)
-
-local Toggle = Tab:CreateToggle("Toggle Me", false, function(Value)
-    print("Toggle state:", Value)
-end)
-
-local Slider = Tab:CreateSlider("Adjust Value", 0, 100, 50, function(Value)
-    print("Slider value:", Value)
-end)
-
-UltraLordLib:MakeNotification({
-    Name = "Hello!",
-    Content = "This is a basic notification",
-    Image = "rbxassetid://4384403532",
-    Time = 5
-})
+local UltraLordLib = loadstring(game:HttpGet("source.lua"))()
 ```
 
-## Window Configuration Options
-
+2. Create a window with custom theme:
 ```lua
-UltraLordLib:MakeWindow({
-    Name = string,              -- Window title
-    Theme = string,             -- Theme name
-    Font = string,              -- Font family
-    ConfigFolder = string,      -- Config save location
-    SaveConfig = boolean,       -- Enable config saving
-    HidePremium = boolean,      -- Hide premium features
-    IntroEnabled = boolean,     -- Show intro animation
-    IntroText = string,         -- Intro text
-    IntroIcon = string,         -- Intro icon
-    Icon = string,              -- Window icon
-    CloseCallback = function()  -- On close callback
+local Window = UltraLordLib:MakeWindow({
+    WindowName = "My Application",
+    Theme = {
+        PrimaryColor = Color3.fromRGB(36, 36, 36),
+        SecondaryColor = Color3.fromRGB(46, 46, 46),
+        AccentColor = Color3.fromRGB(240, 240, 240),
+        ToggleOnColor = Color3.fromRGB(56, 207, 137),
+        ToggleOffColor = Color3.fromRGB(229, 57, 53)
+    },
+    Font = Enum.Font.FredokaOne
 })
 ```
 
 ## UI Elements
 
-### Button
+### Tabs
+Create organized sections in your UI:
 ```lua
-Tab:CreateButton(name, callback)
+local MainTab = Window:CreateTab("Main")
+local SettingsTab = Window:CreateTab("Settings")
 ```
 
-### Toggle
+### Buttons
+Add clickable buttons with callbacks:
 ```lua
-Tab:CreateToggle(name, defaultState, callback)
+MainTab:CreateButton("Save Settings", function()
+    print("Settings saved!")
+    Window:Notify("Success", "Settings saved successfully!", 3)
+end)
 ```
 
-### Slider
+### Toggles
+Create toggle switches with state management:
 ```lua
-Tab:CreateSlider(name, min, max, default, callback)
+MainTab:CreateToggle("Auto Save", false, function(state)
+    print("Auto save is now:", state)
+end)
 ```
 
-### Notification
+### Sliders
+Add value sliders with custom ranges:
 ```lua
-UltraLordLib:MakeNotification({
-    Name = string,     -- Title
-    Content = string,  -- Message
-    Image = string,    -- Icon ID
-    Time = number      -- Duration (seconds)
-})
+MainTab:CreateSlider("Volume", 0, 100, 50, function(value)
+    print("Volume set to:", value)
+end)
 ```
 
-### Menu Toggle
-The library includes a built-in menu toggle feature:
-- Hide/Show UI with toggle button
-- Automatic notification on hide
-- Maintains drag functionality state
-
-## Themes & Styling
-
-### Available Themes
-- UltraLord (Default)
-
-### Available Fonts
-- FredokaOne (Default)
-- GothamBold
-- SourceSansBold
-
-## Advanced Features
-
-### Configuration Saving
-Enable automatic configuration saving:
+### Notifications
+Display timed notifications with progress bar:
 ```lua
-local Window = UltraLordLib:MakeWindow({
-    SaveConfig = true,
-    ConfigFolder = "MyConfigs"
-})
+Window:Notify("Title", "Message", duration) -- duration in seconds
 ```
 
-### Custom Theme Colors
+## Theme Configuration
+
+Customize the appearance with these theme options:
 ```lua
-UltraLordLib.Themes.Custom = {
-    Main = Color3.fromRGB(25, 25, 25),
-    Second = Color3.fromRGB(32, 32, 32),
-    Stroke = Color3.fromRGB(60, 60, 60),
-    Text = Color3.fromRGB(240, 240, 240),
-    TextDark = Color3.fromRGB(150, 150, 150)
+{
+    Font = Enum.Font.FredokaOne,
+    SecondaryFont = Enum.Font.FredokaOne,
+    PrimaryColor = Color3.fromRGB(36, 36, 36),
+    SecondaryColor = Color3.fromRGB(46, 46, 46),
+    AccentColor = Color3.fromRGB(240, 240, 240),
+    ToggleOnColor = Color3.fromRGB(56, 207, 137),
+    ToggleOffColor = Color3.fromRGB(229, 57, 53)
 }
 ```
 
-## Key Features
+## Complete Example
 
-- **Smart Animations**: Smooth transitions and effects
-- **Theme Support**: Multiple built-in themes
-- **Responsive Design**: Adapts to different screen sizes
-- **Touch Support**: Works on mobile devices
-- **Modern UI**: Clean and intuitive interface
-- **Auto-Save**: Configuration persistence
-- **Customizable**: Extensive styling options
+```lua
+local UltraLordLib = loadstring(game:HttpGet("source.lua"))()
+
+-- Create window
+local Window = UltraLordLib:MakeWindow({
+    WindowName = "My Application",
+    Theme = {
+        PrimaryColor = Color3.fromRGB(36, 36, 36),
+        SecondaryColor = Color3.fromRGB(46, 46, 46),
+        AccentColor = Color3.fromRGB(240, 240, 240),
+        ToggleOnColor = Color3.fromRGB(56, 207, 137),
+        ToggleOffColor = Color3.fromRGB(229, 57, 53)
+    },
+    Font = Enum.Font.FredokaOne
+})
+
+-- Create tabs
+local MainTab = Window:CreateTab("Main")
+local SettingsTab = Window:CreateTab("Settings")
+
+-- Add elements to Main tab
+MainTab:CreateButton("Save", function()
+    Window:Notify("Success", "Data saved!", 3)
+end)
+
+MainTab:CreateToggle("Auto Save", false, function(state)
+    print("Auto save:", state)
+end)
+
+MainTab:CreateSlider("Volume", 0, 100, 50, function(value)
+    print("Volume set to:", value)
+end)
+
+-- Add elements to Settings tab
+SettingsTab:CreateButton("Reset", function()
+    Window:Notify("Info", "Settings reset to default", 3)
+end)
+```
 
 ## License
-MIT License - Feel free to use and modify while maintaining attribution.
+
+MIT License - Free to use and modify for your projects.
