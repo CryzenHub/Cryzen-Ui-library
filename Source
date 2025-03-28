@@ -400,6 +400,8 @@ local MenuToggleButton = Create("ImageButton", {
     BackgroundColor3 = Color3.fromRGB(30, 30, 45),
     Image = "rbxassetid://7072718266",
     ImageColor3 = Color3.fromRGB(240, 240, 255),
+    ZIndex = 1000,
+    AutoButtonColor = false,
 }, {
     Create("UICorner", {
         CornerRadius = UDim.new(0, 5)
@@ -407,6 +409,17 @@ local MenuToggleButton = Create("ImageButton", {
     Create("UIStroke", {
         Color = Color3.fromRGB(60, 60, 100),
         Thickness = 1.5
+    }),
+    Create("Frame", {
+        Name = "Indicator",
+        Size = UDim2.new(0, 8, 0, 8),
+        Position = UDim2.new(1, -8, 0, 8),
+        BackgroundColor3 = Color3.fromRGB(60, 255, 100),
+        ZIndex = 1001,
+    }, {
+        Create("UICorner", {
+            CornerRadius = UDim.new(1, 0)
+        })
     })
 })
 
@@ -424,41 +437,46 @@ end)
 
 MenuToggleButton.MouseButton1Click:Connect(function()
     WindowVisible = not WindowVisible
-    TweenService:Create(MenuToggleButton, TweenInfo.new(0.2), {
-        Rotation = WindowVisible and 0 or 180
+    
+    -- Animate toggle button
+    TweenService:Create(MenuToggleButton, TweenInfo.new(0.3), {
+        Rotation = WindowVisible and 0 or 180,
+        BackgroundColor3 = WindowVisible and Color3.fromRGB(40, 40, 65) or Color3.fromRGB(30, 30, 45)
+    }):Play()
+    
+    -- Animate indicator
+    TweenService:Create(MenuToggleButton.Indicator, TweenInfo.new(0.3), {
+        BackgroundColor3 = WindowVisible and Color3.fromRGB(60, 255, 100) or Color3.fromRGB(255, 60, 60)
     }):Play()
 
-    UltraLordLib:MakeNotification({
-        Name = "Menu Toggle",
-        Content = WindowVisible and "Menu Opened" or "Menu Closed",
-        Time = 2
-    })
-
-    if WindowVisible then
-        MainUI.Enabled = true
-        for _, window in ipairs(MainUI:GetChildren()) do
-            if window:IsA("Frame") and window.Name == "Window" then
+    -- Handle window visibility with improved animations
+    for _, window in ipairs(MainUI:GetChildren()) do
+        if window:IsA("Frame") and window.Name == "Window" then
+            if WindowVisible then
                 window.Visible = true
-                TweenService:Create(window, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {
-                    Position = window.Position - UDim2.new(0, 0, 0, 10),
-                    BackgroundTransparency = 0
+                TweenService:Create(window, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+                    Position = UDim2.new(0.5, -300, 0.5, -200),
+                    BackgroundTransparency = 0,
+                    Size = UDim2.new(0, 600, 0, 400)
                 }):Play()
-            end
-        end
-    else
-        for _, window in ipairs(MainUI:GetChildren()) do
-            if window:IsA("Frame") and window.Name == "Window" then
-                TweenService:Create(window, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {
-                    Position = window.Position + UDim2.new(0, 0, 0, 10),
-                    BackgroundTransparency = 1
+            else
+                TweenService:Create(window, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.In), {
+                    Position = UDim2.new(0.5, -300, 0.5, -180),
+                    BackgroundTransparency = 1,
+                    Size = UDim2.new(0, 580, 0, 380)
                 }):Play()
                 wait(0.3)
                 window.Visible = false
             end
         end
-        wait(0.3)
-        MainUI.Enabled = false
     end
+    
+    -- Update notification style
+    UltraLordLib:MakeNotification({
+        Name = "Menu Status",
+        Content = WindowVisible and "Interface Visible" or "Interface Hidden",
+        Time = 1.5
+    })
 end)
 
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
@@ -756,13 +774,35 @@ local function CreateWindow(Config)
 	Config.Font = Config.Font or "FredokaOne" -- Default font
 	UltraLordLib.SelectedTheme = Config.Theme
 
-	local Window = Create("Frame", {
-		Name = "Window",
-		Parent = MainUI,
-		BackgroundColor3 = UltraLordLib.Themes[Config.Theme].Main,
-		Position = UDim2.new(0.5, -300, 0.5, -200),
-		Size = UDim2.new(0, 600, 0, 400),
-		ClipsDescendants = true
+	-- Create loading screen
+local LoadingScreen = Create("Frame", {
+    Name = "LoadingScreen",
+    Parent = MainUI,
+    BackgroundColor3 = Color3.fromRGB(20, 20, 35),
+    Size = UDim2.new(1, 0, 1, 0),
+    ZIndex = 999
+}, {
+    Create("TextLabel", {
+        Text = "Ultra Lord UI V2",
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1,
+        TextColor3 = Color3.fromRGB(240, 240, 255),
+        TextSize = 24,
+        Font = Enum.Font.FredokaOne,
+        ZIndex = 1000
+    }),
+    Create("UICorner", {
+        CornerRadius = UDim.new(0, 5)
+    })
+})
+
+local Window = Create("Frame", {
+        Name = "Window",
+        Parent = MainUI,
+        BackgroundColor3 = UltraLordLib.Themes[Config.Theme].Main,
+        Position = UDim2.new(0.5, -300, 0.5, -200),
+        Size = UDim2.new(0, 600, 0, 400),
+        ClipsDescendants = true
 	}, {
 		Create("UICorner", {
 			CornerRadius = UDim.new(0, 5)
