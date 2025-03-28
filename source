@@ -2,6 +2,21 @@ local UltraLordLib = {}
 local TweenService = game:GetService("TweenService")
 local UIS = game:GetService("UserInputService")
 
+-- Timer function
+local function startTimer(frame, duration)
+    local TimerBar = Instance.new("Frame")
+    TimerBar.Name = "TimerBar"
+    TimerBar.Parent = frame
+    TimerBar.BackgroundColor3 = ConfigFolder.AccentColor
+    TimerBar.Position = UDim2.new(0, 0, 1, -2)
+    TimerBar.Size = UDim2.new(1, 0, 0, 2)
+
+    local timerTween = TweenService:Create(TimerBar, TweenInfo.new(duration), {
+        Size = UDim2.new(0, 0, 0, 2)
+    })
+    timerTween:Play()
+end
+
 -- Configuration folder
 local ConfigFolder = {
     Font = Enum.Font.FredokaOne,
@@ -12,6 +27,137 @@ local ConfigFolder = {
     ToggleOnColor = Color3.fromRGB(56, 207, 137),
     ToggleOffColor = Color3.fromRGB(229, 57, 53)
 }
+
+-- Notification function with timer
+function UltraLordLib:Notify(title, text, duration)
+    duration = duration or 3
+
+    local NotificationGui = Instance.new("ScreenGui")
+    local NotificationFrame = Instance.new("Frame")
+    local UICorner = Instance.new("UICorner")
+    local Title = Instance.new("TextLabel")
+    local Message = Instance.new("TextLabel")
+    local TimeLabel = Instance.new("TextLabel")
+
+    NotificationGui.Name = "UltraLordNotification"
+    NotificationGui.Parent = game.CoreGui
+
+    NotificationFrame.Name = "NotificationFrame"
+    NotificationFrame.Parent = NotificationGui
+    NotificationFrame.BackgroundColor3 = ConfigFolder.PrimaryColor
+    NotificationFrame.Position = UDim2.new(1, 20, 0.8, 0)
+    NotificationFrame.Size = UDim2.new(0, 250, 0, 80)
+    NotificationFrame.BackgroundTransparency = 1
+
+    UICorner.Parent = NotificationFrame
+    UICorner.CornerRadius = UDim.new(0, 6)
+
+    Title.Name = "Title"
+    Title.Parent = NotificationFrame
+    Title.BackgroundTransparency = 1
+    Title.Position = UDim2.new(0, 10, 0, 5)
+    Title.Size = UDim2.new(1, -20, 0, 25)
+    Title.Font = ConfigFolder.Font
+    Title.Text = title
+    Title.TextColor3 = ConfigFolder.AccentColor
+    Title.TextSize = 16
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    Title.TextTransparency = 1
+
+    Message.Name = "Message"
+    Message.Parent = NotificationFrame
+    Message.BackgroundTransparency = 1
+    Message.Position = UDim2.new(0, 10, 0, 35)
+    Message.Size = UDim2.new(1, -20, 0, 35)
+    Message.Font = ConfigFolder.SecondaryFont
+    Message.Text = text
+    Message.TextColor3 = ConfigFolder.AccentColor
+    Message.TextSize = 14
+    Message.TextWrapped = true
+    Message.TextXAlignment = Enum.TextXAlignment.Left
+    Message.TextTransparency = 1
+
+    TimeLabel.Name = "TimeLabel"
+    TimeLabel.Parent = NotificationFrame
+    TimeLabel.BackgroundTransparency = 1
+    TimeLabel.Position = UDim2.new(1, -50, 0, 5)
+    TimeLabel.Size = UDim2.new(0, 40, 0, 25)
+    TimeLabel.Font = ConfigFolder.SecondaryFont
+    TimeLabel.TextColor3 = ConfigFolder.AccentColor
+    TimeLabel.TextSize = 12
+    TimeLabel.TextTransparency = 1
+
+    -- Animation
+    local function animateNotification()
+        -- Slide in
+        local slideIn = TweenService:Create(NotificationFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {
+            Position = UDim2.new(1, -270, 0.8, 0),
+            BackgroundTransparency = 0
+        })
+
+        local fadeIn = TweenService:Create(Title, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {
+            TextTransparency = 0
+        })
+
+        local fadeInMessage = TweenService:Create(Message, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {
+            TextTransparency = 0
+        })
+
+        local fadeInTime = TweenService:Create(TimeLabel, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {
+            TextTransparency = 0
+        })
+
+        slideIn:Play()
+        fadeIn:Play()
+        fadeInMessage:Play()
+        fadeInTime:Play()
+
+        -- Start timer
+        startTimer(NotificationFrame, duration)
+
+        -- Update time label
+        local timeLeft = duration
+        local connection = game:GetService("RunService").RenderStepped:Connect(function()
+            timeLeft = timeLeft - game:GetService("RunService").RenderStepped:Wait()
+            TimeLabel.Text = string.format("%.1fs", math.max(0, timeLeft))
+        end)
+
+        -- Wait for duration
+        task.wait(duration)
+
+        -- Cleanup connection
+        connection:Disconnect()
+
+        -- Slide out
+        local slideOut = TweenService:Create(NotificationFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {
+            Position = UDim2.new(1, 20, 0.8, 0),
+            BackgroundTransparency = 1
+        })
+
+        local fadeOut = TweenService:Create(Title, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {
+            TextTransparency = 1
+        })
+
+        local fadeOutMessage = TweenService:Create(Message, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {
+            TextTransparency = 1
+        })
+
+        local fadeOutTime = TweenService:Create(TimeLabel, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {
+            TextTransparency = 1
+        })
+
+        slideOut:Play()
+        fadeOut:Play()
+        fadeOutMessage:Play()
+        fadeOutTime:Play()
+
+        -- Cleanup
+        task.wait(0.5)
+        NotificationGui:Destroy()
+    end
+
+    coroutine.wrap(animateNotification)()
+end
 
 function UltraLordLib:MakeWindow(config)
     config = config or {}
