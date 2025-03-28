@@ -205,40 +205,72 @@ function UltraLordLib:CreateWindow(options)
         TextXAlignment = Enum.TextXAlignment.Left
     })
 
-    -- Improved dragging with smooth animation
+    -- Enhanced dragging with inertia and bounds checking
     local isDragging = false
     local dragStart = nil
     local startPos = nil
+    local dragVelocity = Vector2.new(0, 0)
+    local lastMousePos = nil
+    local dampening = 0.85
 
     TitleBar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             isDragging = true
             dragStart = input.Position
             startPos = Main.Position
+            lastMousePos = input.Position
+            dragVelocity = Vector2.new(0, 0)
         end
     end)
 
     UserInputService.InputChanged:Connect(function(input)
         if isDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
             local delta = input.Position - dragStart
-            Tween(Main, Config.Animation.Short, {
-                Position = UDim2.new(
-                    startPos.X.Scale,
-                    startPos.X.Offset + delta.X,
-                    startPos.Y.Scale,
-                    startPos.Y.Offset + delta.Y
-                )
-            })
+            local newPos = UDim2.new(
+                startPos.X.Scale,
+                math.clamp(startPos.X.Offset + delta.X, -Main.AbsoluteSize.X/2, game.Workspace.CurrentCamera.ViewportSize.X - Main.AbsoluteSize.X/2),
+                startPos.Y.Scale,
+                math.clamp(startPos.Y.Offset + delta.Y, 0, game.Workspace.CurrentCamera.ViewportSize.Y - Main.AbsoluteSize.Y)
+            )
+            
+            dragVelocity = (input.Position - lastMousePos) / UserInputService.DeltaTime
+            lastMousePos = input.Position
+            
+            Main.Position = newPos
         end
     end)
 
     UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 and isDragging then
             isDragging = false
+            
+            -- Apply inertia
+            local function applyInertia()
+                if dragVelocity.Magnitude > 1 then
+                    local newPos = UDim2.new(
+                        Main.Position.X.Scale,
+                        math.clamp(Main.Position.X.Offset + dragVelocity.X * 0.016, -Main.AbsoluteSize.X/2, game.Workspace.CurrentCamera.ViewportSize.X - Main.AbsoluteSize.X/2),
+                        Main.Position.Y.Scale,
+                        math.clamp(Main.Position.Y.Offset + dragVelocity.Y * 0.016, 0, game.Workspace.CurrentCamera.ViewportSize.Y - Main.AbsoluteSize.Y)
+                    )
+                    
+                    Tween(Main, Config.Animation.Short, {
+                        Position = newPos
+                    })
+                    
+                    dragVelocity = dragVelocity * dampening
+                    if dragVelocity.Magnitude > 1 then
+                        game:GetService("RunService").Heartbeat:Wait()
+                        applyInertia()
+                    end
+                end
+            end
+            
+            applyInertia()
         end
     end)
 
-    -- Menu Toggle with improved animation
+    -- Menu Toggle with improved animation and dragging
     local MenuToggle = CreateElement("ImageButton", {
         Name = "MenuToggle",
         Parent = ScreenGui,
@@ -247,8 +279,43 @@ function UltraLordLib:CreateWindow(options)
         Size = Config.MenuToggle.Size,
         Image = Config.MenuToggle.Image,
         BackgroundTransparency = Config.MenuToggle.Transparency,
-        ImageTransparency = Config.MenuToggle.Transparency
+        ImageTransparency = Config.MenuToggle.Transparency,
+        ZIndex = 999
     })
+
+    -- Add dragging functionality to MenuToggle
+    local isDraggingMenu = false
+    local menuDragStart = nil
+    local menuStartPos = nil
+
+    MenuToggle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton2 then  -- Right click to drag
+            isDraggingMenu = true
+            menuDragStart = input.Position
+            menuStartPos = MenuToggle.Position
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if isDraggingMenu and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - menuDragStart
+            local newPos = UDim2.new(
+                menuStartPos.X.Scale,
+                math.clamp(menuStartPos.X.Offset + delta.X, 0, game.Workspace.CurrentCamera.ViewportSize.X - MenuToggle.AbsoluteSize.X),
+                menuStartPos.Y.Scale,
+                math.clamp(menuStartPos.Y.Offset + delta.Y, 0, game.Workspace.CurrentCamera.ViewportSize.Y - MenuToggle.AbsoluteSize.Y)
+            )
+            Tween(MenuToggle, Config.Animation.Short, {
+                Position = newPos
+            })
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton2 then
+            isDraggingMenu = false
+        end
+    end)
 
     CreateElement("UICorner", {
         Parent = MenuToggle,
@@ -550,33 +617,41 @@ function UltraLordLib:CreateWindow(options)
                     0.5,
                     -7.5
                 )
-                Tween(button, Config.Animation.Short, {
-                    Position = pos,
-                    Size = UDim2.new(0, 12, 0, 17)  -- Scale up while dragging
-                })
+                button.Position = pos
                 local val = math.floor(((pos.X.Scale * (options.Max - options.Min)) + options.Min) * 100) / 100
                 value.Text = tostring(val)
                 options.Callback(val)
             end
 
+            local dragging = false
+            local connection
+
             button.MouseButton1Down:Connect(function()
-                local connection
+                dragging = true
+                if connection then connection:Disconnect() end
+                
                 connection = UserInputService.InputChanged:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseMovement then
+                    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
                         update(input)
                     end
                 end)
+                
+                Tween(button, Config.Animation.Short, {
+                    Size = UDim2.new(0, 12, 0, 17)
+                })
+            end)
 
-                UserInputService.InputEnded:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        if connection then
-                            connection:Disconnect()
-                            Tween(button, Config.Animation.Short, {
-                                Size = UDim2.new(0, 10, 0, 15)  -- Return to original size
-                            })
-                        end
+            UserInputService.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 and dragging then
+                    dragging = false
+                    if connection then
+                        connection:Disconnect()
+                        connection = nil
                     end
-                end)
+                    Tween(button, Config.Animation.Short, {
+                        Size = UDim2.new(0, 10, 0, 15)
+                    })
+                end
             end)
 
             return slider
