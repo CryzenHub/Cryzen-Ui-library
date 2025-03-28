@@ -1,3 +1,4 @@
+
 local UltraLordLib = {}
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -32,7 +33,7 @@ local Config = {
 
 -- Utility functions
 local function Tween(object, duration, properties)
-    local tween = TweenService:Create(object, TweenInfo.new(duration), properties)
+    local tween = TweenService:Create(object, TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), properties)
     tween:Play()
     return tween
 end
@@ -66,7 +67,7 @@ function UltraLordLib:Notify(options)
 
     local corner = CreateElement("UICorner", {
         Parent = frame,
-        CornerRadius = UDim.new(0, 6)
+        CornerRadius = UDim.new(0, 5)
     })
 
     local titleLabel = CreateElement("TextLabel", {
@@ -74,7 +75,7 @@ function UltraLordLib:Notify(options)
         BackgroundTransparency = 1,
         Position = UDim2.new(0, 10, 0, 5),
         Size = UDim2.new(1, -20, 0, 25),
-        Font = Config.Fonts.Title, -- Using new font
+        Font = Config.Fonts.Title,
         Text = title,
         TextColor3 = Config.Theme.Accent,
         TextSize = 16,
@@ -87,7 +88,7 @@ function UltraLordLib:Notify(options)
         BackgroundTransparency = 1,
         Position = UDim2.new(0, 10, 0, 35),
         Size = UDim2.new(1, -20, 0, 35),
-        Font = Config.Fonts.Text, -- Using new font
+        Font = Config.Fonts.Text,
         Text = message,
         TextColor3 = Config.Theme.Accent,
         TextSize = 14,
@@ -96,33 +97,33 @@ function UltraLordLib:Notify(options)
         TextTransparency = 1
     })
 
-    -- Animation handler
+    -- Animation handler with improved easing
     coroutine.wrap(function()
-        Tween(frame, Config.Animation.Normal, { -- Using new animation duration
+        Tween(frame, Config.Animation.Normal, {
             Position = UDim2.new(1, -270, 0.8, 0),
             BackgroundTransparency = 0
         })
 
-        Tween(titleLabel, Config.Animation.Normal, { -- Using new animation duration
+        Tween(titleLabel, Config.Animation.Normal, {
             TextTransparency = 0
         })
 
-        Tween(messageLabel, Config.Animation.Normal, {  -- Using new animation duration
+        Tween(messageLabel, Config.Animation.Normal, {
             TextTransparency = 0
         })
 
         wait(duration)
 
-        Tween(frame, Config.Animation.Normal, { -- Using new animation duration
+        Tween(frame, Config.Animation.Normal, {
             Position = UDim2.new(1, 20, 0.8, 0),
             BackgroundTransparency = 1
         })
 
-        Tween(titleLabel, Config.Animation.Normal, { -- Using new animation duration
+        Tween(titleLabel, Config.Animation.Normal, {
             TextTransparency = 1
         })
 
-        Tween(messageLabel, Config.Animation.Normal, { -- Using new animation duration
+        Tween(messageLabel, Config.Animation.Normal, {
             TextTransparency = 1
         }).Completed:Wait()
 
@@ -132,23 +133,21 @@ end
 
 function UltraLordLib:CreateWindow(options)
     local windowConfig = {
-        Title = options.Title or "Ultra Lord V3",
+        Title = options.Title or "Ultra Lord V5",
         Theme = options.Theme or {},
         Fonts = options.Fonts or {}
     }
 
-    -- Merge custom theme with default
     for key, value in pairs(windowConfig.Theme) do
         Config.Theme[key] = value
     end
 
-    -- Merge custom fonts with default
     for key, value in pairs(windowConfig.Fonts) do
         Config.Fonts[key] = value
     end
 
     local ScreenGui = CreateElement("ScreenGui", {
-        Name = "UltraLordV3",
+        Name = "UltraLordV5",
         Parent = game.CoreGui,
         ResetOnSpawn = false
     })
@@ -162,24 +161,7 @@ function UltraLordLib:CreateWindow(options)
         ClipsDescendants = true
     })
 
-    -- Menu Toggle Button
-    local MenuToggle = CreateElement("ImageButton", {
-        Name = "MenuToggle",
-        Parent = ScreenGui,
-        BackgroundColor3 = Config.Theme.Primary,
-        Position = Config.MenuToggle.Position,
-        Size = Config.MenuToggle.Size,
-        Image = Config.MenuToggle.Image,
-        BackgroundTransparency = Config.MenuToggle.Transparency,
-        ImageTransparency = Config.MenuToggle.Transparency
-    })
-
-    CreateElement("UICorner", {
-        Parent = MenuToggle,
-        CornerRadius = UDim.new(0, 8)
-    })
-
-    -- Window shadow and effects
+    -- Enhanced shadow effect
     local Shadow = CreateElement("ImageLabel", {
         Name = "Shadow",
         Parent = Main,
@@ -193,12 +175,22 @@ function UltraLordLib:CreateWindow(options)
         SliceCenter = Rect.new(49, 49, 450, 450)
     })
 
-    -- Title bar with new font
+    -- Improved corner radius
+    CreateElement("UICorner", {
+        Parent = Main,
+        CornerRadius = UDim.new(0, 5)
+    })
+
     local TitleBar = CreateElement("Frame", {
         Name = "TitleBar",
         Parent = Main,
         BackgroundColor3 = Config.Theme.Secondary,
         Size = UDim2.new(1, 0, 0, 40)
+    })
+
+    CreateElement("UICorner", {
+        Parent = TitleBar,
+        CornerRadius = UDim.new(0, 5)
     })
 
     local Title = CreateElement("TextLabel", {
@@ -213,7 +205,7 @@ function UltraLordLib:CreateWindow(options)
         TextXAlignment = Enum.TextXAlignment.Left
     })
 
-    -- Make window draggable with smoother dragging
+    -- Improved dragging with smooth animation
     local isDragging = false
     local dragStart = nil
     local startPos = nil
@@ -229,12 +221,14 @@ function UltraLordLib:CreateWindow(options)
     UserInputService.InputChanged:Connect(function(input)
         if isDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
             local delta = input.Position - dragStart
-            Main.Position = UDim2.new(
-                startPos.X.Scale,
-                startPos.X.Offset + delta.X,
-                startPos.Y.Scale,
-                startPos.Y.Offset + delta.Y
-            )
+            Tween(Main, Config.Animation.Short, {
+                Position = UDim2.new(
+                    startPos.X.Scale,
+                    startPos.X.Offset + delta.X,
+                    startPos.Y.Scale,
+                    startPos.Y.Offset + delta.Y
+                )
+            })
         end
     end)
 
@@ -244,7 +238,23 @@ function UltraLordLib:CreateWindow(options)
         end
     end)
 
-    -- Menu Toggle functionality
+    -- Menu Toggle with improved animation
+    local MenuToggle = CreateElement("ImageButton", {
+        Name = "MenuToggle",
+        Parent = ScreenGui,
+        BackgroundColor3 = Config.Theme.Primary,
+        Position = Config.MenuToggle.Position,
+        Size = Config.MenuToggle.Size,
+        Image = Config.MenuToggle.Image,
+        BackgroundTransparency = Config.MenuToggle.Transparency,
+        ImageTransparency = Config.MenuToggle.Transparency
+    })
+
+    CreateElement("UICorner", {
+        Parent = MenuToggle,
+        CornerRadius = UDim.new(0, 5)
+    })
+
     local isMenuVisible = true
     MenuToggle.MouseButton1Click:Connect(function()
         isMenuVisible = not isMenuVisible
@@ -261,18 +271,20 @@ function UltraLordLib:CreateWindow(options)
         end
     end)
 
-    -- Hover effects for menu toggle
+    -- Enhanced hover effects
     MenuToggle.MouseEnter:Connect(function()
         Tween(MenuToggle, Config.Animation.Short, {
             BackgroundTransparency = Config.MenuToggle.HoverTransparency,
-            ImageTransparency = Config.MenuToggle.HoverTransparency
+            ImageTransparency = Config.MenuToggle.HoverTransparency,
+            Size = UDim2.new(0, 42, 0, 42)  -- Slight scale up
         })
     end)
 
     MenuToggle.MouseLeave:Connect(function()
         Tween(MenuToggle, Config.Animation.Short, {
             BackgroundTransparency = Config.MenuToggle.Transparency,
-            ImageTransparency = Config.MenuToggle.Transparency
+            ImageTransparency = Config.MenuToggle.Transparency,
+            Size = Config.MenuToggle.Size  -- Return to original size
         })
     end)
 
@@ -299,7 +311,6 @@ function UltraLordLib:CreateWindow(options)
     })
 
     local Window = {}
-    local Tabs = {}
 
     function Window:AddTab(name)
         local tab = CreateElement("TextButton", {
@@ -309,7 +320,7 @@ function UltraLordLib:CreateWindow(options)
             Size = UDim2.new(1, 0, 0, 30),
             Text = name,
             TextColor3 = Config.Theme.Accent,
-            Font = Config.Fonts.Button, -- Using new font
+            Font = Config.Fonts.Button,
             TextSize = 14
         })
 
@@ -342,7 +353,7 @@ function UltraLordLib:CreateWindow(options)
                 Size = UDim2.new(1, -10, 0, 30),
                 Text = options.Name,
                 TextColor3 = Config.Theme.Accent,
-                Font = Config.Fonts.Button, -- Using new font
+                Font = Config.Fonts.Button,
                 TextSize = 14
             })
 
@@ -350,6 +361,21 @@ function UltraLordLib:CreateWindow(options)
                 Parent = button,
                 CornerRadius = UDim.new(0, 5)
             })
+
+            -- Button hover effect
+            button.MouseEnter:Connect(function()
+                Tween(button, Config.Animation.Short, {
+                    BackgroundColor3 = Config.Theme.Highlight,
+                    Size = UDim2.new(1, -8, 0, 32)  -- Slight scale up
+                })
+            end)
+
+            button.MouseLeave:Connect(function()
+                Tween(button, Config.Animation.Short, {
+                    BackgroundColor3 = Config.Theme.Secondary,
+                    Size = UDim2.new(1, -10, 0, 30)  -- Return to original size
+                })
+            end)
 
             button.MouseButton1Click:Connect(options.Callback)
             return button
@@ -362,13 +388,18 @@ function UltraLordLib:CreateWindow(options)
                 Size = UDim2.new(1, -10, 0, 30)
             })
 
+            CreateElement("UICorner", {
+                Parent = toggle,
+                CornerRadius = UDim.new(0, 5)
+            })
+
             local button = CreateElement("TextButton", {
                 Parent = toggle,
                 BackgroundTransparency = 1,
                 Size = UDim2.new(1, 0, 1, 0),
                 Text = options.Name,
                 TextColor3 = Config.Theme.Accent,
-                Font = Config.Fonts.Button, -- Using new font
+                Font = Config.Fonts.Button,
                 TextSize = 14
             })
 
@@ -381,13 +412,17 @@ function UltraLordLib:CreateWindow(options)
 
             CreateElement("UICorner", {
                 Parent = status,
-                CornerRadius = UDim.new(1, 0)
+                CornerRadius = UDim.new(0, 5)
             })
 
             local enabled = options.Default or false
             button.MouseButton1Click:Connect(function()
                 enabled = not enabled
-                status.BackgroundColor3 = enabled and Config.Theme.Success or Config.Theme.Error
+                Tween(status, Config.Animation.Short, {
+                    BackgroundColor3 = enabled and Config.Theme.Success or Config.Theme.Error,
+                    Size = UDim2.new(0, enabled and 12 or 10, 0, enabled and 12 or 10),  -- Scale effect
+                    Position = UDim2.new(1, -25, 0.5, enabled and -6 or -5)
+                })
                 options.Callback(enabled)
             end)
 
@@ -401,7 +436,7 @@ function UltraLordLib:CreateWindow(options)
                 Size = UDim2.new(1, -10, 0, 30),
                 Text = options.Text,
                 TextColor3 = Config.Theme.Accent,
-                Font = Config.Fonts.Text, -- Using new font
+                Font = Config.Fonts.Text,
                 TextSize = 14
             })
 
@@ -420,13 +455,12 @@ function UltraLordLib:CreateWindow(options)
                 Size = UDim2.new(1, -10, 0, 0),
                 Text = options.Text,
                 TextColor3 = Config.Theme.Accent,
-                Font = Config.Fonts.Text, -- Using new font
+                Font = Config.Fonts.Text,
                 TextSize = 14,
                 TextWrapped = true,
                 AutomaticSize = Enum.AutomaticSize.Y,
                 TextXAlignment = Enum.TextXAlignment.Left,
-                TextYAlignment = Enum.TextYAlignment.Top,
-                Padding = UDim.new(0, 10)
+                TextYAlignment = Enum.TextYAlignment.Top
             })
 
             CreateElement("UIPadding", {
@@ -465,7 +499,7 @@ function UltraLordLib:CreateWindow(options)
                 Text = options.Name,
                 TextColor3 = Config.Theme.Accent,
                 TextXAlignment = Enum.TextXAlignment.Left,
-                Font = Config.Fonts.Text, -- Using new font
+                Font = Config.Fonts.Text,
                 TextSize = 14
             })
 
@@ -476,12 +510,22 @@ function UltraLordLib:CreateWindow(options)
                 Size = UDim2.new(1, -20, 0, 5)
             })
 
+            CreateElement("UICorner", {
+                Parent = bar,
+                CornerRadius = UDim.new(0, 5)
+            })
+
             local button = CreateElement("TextButton", {
                 Parent = bar,
                 BackgroundColor3 = Config.Theme.Accent,
                 Size = UDim2.new(0, 10, 0, 15),
                 Position = UDim2.new(0, -5, 0.5, -7.5),
                 Text = ""
+            })
+
+            CreateElement("UICorner", {
+                Parent = button,
+                CornerRadius = UDim.new(0, 5)
             })
 
             local value = CreateElement("TextLabel", {
@@ -491,7 +535,7 @@ function UltraLordLib:CreateWindow(options)
                 Size = UDim2.new(0, 30, 0, 20),
                 Text = tostring(options.Default or options.Min),
                 TextColor3 = Config.Theme.Accent,
-                Font = Config.Fonts.Text, -- Using new font
+                Font = Config.Fonts.Text,
                 TextSize = 14
             })
 
@@ -506,7 +550,10 @@ function UltraLordLib:CreateWindow(options)
                     0.5,
                     -7.5
                 )
-                button.Position = pos
+                Tween(button, Config.Animation.Short, {
+                    Position = pos,
+                    Size = UDim2.new(0, 12, 0, 17)  -- Scale up while dragging
+                })
                 local val = math.floor(((pos.X.Scale * (options.Max - options.Min)) + options.Min) * 100) / 100
                 value.Text = tostring(val)
                 options.Callback(val)
@@ -524,6 +571,9 @@ function UltraLordLib:CreateWindow(options)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 then
                         if connection then
                             connection:Disconnect()
+                            Tween(button, Config.Animation.Short, {
+                                Size = UDim2.new(0, 10, 0, 15)  -- Return to original size
+                            })
                         end
                     end
                 end)
@@ -535,9 +585,10 @@ function UltraLordLib:CreateWindow(options)
         tab.MouseButton1Click:Connect(function()
             for _, t in pairs(TabHolder:GetChildren()) do
                 if t:IsA("TextButton") then
-                    Tween(t, Config.Animation.Short, {  -- Using new animation duration
+                    Tween(t, Config.Animation.Short, {
                         BackgroundColor3 = t == tab and Config.Theme.Accent or Config.Theme.Secondary,
-                        TextColor3 = t == tab and Config.Theme.Primary or Config.Theme.Accent
+                        TextColor3 = t == tab and Config.Theme.Primary or Config.Theme.Accent,
+                        Size = t == tab and UDim2.new(1, 0, 0, 32) or UDim2.new(1, 0, 0, 30)  -- Scale effect
                     })
                 end
             end
@@ -547,11 +598,11 @@ function UltraLordLib:CreateWindow(options)
                     if c == container then
                         c.Visible = true
                         c.Position = UDim2.new(1, 0, 0, 0)
-                        Tween(c, Config.Animation.Normal, { -- Using new animation duration
+                        Tween(c, Config.Animation.Normal, {
                             Position = UDim2.new(0, 0, 0, 0)
                         })
                     else
-                        Tween(c, Config.Animation.Normal, { -- Using new animation duration
+                        Tween(c, Config.Animation.Normal, {
                             Position = UDim2.new(-1, 0, 0, 0)
                         }).Completed:Connect(function()
                             c.Visible = false
