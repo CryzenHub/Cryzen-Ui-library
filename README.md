@@ -17,7 +17,7 @@ A modern, feature-rich UI Library for Roblox with smooth animations, notificatio
 
 1. Load the library:
 ```lua
-local UltraLordLib = loadstring(game:HttpGet("source.lua"))()
+local UltraLordLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Ultra-Lord-Hub/Ultra-Lord-Ui-library/refs/heads/main/source"))()
 ```
 
 2. Create a window with custom theme:
@@ -72,7 +72,7 @@ end)
 ### Notifications
 Display timed notifications with progress bar:
 ```lua
-Window:Notify("Title", "Message", duration) -- duration in seconds
+Window:Notify("Title", "Message", 5) -- duration in seconds
 ```
 
 ## Theme Configuration
@@ -93,7 +93,7 @@ Customize the appearance with these theme options:
 ## Complete Example
 
 ```lua
-local UltraLordLib = loadstring(game:HttpGet("source.lua"))()
+local UltraLordLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Ultra-Lord-Hub/Ultra-Lord-Ui-library/refs/heads/main/source"))()
 
 -- Create window
 local Window = UltraLordLib:MakeWindow({
