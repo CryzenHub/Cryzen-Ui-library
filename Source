@@ -600,18 +600,8 @@ function UltraLordLib:MakeWindow(WindowConfig)
 		Position = UDim2.new(0, 0, 1, -1)
 	}), "Stroke")
 
-	local MenuToggleBtn = SetChildren(SetProps(MakeElement("Button"), {
-	Size = UDim2.new(0.5, 0, 1, 0),
-	BackgroundTransparency = 1
-}), {
-	AddThemeObject(SetProps(MakeElement("Image", "rbxassetid://7072721682"), {
-		Position = UDim2.new(0, 9, 0, 6),
-		Size = UDim2.new(0, 18, 0, 18),
-		Name = "Ico"
-	}), "Text")
-})
 
-local MainWindow = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 10), {
+	local MainWindow = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 10), {
 		Parent = UltraLord,
 		Position = UDim2.new(0.5, -307, 0.5, -172),
 		Size = UDim2.new(0, 615, 0, 344),
@@ -636,28 +626,12 @@ local MainWindow = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame",
 				}), "Stroke"), 
 				CloseBtn,
 				MinimizeBtn
-			}), "Second"), 
-			MenuToggleBtn
+			}), "Second")
 		}),
 		DragPoint,
 		WindowStuff
 	}), "Main")
 
-	AddConnection(MenuToggleBtn.MouseButton1Click, function()
-		MenuToggled = not MenuToggled
-		MainWindow.Visible = not MenuToggled
-		MainWindow.Active = not MenuToggled
-		MainWindow.Draggable = not MenuToggled and CanDrag
-		MenuToggleBtn.Ico.Image = MenuToggled and "rbxassetid://7072725342" or "rbxassetid://7072721682"
-		
-		if MenuToggled then
-			UltraLordLib:MakeNotification({
-				Name = "Menu Hidden",
-				Content = "Menu has been hidden",
-				Time = 2
-			})
-		end
-	end)
 
 	if WindowConfig.ShowIcon then
 		WindowName.Position = UDim2.new(0, 50, 0, -24)
@@ -709,6 +683,15 @@ local MainWindow = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame",
 
 	local function LoadSequence()
 		MainWindow.Visible = false
+
+		-- Smoother tab animations
+		for _, Tab in next, TabHolder:GetChildren() do
+			if Tab:IsA("TextButton") then
+				TweenService:Create(Tab.Title, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {TextTransparency = 0.4}):Play()
+				TweenService:Create(Tab.Ico, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {ImageTransparency = 0.4}):Play()
+			end
+		end
+
 		local LoadSequenceLogo = SetProps(MakeElement("Image", WindowConfig.IntroIcon), {
 			Parent = UltraLord,
 			AnchorPoint = Vector2.new(0.5, 0.5),
@@ -801,9 +784,10 @@ local MainWindow = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame",
 		AddConnection(TabFrame.MouseButton1Click, function()
 			for _, Tab in next, TabHolder:GetChildren() do
 				if Tab:IsA("TextButton") then
+					TweenService:Create(Tab, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundTransparency = 1}):Play()
 					Tab.Title.Font = Enum.Font.GothamSemibold
-					TweenService:Create(Tab.Ico, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {ImageTransparency = 0.4}):Play()
-					TweenService:Create(Tab.Title, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {TextTransparency = 0.4}):Play()
+					TweenService:Create(Tab.Ico, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {ImageTransparency = 0.4}):Play()
+					TweenService:Create(Tab.Title, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {TextTransparency = 0.4}):Play()
 				end    
 			end
 			for _, ItemContainer in next, MainWindow:GetChildren() do
@@ -811,8 +795,8 @@ local MainWindow = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame",
 					ItemContainer.Visible = false
 				end    
 			end  
-			TweenService:Create(TabFrame.Ico, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {ImageTransparency = 0}):Play()
-			TweenService:Create(TabFrame.Title, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
+			TweenService:Create(TabFrame.Ico, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageTransparency = 0}):Play()
+			TweenService:Create(TabFrame.Title, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
 			TabFrame.Title.Font = Enum.Font.GothamBlack
 			Container.Visible = true   
 		end)
@@ -1349,7 +1333,7 @@ local MainWindow = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame",
 				end)
 
 				AddConnection(UserInputService.InputEnded, function(Input)
-					if Input.KeyCode.Name == Bind.Value or Input.UserInputType.Name == Bind.Value then
+					if Input.KeyCode.Name == Bind.Value or Input.UserInputType.Name== Bind.Value then
 						if BindConfig.Hold and Holding then
 							Holding = false
 							BindConfig.Callback(Holding)
@@ -1358,7 +1342,7 @@ local MainWindow = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame",
 				end)
 
 				AddConnection(Click.MouseEnter, function()
-					TweenService:Create(BindFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(UltraLordLib.Themes[UltraLordLib.SelectedTheme].Second.R* 255 + 3, UltraLordLib.Themes[UltraLordLib.SelectedTheme].Second.G * 255 + 3, UltraLordLib.Themes[UltraLordLib.SelectedTheme].Second.B * 255 + 3)}):Play()
+					TweenService:Create(BindFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(UltraLordLib.Themes[UltraLordLib.SelectedTheme].Second.R * 255 + 3, UltraLordLib.Themes[UltraLordLib.SelectedTheme].Second.G * 255 + 3, UltraLordLib.Themes[UltraLordLib.SelectedTheme].Second.B * 255 + 3)}):Play()
 				end)
 
 				AddConnection(Click.MouseLeave, function()
