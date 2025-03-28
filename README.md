@@ -6,7 +6,7 @@ A modern, feature-rich UI library for Roblox with smooth animations and customiz
 ## Installation
 
 ```lua
-local UltraLordLib = loadstring(game:HttpGet("source.lua"))()
+local UltraLordLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Ultra-Lord-Hub/Ultra-Lord-Ui-library/refs/heads/main/source"))()
 ```
 
 ## Quick Start
