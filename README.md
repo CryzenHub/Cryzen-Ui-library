@@ -181,7 +181,7 @@ local window = UltraLordLib:CreateWindow({
 ## 📱 Complete Example
 
 ```lua
-local UltraLordLib = loadstring(game:HttpGet("YOUR_RAW_URL"))()
+local UltraLordLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Ultra-Lord-Hub/Ultra-Lord-Ui-library/refs/heads/main/source"))()
 
 local window = UltraLordLib:CreateWindow({
     Title = "Ultra Lord V5",
