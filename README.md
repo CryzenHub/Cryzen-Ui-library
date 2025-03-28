@@ -1,74 +1,122 @@
+# UltraLord Library V5
+
+A modern, sleek UI library for Roblox with enhanced animations and styling.
+
+## Features
+
+- Modern and clean design
+- Smooth animations and transitions
+- Enhanced shadow effects
+- Improved corner radius system
+- Modern notification system
+- Fully customizable theme
+- Draggable windows
+- Built-in key system authentication
+- Secure input handling
+- Anti-tampering measures
+- Buttons with hover effects
+- Animated toggles
+- Dynamic sliders
+- Text inputs
+- Labels and paragraphs
+- Custom notifications
+- Tab system
 
 
-# Ultra Lord UI Library
-
-A modern, animated UI library for Roblox with smooth transitions and customizable themes.
-
-## Quick Start (Loadstring)
+## 📦 Installation
 
 ```lua
 local UltraLordLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Ultra-Lord-Hub/Ultra-Lord-Ui-library/refs/heads/main/source"))()
+```
 
--- Create a window
+## 🚀 Quick Start
+
+```lua
+-- Initialize with key authentication
 local window = UltraLordLib:CreateWindow({
-    Title = "My Window",
+    Title = "Ultra Lord V5",
+    Key = "YourSecureKey123", -- Minimum 8 chars with numbers and uppercase
     Theme = {
-        Primary = Color3.fromRGB(36, 36, 36),
-        Secondary = Color3.fromRGB(46, 46, 46),
-        Accent = Color3.fromRGB(240, 240, 240)
+        Primary = Color3.fromRGB(24, 24, 28),
+        Secondary = Color3.fromRGB(32, 32, 36),
+        Accent = Color3.fromRGB(240, 240, 245),
+        Success = Color3.fromRGB(56, 207, 137),
+        Error = Color3.fromRGB(229, 57, 53),
+        Highlight = Color3.fromRGB(61, 133, 224),
+        Stroke = Color3.fromRGB(45, 45, 50)
     }
 })
 ```
 
-## Features
+## 💡 Components Guide
 
-- Smooth animations and transitions
-- Customizable themes and fonts
-- Multiple UI components:
-  - Buttons
-  - Toggles
-  - Labels
-  - Paragraphs
-  - Sliders
-  - Notifications
-- Draggable windows
-- Menu toggle functionality
-
-## Example Usage
-
+### Tabs
 ```lua
--- Create a tab
 local tab = window:AddTab("General")
+```
 
--- Add a button
+### Buttons
+```lua
 tab:AddButton({
     Name = "Click Me",
     Callback = function()
         print("Button clicked!")
     end
 })
+```
 
--- Add a toggle
+### Toggles
+```lua
 tab:AddToggle({
-    Name = "Toggle Me",
+    Name = "Feature Toggle",
     Default = false,
     Callback = function(value)
-        print("Toggle value:", value)
+        print("Toggle:", value)
     end
 })
+```
 
--- Add a slider
+### Sliders
+```lua
 tab:AddSlider({
-    Name = "Slider",
+    Name = "Speed",
     Min = 0,
     Max = 100,
     Default = 50,
     Callback = function(value)
-        print("Slider value:", value)
+        print("Speed:", value)
     end
 })
+```
 
--- Show notification
+### Input Fields
+```lua
+tab:AddInput({
+    Placeholder = "Enter text...",
+    Default = "",
+    ClearOnFocus = true,
+    Callback = function(text)
+        print("Input:", text)
+    end
+})
+```
+
+### Labels
+```lua
+tab:AddLabel({
+    Text = "Information Label"
+})
+```
+
+### Paragraphs
+```lua
+tab:AddParagraph({
+    Text = "This is a detailed paragraph that can contain longer text content with automatic wrapping."
+})
+```
+
+### Notifications
+```lua
 UltraLordLib:Notify({
     Title = "Success",
     Message = "Operation completed!",
@@ -76,114 +124,145 @@ UltraLordLib:Notify({
 })
 ```
 
-## UI Elements
+## 🎨 Theme Customization
 
-### Button
+The theme can be customized by passing a table to the `CreateWindow` function.  Here's an example of a custom theme:
+
 ```lua
-tab:AddButton({
-    Name = "Button Name",  -- Text displayed on the button
-    Callback = function()  -- Function called when clicked
-        -- Your code here
-    end
+local window = UltraLordLib:CreateWindow({
+    Theme = {
+        Primary = Color3.fromRGB(24, 24, 28),    -- Main background
+        Secondary = Color3.fromRGB(32, 32, 36),  -- Secondary elements
+        Accent = Color3.fromRGB(240, 240, 245),  -- Text and highlights
+        Success = Color3.fromRGB(56, 207, 137),  -- Success states
+        Error = Color3.fromRGB(229, 57, 53),     -- Error states
+        Highlight = Color3.fromRGB(61, 133, 224), -- Hover effects
+        Stroke = Color3.fromRGB(45, 45, 50),     -- UI borders
+        InputBackground = Color3.fromRGB(30, 30, 30) -- Input fields
+    }
 })
 ```
 
-### Toggle
+## 🎯 UI Corner Customization
+
 ```lua
-tab:AddToggle({
-    Name = "Toggle Name",    -- Text displayed next to toggle
-    Default = false,         -- Initial state (true/false)
-    Callback = function(value)  -- Function called with new state
-        -- value is true/false
-    end
-})
+-- Available corner sizes
+Corner = {
+    Small = UDim.new(0, 4),
+    Medium = UDim.new(0, 6),
+    Large = UDim.new(0, 8)
+}
 ```
 
-### Label
+## ✨ Animation Settings
+
 ```lua
-tab:AddLabel({
-    Text = "Label Text"  -- Static text to display
-})
+-- Animation duration presets
+Animation = {
+    Short = 0.15,  -- Quick feedback
+    Normal = 0.3,  -- Standard transitions
+    Long = 0.5     -- Emphasis effects
+}
 ```
 
-### Paragraph
-```lua
-tab:AddParagraph({
-    Text = "Multi-line text content that automatically wraps"
-})
-```
-
-### Slider
-```lua
-tab:AddSlider({
-    Name = "Slider Name",  -- Text displayed above slider
-    Min = 0,              -- Minimum value
-    Max = 100,            -- Maximum value
-    Default = 50,         -- Starting value
-    Callback = function(value)  -- Function called with new value
-        -- value is number between Min and Max
-    end
-})
-```
-
-### Notification
-```lua
-UltraLordLib:Notify({
-    Title = "Title",      -- Notification title
-    Message = "Message",  -- Notification content
-    Duration = 3         -- How long to show (seconds)
-})
-```
-
-## Full Source Code
+## 🛡️ Key System Example
 
 ```lua
--- Ultra Lord UI Library Source Code
-local UltraLordLib = {}
-local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
-
-local Config = {
+local window = UltraLordLib:CreateWindow({
+    Title = "Secured Window",
+    Key = "SecureKey123", -- Must have 8+ chars, numbers, and uppercase
     Theme = {
         Primary = Color3.fromRGB(36, 36, 36),
-        Secondary = Color3.fromRGB(46, 46, 46),
-        Accent = Color3.fromRGB(240, 240, 240),
-        Success = Color3.fromRGB(56, 207, 137),
-        Error = Color3.fromRGB(229, 57, 53),
-        Highlight = Color3.fromRGB(61, 133, 224)
-    },
-    Fonts = {
-        Title = Enum.Font.GothamBold,
-        Text = Enum.Font.Gotham,
-        Button = Enum.Font.GothamMedium
-    },
-    Animation = {
-        Short = 0.15,
-        Normal = 0.3,
-        Long = 0.5
-    },
-    MenuToggle = {
-        Size = UDim2.new(0, 40, 0, 40),
-        Position = UDim2.new(0, 10, 0.5, -20),
-        Image = "rbxassetid://11432851457",
-        Transparency = 0.1,
-        HoverTransparency = 0
+        Secondary = Color3.fromRGB(46, 46, 46)
     }
-}
-
-return UltraLordLib
+})
 ```
 
-## Themes
+## 📱 Complete Example
 
-The library supports custom themes with the following properties:
-- Primary: Main background color
-- Secondary: Secondary UI elements color
-- Accent: Text and highlight color
-- Success: Used for positive states
-- Error: Used for negative states
-- Highlight: Used for hover effects
+```lua
+local UltraLordLib = loadstring(game:HttpGet("YOUR_RAW_URL"))()
 
-## License
+local window = UltraLordLib:CreateWindow({
+    Title = "Ultra Lord V5",
+    Key = "SecureKey123",
+    Theme = {
+        Primary = Color3.fromRGB(36, 36, 36),
+        Secondary = Color3.fromRGB(46, 46, 46)
+    }
+})
 
-MIT License - Feel free to use and modify this library in your projects.
+local mainTab = window:AddTab("Main")
+local settingsTab = window:AddTab("Settings")
+
+-- Main Tab
+mainTab:AddButton({
+    Name = "Start",
+    Callback = function()
+        UltraLordLib:Notify({
+            Title = "Started",
+            Message = "Process initiated!",
+            Duration = 2
+        })
+    end
+})
+
+mainTab:AddInput({
+    Placeholder = "Enter name...",
+    ClearOnFocus = true,
+    Callback = function(text)
+        print("Name:", text)
+    end
+})
+
+-- Settings Tab
+settingsTab:AddToggle({
+    Name = "Auto Save",
+    Default = true,
+    Callback = function(value)
+        print("Auto Save:", value)
+    end
+})
+
+settingsTab:AddSlider({
+    Name = "Volume",
+    Min = 0,
+    Max = 100,
+    Default = 75,
+    Callback = function(value)
+        print("Volume:", value)
+    end
+})
+```
+
+## 🔄 Updates in V5
+
+- Enhanced UI corners and strokes
+- Improved animations and transitions
+- New input component
+- Draggable menu toggle
+- Inertia-based dragging
+- Enhanced theme customization
+- Improved key system UI
+- Better performance and stability
+
+## ⚠️ Best Practices
+
+1. **Security**
+   - Use strong keys (8+ characters)
+   - Include numbers and uppercase letters
+   - Don't share keys publicly
+
+2. **Performance**
+   - Group related elements in tabs
+   - Use appropriate animation durations
+   - Clean up connections when needed
+
+3. **UI/UX**
+   - Maintain consistent styling
+   - Provide user feedback
+   - Use clear, descriptive labels
+
+## 🔧 Support
+
+For updates and support, check back regularly. Report any issues or feature requests through the appropriate channels.
