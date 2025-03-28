@@ -201,7 +201,7 @@ function UltraLordLib:MakeWindow(config)
     Main.Draggable = true
 
     UICorner.Parent = Main
-    UICorner.CornerRadius = UDim.new(0, 6)
+    UICorner.CornerRadius = UDim.new(0, 5)
 
     Title.Name = "Title"
     Title.Parent = Main
@@ -215,20 +215,20 @@ function UltraLordLib:MakeWindow(config)
     Title.TextXAlignment = Enum.TextXAlignment.Left
 
     -- Toggle Button
-    local ToggleButton = Instance.new("TextButton")
+    local ToggleButton = Instance.new("ImageButton")
     ToggleButton.Name = "ToggleUI"
     ToggleButton.Parent = ScreenGui
     ToggleButton.Position = UDim2.new(0, 10, 0.5, 0)
-    ToggleButton.Size = UDim2.new(0, 100, 0, 30)
+    ToggleButton.Size = UDim2.new(0, 40, 0, 40)
     ToggleButton.BackgroundColor3 = ConfigFolder.PrimaryColor
-    ToggleButton.Text = "Toggle UI"
-    ToggleButton.TextColor3 = ConfigFolder.AccentColor
-    ToggleButton.Font = ConfigFolder.Font
-    ToggleButton.TextSize = 14
+    ToggleButton.Image = "rbxassetid://11432851457" -- Menu icon
+    ToggleButton.BackgroundTransparency = 0.2
+    ToggleButton.Active = true
+    ToggleButton.Draggable = true
 
     local ToggleCorner = Instance.new("UICorner")
     ToggleCorner.Parent = ToggleButton
-    ToggleCorner.CornerRadius = UDim.new(0, 6)
+    ToggleCorner.CornerRadius = UDim.new(0, 8)
 
     -- Toggle Functionality
     local GuiVisible = true
@@ -272,7 +272,7 @@ function UltraLordLib:MakeWindow(config)
 
         local TabCorner = Instance.new("UICorner")
         TabCorner.Parent = Tab
-        TabCorner.CornerRadius = UDim.new(0, 4)
+        TabCorner.CornerRadius = UDim.new(0, 5)
 
         Container.Name = name.."Container"
         Container.Parent = ContainerHolder
@@ -300,7 +300,7 @@ function UltraLordLib:MakeWindow(config)
 
             local ButtonCorner = Instance.new("UICorner")
             ButtonCorner.Parent = Button
-            ButtonCorner.CornerRadius = UDim.new(0, 4)
+            ButtonCorner.CornerRadius = UDim.new(0, 5)
 
             Button.MouseButton1Click:Connect(callback)
             return Button
@@ -436,13 +436,16 @@ function UltraLordLib:MakeWindow(config)
                     if container == Container then
                         container.Visible = true
                         container.Position = UDim2.new(1, 0, 0, 0)
+                        container.BackgroundTransparency = 1
                         local slideTween = TweenService:Create(container, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {
-                            Position = UDim2.new(0, 0, 0, 0)
+                            Position = UDim2.new(0, 0, 0, 0),
+                            BackgroundTransparency = 0
                         })
                         slideTween:Play()
                     else
                         local hideSlide = TweenService:Create(container, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {
-                            Position = UDim2.new(-1, 0, 0, 0)
+                            Position = UDim2.new(-1, 0, 0, 0),
+                            BackgroundTransparency = 1
                         })
                         hideSlide:Play()
                         hideSlide.Completed:Connect(function()
