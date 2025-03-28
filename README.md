@@ -1,104 +1,104 @@
 
 # Ultra Lord UI Library V2
 
-A modern, feature-rich UI library for Roblox with smooth animations and customizable themes.
+A modern, feature-rich UI library for Roblox with smooth animations, dynamic themes, and an intuitive API.
 
 ## Features
 
-- Clean and modern design
-- Multiple built-in themes
-- Smooth animations and effects
-- Customizable fonts
-- Notification system
-- Tab-based interface
-- Responsive draggable windows
-
-## Themes
-
-- UltraLordV2
-- UltraSpaceV2
-- UltraDarkV2
-- UltraLegend
+- 🎨 Multiple built-in themes (UltraLordV2, UltraSpaceV2, UltraDarkV2, UltraLegend)
+- ✨ Smooth animations and transitions
+- 🎯 Customizable fonts
+- 📢 Modern notification system
+- 📑 Tab-based interface
+- 🔄 Draggable windows
+- 🛡️ UICorner standardization
+- 📱 Touch support
 
 ## Quick Start
 
 ```lua
-local UltraLordLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Ultra-Lord-Hub/Ultra-Lord-Ui-library/refs/heads/main/Source"))()
+local UltraLordLib = loadstring(game:HttpGet("path_to_library"))()
 
 -- Create a window
 local Window = UltraLordLib:MakeWindow({
     Name = "My Window",
-    Theme = "UltraLordV2", -- UltraLordV2, UltraSpaceV2, UltraDarkV2, UltraLegend
-    Font = "FredokaOne" -- FredokaOne, GothamBold, SourceSansBold
+    Theme = "UltraLordV2",
+    Font = "FredokaOne"
 })
 
 -- Create a tab
 local Tab = Window:CreateTab("Main", "rbxassetid://4384401360")
 
--- Create a button
+-- Add elements
 local Button = Tab:CreateButton("Click Me", function()
     print("Button clicked!")
 end)
 
--- Create a toggle
 local Toggle = Tab:CreateToggle("Toggle Me", false, function(Value)
     print("Toggle state:", Value)
 end)
 
--- Create a slider
 local Slider = Tab:CreateSlider("Adjust Value", 0, 100, 50, function(Value)
     print("Slider value:", Value)
 end)
+```
 
--- Create a notification
+## API Reference
+
+### Window Configuration
+```lua
+UltraLordLib:MakeWindow({
+    Name = string,    -- Window title
+    Theme = string,   -- Theme name
+    Font = string     -- Font family
+})
+```
+
+### Notifications
+```lua
 UltraLordLib:MakeNotification({
-    Name = "Hello!",
-    Content = "Welcome to Ultra Lord UI Library V2",
-    Image = "rbxassetid://4384401360",
-    Time = 5
+    Name = string,    -- Notification title
+    Content = string, -- Message content
+    Image = string,   -- Icon ID
+    Time = number     -- Duration in seconds
 })
 ```
 
-## Elements
+### Available Themes
+- UltraLordV2 (Default)
+- UltraSpaceV2
+- UltraDarkV2
+- UltraLegend
 
-### Window
-```lua
-local Window = UltraLordLib:MakeWindow({
-    Name = string,
-    Theme = string,
-    Font = string
-})
-```
+### Available Fonts
+- FredokaOne (Default)
+- GothamBold
+- SourceSansBold
 
-### Tab
-```lua
-local Tab = Window:CreateTab(name, iconId)
-```
+## UI Elements
 
 ### Button
 ```lua
-local Button = Tab:CreateButton(name, callback)
+Tab:CreateButton(name, callback)
 ```
 
 ### Toggle
 ```lua
-local Toggle = Tab:CreateToggle(name, defaultState, callback)
+Tab:CreateToggle(name, defaultState, callback)
 ```
 
 ### Slider
 ```lua
-local Slider = Tab:CreateSlider(name, min, max, default, callback)
+Tab:CreateSlider(name, min, max, default, callback)
 ```
 
-### Notification
-```lua
-UltraLordLib:MakeNotification({
-    Name = string,
-    Content = string,
-    Image = string,
-    Time = number
-})
-```
+## Key Features
+
+- **Smart Animations**: Smooth transitions and effects
+- **Theme Support**: Multiple built-in themes
+- **Responsive Design**: Adapts to different screen sizes
+- **Touch Support**: Works on mobile devices
+- **Modern UI**: Clean and intuitive interface
 
 ## License
 MIT License
