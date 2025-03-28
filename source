@@ -1,39 +1,42 @@
-
 local UltraLordLib = {}
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
+-- Enhanced configuration with modern UI elements
 local Config = {
     Theme = {
-        Primary = Color3.fromRGB(36, 36, 36),
-        Secondary = Color3.fromRGB(46, 46, 46),
-        Accent = Color3.fromRGB(240, 240, 240),
+        Primary = Color3.fromRGB(24, 24, 28),
+        Secondary = Color3.fromRGB(32, 32, 36),
+        Accent = Color3.fromRGB(240, 240, 245),
         Success = Color3.fromRGB(56, 207, 137),
         Error = Color3.fromRGB(229, 57, 53),
-        Highlight = Color3.fromRGB(61, 133, 224)
+        Highlight = Color3.fromRGB(61, 133, 224),
+        Stroke = Color3.fromRGB(45, 45, 50)
     },
-    Fonts = {
-        Title = Enum.Font.GothamBold,
-        Text = Enum.Font.Gotham,
-        Button = Enum.Font.GothamMedium
+    Corner = {
+        Small = UDim.new(0, 4),
+        Medium = UDim.new(0, 6),
+        Large = UDim.new(0, 8)
     },
     Animation = {
         Short = 0.15,
         Normal = 0.3,
         Long = 0.5
     },
-    MenuToggle = {
-        Size = UDim2.new(0, 40, 0, 40),
-        Position = UDim2.new(0, 10, 0.5, -20),
-        Image = "rbxassetid://11432851457",
-        Transparency = 0.1,
-        HoverTransparency = 0
+    Shadow = {
+        Elevation1 = 10,
+        Elevation2 = 15,
+        Elevation3 = 20
     }
 }
 
--- Utility functions
+-- Utility functions with improved animations
 local function Tween(object, duration, properties)
-    local tween = TweenService:Create(object, TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), properties)
+    local tween = TweenService:Create(
+        object,
+        TweenInfo.new(duration, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
+        properties
+    )
     tween:Play()
     return tween
 end
@@ -46,128 +49,99 @@ local function CreateElement(className, properties)
     return element
 end
 
+-- Enhanced notification system
 function UltraLordLib:Notify(options)
-    local title = options.Title or "Notification"
-    local message = options.Message or ""
-    local duration = options.Duration or 3
-
-    local gui = CreateElement("ScreenGui", {
-        Name = "UltraLordNotification",
-        Parent = game.CoreGui
-    })
-
-    local frame = CreateElement("Frame", {
-        Name = "NotificationFrame",
-        Parent = gui,
+    local notif = CreateElement("Frame", {
+        Name = "Notification",
+        Parent = game.CoreGui,
         BackgroundColor3 = Config.Theme.Primary,
-        Position = UDim2.new(1, 20, 0.8, 0),
-        Size = UDim2.new(0, 250, 0, 80),
+        Position = UDim2.new(1, 20, 0.85, 0),
+        Size = UDim2.new(0, 280, 0, 80),
         BackgroundTransparency = 1
     })
 
-    local corner = CreateElement("UICorner", {
-        Parent = frame,
-        CornerRadius = UDim.new(0, 5)
+    CreateElement("UICorner", {
+        Parent = notif,
+        CornerRadius = Config.Corner.Medium
     })
 
-    local titleLabel = CreateElement("TextLabel", {
-        Parent = frame,
+    CreateElement("UIStroke", {
+        Parent = notif,
+        Color = Config.Theme.Stroke,
+        Thickness = 1,
+        Transparency = 0.5
+    })
+
+    local content = CreateElement("Frame", {
+        Parent = notif,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 10, 0, 5),
-        Size = UDim2.new(1, -20, 0, 25),
-        Font = Config.Fonts.Title,
-        Text = title,
+        Size = UDim2.new(1, 0, 1, 0)
+    })
+
+    local title = CreateElement("TextLabel", {
+        Parent = content,
+        BackgroundTransparency = 1,
+        Position = UDim2.new(0, 15, 0, 10),
+        Size = UDim2.new(1, -30, 0, 25),
+        Font = Enum.Font.GothamBold,
+        Text = options.Title or "Notification",
         TextColor3 = Config.Theme.Accent,
         TextSize = 16,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        TextTransparency = 1
+        TextXAlignment = Enum.TextXAlignment.Left
     })
 
-    local messageLabel = CreateElement("TextLabel", {
-        Parent = frame,
+    local message = CreateElement("TextLabel", {
+        Parent = content,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 10, 0, 35),
-        Size = UDim2.new(1, -20, 0, 35),
-        Font = Config.Fonts.Text,
-        Text = message,
+        Position = UDim2.new(0, 15, 0, 35),
+        Size = UDim2.new(1, -30, 0, 35),
+        Font = Enum.Font.Gotham,
+        Text = options.Message or "",
         TextColor3 = Config.Theme.Accent,
         TextSize = 14,
         TextWrapped = true,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        TextTransparency = 1
+        TextXAlignment = Enum.TextXAlignment.Left
     })
 
-    -- Animation handler with improved easing
-    coroutine.wrap(function()
-        Tween(frame, Config.Animation.Normal, {
-            Position = UDim2.new(1, -270, 0.8, 0),
-            BackgroundTransparency = 0
-        })
+    -- Smooth animation sequence
+    Tween(notif, Config.Animation.Normal, {
+        Position = UDim2.new(1, -300, 0.85, 0),
+        BackgroundTransparency = 0
+    })
 
-        Tween(titleLabel, Config.Animation.Normal, {
-            TextTransparency = 0
-        })
+    wait(options.Duration or 3)
 
-        Tween(messageLabel, Config.Animation.Normal, {
-            TextTransparency = 0
-        })
+    Tween(notif, Config.Animation.Normal, {
+        Position = UDim2.new(1, 20, 0.85, 0),
+        BackgroundTransparency = 1
+    }).Completed:Wait()
 
-        wait(duration)
-
-        Tween(frame, Config.Animation.Normal, {
-            Position = UDim2.new(1, 20, 0.8, 0),
-            BackgroundTransparency = 1
-        })
-
-        Tween(titleLabel, Config.Animation.Normal, {
-            TextTransparency = 1
-        })
-
-        Tween(messageLabel, Config.Animation.Normal, {
-            TextTransparency = 1
-        }).Completed:Wait()
-
-        gui:Destroy()
-    end)()
+    notif:Destroy()
 end
 
+-- Main window creation with modern styling
 function UltraLordLib:CreateWindow(options)
-    local windowConfig = {
-        Title = options.Title or "Ultra Lord V5",
-        Theme = options.Theme or {},
-        Fonts = options.Fonts or {}
-    }
-
-    for key, value in pairs(windowConfig.Theme) do
-        Config.Theme[key] = value
-    end
-
-    for key, value in pairs(windowConfig.Fonts) do
-        Config.Fonts[key] = value
-    end
-
-    local ScreenGui = CreateElement("ScreenGui", {
+    local window = CreateElement("ScreenGui", {
         Name = "UltraLordV5",
-        Parent = game.CoreGui,
-        ResetOnSpawn = false
+        Parent = game.CoreGui
     })
 
-    local Main = CreateElement("Frame", {
+    local main = CreateElement("Frame", {
         Name = "Main",
-        Parent = ScreenGui,
+        Parent = window,
         BackgroundColor3 = Config.Theme.Primary,
-        Position = UDim2.new(0.5, -300, 0.5, -175),
-        Size = UDim2.new(0, 600, 0, 350),
+        Position = UDim2.new(0.5, -300, 0.5, -200),
+        Size = UDim2.new(0, 600, 0, 400),
         ClipsDescendants = true
     })
 
     -- Enhanced shadow effect
-    local Shadow = CreateElement("ImageLabel", {
+    local shadow = CreateElement("ImageLabel", {
         Name = "Shadow",
-        Parent = Main,
+        Parent = main,
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, -15, 0, -15),
-        Size = UDim2.new(1, 30, 1, 30),
+        Position = UDim2.new(0, -Config.Shadow.Elevation1, 0, -Config.Shadow.Elevation1),
+        Size = UDim2.new(1, Config.Shadow.Elevation1 * 2, 1, Config.Shadow.Elevation1 * 2),
         Image = "rbxassetid://6015897843",
         ImageColor3 = Color3.new(0, 0, 0),
         ImageTransparency = 0.5,
@@ -175,15 +149,21 @@ function UltraLordLib:CreateWindow(options)
         SliceCenter = Rect.new(49, 49, 450, 450)
     })
 
-    -- Improved corner radius
     CreateElement("UICorner", {
-        Parent = Main,
-        CornerRadius = UDim.new(0, 5)
+        Parent = main,
+        CornerRadius = Config.Corner.Large
+    })
+
+    CreateElement("UIStroke", {
+        Parent = main,
+        Color = Config.Theme.Stroke,
+        Thickness = Config.Stroke.Thin,
+        Transparency = 0.5
     })
 
     local TitleBar = CreateElement("Frame", {
         Name = "TitleBar",
-        Parent = Main,
+        Parent = main,
         BackgroundColor3 = Config.Theme.Secondary,
         Size = UDim2.new(1, 0, 0, 40)
     })
@@ -206,7 +186,10 @@ function UltraLordLib:CreateWindow(options)
     })
 
     -- Enhanced dragging with inertia and bounds checking
-    local isDragging = false
+    local isDragging = {
+        frame = false,
+        menu = false
+    }
     local dragStart = nil
     local startPos = nil
     local dragVelocity = Vector2.new(0, 0)
@@ -215,49 +198,49 @@ function UltraLordLib:CreateWindow(options)
 
     TitleBar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            isDragging = true
+            isDragging.frame = true
             dragStart = input.Position
-            startPos = Main.Position
+            startPos = main.Position
             lastMousePos = input.Position
             dragVelocity = Vector2.new(0, 0)
         end
     end)
 
     UserInputService.InputChanged:Connect(function(input)
-        if isDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        if isDragging.frame and input.UserInputType == Enum.UserInputType.MouseMovement then
             local delta = input.Position - dragStart
             local newPos = UDim2.new(
                 startPos.X.Scale,
-                math.clamp(startPos.X.Offset + delta.X, -Main.AbsoluteSize.X/2, game.Workspace.CurrentCamera.ViewportSize.X - Main.AbsoluteSize.X/2),
+                math.clamp(startPos.X.Offset + delta.X, -main.AbsoluteSize.X/2, game.Workspace.CurrentCamera.ViewportSize.X - main.AbsoluteSize.X/2),
                 startPos.Y.Scale,
-                math.clamp(startPos.Y.Offset + delta.Y, 0, game.Workspace.CurrentCamera.ViewportSize.Y - Main.AbsoluteSize.Y)
+                math.clamp(startPos.Y.Offset + delta.Y, 0, game.Workspace.CurrentCamera.ViewportSize.Y - main.AbsoluteSize.Y)
             )
-            
+
             dragVelocity = (input.Position - lastMousePos) / UserInputService.DeltaTime
             lastMousePos = input.Position
-            
-            Main.Position = newPos
+
+            main.Position = newPos
         end
     end)
 
     UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 and isDragging then
-            isDragging = false
-            
+        if input.UserInputType == Enum.UserInputType.MouseButton1 and isDragging.frame then
+            isDragging.frame = false
+
             -- Apply inertia
             local function applyInertia()
                 if dragVelocity.Magnitude > 1 then
                     local newPos = UDim2.new(
-                        Main.Position.X.Scale,
-                        math.clamp(Main.Position.X.Offset + dragVelocity.X * 0.016, -Main.AbsoluteSize.X/2, game.Workspace.CurrentCamera.ViewportSize.X - Main.AbsoluteSize.X/2),
-                        Main.Position.Y.Scale,
-                        math.clamp(Main.Position.Y.Offset + dragVelocity.Y * 0.016, 0, game.Workspace.CurrentCamera.ViewportSize.Y - Main.AbsoluteSize.Y)
+                        main.Position.X.Scale,
+                        math.clamp(main.Position.X.Offset + dragVelocity.X * 0.016, -main.AbsoluteSize.X/2, game.Workspace.CurrentCamera.ViewportSize.X - main.AbsoluteSize.X/2),
+                        main.Position.Y.Scale,
+                        math.clamp(main.Position.Y.Offset + dragVelocity.Y * 0.016, 0, game.Workspace.CurrentCamera.ViewportSize.Y - main.AbsoluteSize.Y)
                     )
-                    
-                    Tween(Main, Config.Animation.Short, {
+
+                    Tween(main, Config.Animation.Short, {
                         Position = newPos
                     })
-                    
+
                     dragVelocity = dragVelocity * dampening
                     if dragVelocity.Magnitude > 1 then
                         game:GetService("RunService").Heartbeat:Wait()
@@ -265,7 +248,7 @@ function UltraLordLib:CreateWindow(options)
                     end
                 end
             end
-            
+
             applyInertia()
         end
     end)
@@ -273,7 +256,7 @@ function UltraLordLib:CreateWindow(options)
     -- Menu Toggle with improved animation and dragging
     local MenuToggle = CreateElement("ImageButton", {
         Name = "MenuToggle",
-        Parent = ScreenGui,
+        Parent = window,
         BackgroundColor3 = Config.Theme.Primary,
         Position = Config.MenuToggle.Position,
         Size = Config.MenuToggle.Size,
@@ -290,14 +273,14 @@ function UltraLordLib:CreateWindow(options)
 
     MenuToggle.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton2 then  -- Right click to drag
-            isDraggingMenu = true
+            isDragging.menu = true
             menuDragStart = input.Position
             menuStartPos = MenuToggle.Position
         end
     end)
 
-    UserInputService.InputChanged:Connect(function(input)
-        if isDraggingMenu and input.UserInputType == Enum.UserInputType.MouseMovement then
+    local function updateMenuPosition(input)
+        if isDragging.menu and input.UserInputType == Enum.UserInputType.MouseMovement then
             local delta = input.Position - menuDragStart
             local newPos = UDim2.new(
                 menuStartPos.X.Scale,
@@ -305,15 +288,15 @@ function UltraLordLib:CreateWindow(options)
                 menuStartPos.Y.Scale,
                 math.clamp(menuStartPos.Y.Offset + delta.Y, 0, game.Workspace.CurrentCamera.ViewportSize.Y - MenuToggle.AbsoluteSize.Y)
             )
-            Tween(MenuToggle, Config.Animation.Short, {
-                Position = newPos
-            })
+            MenuToggle.Position = newPos
         end
-    end)
+    end
+
+    UserInputService.InputChanged:Connect(updateMenuPosition)
 
     UserInputService.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton2 then
-            isDraggingMenu = false
+            isDragging.menu = false
         end
     end)
 
@@ -326,15 +309,15 @@ function UltraLordLib:CreateWindow(options)
     MenuToggle.MouseButton1Click:Connect(function()
         isMenuVisible = not isMenuVisible
         if isMenuVisible then
-            Main.Visible = true
-            Tween(Main, Config.Animation.Normal, {
-                Position = UDim2.new(0.5, -300, 0.5, -175)
+            main.Visible = true
+            Tween(main, Config.Animation.Normal, {
+                Position = UDim2.new(0.5, -300, 0.5, -200)
             })
         else
-            Tween(Main, Config.Animation.Normal, {
-                Position = UDim2.new(1.5, 0, 0.5, -175)
+            Tween(main, Config.Animation.Normal, {
+                Position = UDim2.new(1.5, 0, 0.5, -200)
             }).Completed:Wait()
-            Main.Visible = false
+            main.Visible = false
         end
     end)
 
@@ -357,7 +340,7 @@ function UltraLordLib:CreateWindow(options)
 
     local TabHolder = CreateElement("Frame", {
         Name = "TabHolder",
-        Parent = Main,
+        Parent = main,
         BackgroundTransparency = 1,
         Position = UDim2.new(0, 10, 0, 40),
         Size = UDim2.new(0, 120, 0, 250)
@@ -365,7 +348,7 @@ function UltraLordLib:CreateWindow(options)
 
     local ContentHolder = CreateElement("Frame", {
         Name = "ContentHolder",
-        Parent = Main,
+        Parent = main,
         BackgroundTransparency = 1,
         Position = UDim2.new(0, 135, 0, 40),
         Size = UDim2.new(0, 355, 0, 250)
@@ -546,6 +529,56 @@ function UltraLordLib:CreateWindow(options)
             return paragraph
         end
 
+        function TabFunctions:AddInput(options)
+            local inputFrame = CreateElement("Frame", {
+                Parent = container,
+                BackgroundColor3 = Config.Theme.InputBackground,
+                Size = UDim2.new(1, -10, 0, 35)
+            })
+
+            CreateElement("UICorner", {
+                Parent = inputFrame,
+                CornerRadius = Config.Corner.Medium
+            })
+
+            CreateElement("UIStroke", {
+                Parent = inputFrame,
+                Color = Config.Theme.Stroke,
+                Thickness = Config.Stroke.Thin
+            })
+
+            local input = CreateElement("TextBox", {
+                Parent = inputFrame,
+                BackgroundTransparency = 1,
+                Position = UDim2.new(0, 10, 0, 0),
+                Size = UDim2.new(1, -20, 1, 0),
+                Text = options.Default or "",
+                PlaceholderText = options.Placeholder or "Enter text...",
+                TextColor3 = Config.Theme.Accent,
+                PlaceholderColor3 = Color3.fromRGB(150, 150, 150),
+                Font = Config.Fonts.Text,
+                TextSize = 14,
+                ClearTextOnFocus = options.ClearOnFocus or false
+            })
+
+            input.Focused:Connect(function()
+                Tween(inputFrame, Config.Animation.Short, {
+                    BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+                })
+            end)
+
+            input.FocusLost:Connect(function(enterPressed)
+                Tween(inputFrame, Config.Animation.Short, {
+                    BackgroundColor3 = Config.Theme.InputBackground
+                })
+                if enterPressed and options.Callback then
+                    options.Callback(input.Text)
+                end
+            end)
+
+            return inputFrame
+        end
+
         function TabFunctions:AddSlider(options)
             local slider = CreateElement("Frame", {
                 Parent = container,
@@ -629,13 +662,13 @@ function UltraLordLib:CreateWindow(options)
             button.MouseButton1Down:Connect(function()
                 dragging = true
                 if connection then connection:Disconnect() end
-                
+
                 connection = UserInputService.InputChanged:Connect(function(input)
                     if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
                         update(input)
                     end
                 end)
-                
+
                 Tween(button, Config.Animation.Short, {
                     Size = UDim2.new(0, 12, 0, 17)
                 })
