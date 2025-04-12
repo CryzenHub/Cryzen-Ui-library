@@ -1,4 +1,4 @@
--- Ultra Lord UI Library v2
+-- Ultra Lord UI Library v3
 local UltraLordLibrary = {}
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -24,6 +24,8 @@ local Themes = {
         ToggleOffColor = Color3.fromRGB(80, 80, 90),
         SliderColor = Color3.fromRGB(114, 137, 218),
         SliderBackgroundColor = Color3.fromRGB(50, 50, 60),
+        DropdownColor = Color3.fromRGB(40, 40, 50),
+        TextboxColor = Color3.fromRGB(45, 45, 55),
         MenuToggleIconColor = Color3.fromRGB(255, 255, 255)
     },
     Dark = {
@@ -39,6 +41,8 @@ local Themes = {
         ToggleOffColor = Color3.fromRGB(70, 70, 80),
         SliderColor = Color3.fromRGB(90, 120, 200),
         SliderBackgroundColor = Color3.fromRGB(40, 40, 50),
+        DropdownColor = Color3.fromRGB(30, 30, 40),
+        TextboxColor = Color3.fromRGB(35, 35, 45),
         MenuToggleIconColor = Color3.fromRGB(255, 255, 255)
     },
     Light = {
@@ -54,6 +58,8 @@ local Themes = {
         ToggleOffColor = Color3.fromRGB(180, 180, 190),
         SliderColor = Color3.fromRGB(90, 120, 200),
         SliderBackgroundColor = Color3.fromRGB(220, 220, 230),
+        DropdownColor = Color3.fromRGB(230, 230, 240),
+        TextboxColor = Color3.fromRGB(225, 225, 235),
         MenuToggleIconColor = Color3.fromRGB(40, 40, 45)
     }
 }
@@ -188,7 +194,12 @@ function UltraLordLibrary:MakeWindow(config)
     local config = config or {}
     local windowName = config.Name or "Ultra Lord UI"
     local windowSize = config.Size or UDim2.new(0, 600, 0, 400)
-    local hideMenu = config.HideMenu or false
+    local theme = config.Theme or "Default"
+    
+    -- Set theme
+    if Themes[theme] then
+        CurrentTheme = Themes[theme]
+    end
     
     -- Create main GUI
     local UltraLordGUI = Instance.new("ScreenGui")
@@ -231,7 +242,7 @@ function UltraLordLibrary:MakeWindow(config)
     local TitleText = Instance.new("TextLabel")
     TitleText.Name = "TitleText"
     TitleText.Size = UDim2.new(1, -80, 1, 0)
-    TitleText.Position = UDim2.new(0, 40, 0, 0)
+    TitleText.Position = UDim2.new(0, 10, 0, 0)
     TitleText.BackgroundTransparency = 1
     TitleText.TextColor3 = CurrentTheme.PrimaryTextColor
     TitleText.TextSize = 16
@@ -239,18 +250,6 @@ function UltraLordLibrary:MakeWindow(config)
     TitleText.TextXAlignment = Enum.TextXAlignment.Left
     TitleText.Text = windowName
     TitleText.Parent = TitleBar
-    
-    -- Menu toggle button
-    local MenuToggleButton = Instance.new("TextButton")
-    MenuToggleButton.Name = "MenuToggleButton"
-    MenuToggleButton.Size = UDim2.new(0, 24, 0, 24)
-    MenuToggleButton.Position = UDim2.new(0, 8, 0, 3)
-    MenuToggleButton.BackgroundTransparency = 1
-    MenuToggleButton.TextColor3 = CurrentTheme.MenuToggleIconColor
-    MenuToggleButton.TextSize = 20
-    MenuToggleButton.Font = Enum.Font.GothamBold
-    MenuToggleButton.Text = "≡" -- Menu icon
-    MenuToggleButton.Parent = TitleBar
     
     -- Close button
     local CloseButton = Instance.new("TextButton")
@@ -309,41 +308,6 @@ function UltraLordLibrary:MakeWindow(config)
     CloseButton.MouseButton1Click:Connect(function()
         UltraLordGUI:Destroy()
     end)
-    
-    -- Menu toggle functionality
-    local menuVisible = not hideMenu
-    
-    -- Function to toggle menu
-    local function toggleMenu()
-        menuVisible = not menuVisible
-        
-        local targetSidebarPos, targetContentPos, targetContentSize
-        
-        if menuVisible then
-            -- Show menu
-            targetSidebarPos = UDim2.new(0, 0, 0, 30)
-            targetContentPos = UDim2.new(0, 125, 0, 35)
-            targetContentSize = UDim2.new(1, -130, 1, -40)
-            MenuToggleButton.Text = "≡"
-        else
-            -- Hide menu
-            targetSidebarPos = UDim2.new(0, -120, 0, 30)
-            targetContentPos = UDim2.new(0, 5, 0, 35)
-            targetContentSize = UDim2.new(1, -10, 1, -40)
-            MenuToggleButton.Text = "≡"
-        end
-        
-        -- Animate the sidebar and content
-        createTween(Sidebar, {Position = targetSidebarPos}):Play()
-        createTween(TabContent, {Position = targetContentPos, Size = targetContentSize}):Play()
-    end
-    
-    MenuToggleButton.MouseButton1Click:Connect(toggleMenu)
-    
-    -- Set initial state based on hideMenu
-    if hideMenu then
-        task.defer(toggleMenu)
-    end
     
     -- Window methods and properties
     local Window = {}
@@ -794,67 +758,334 @@ function UltraLordLibrary:MakeWindow(config)
             return LabelObject
         end
         
-        -- Function to create a menu toggle
-        function Tab:CreateMenuToggle(toggleConfig)
-            local toggleConfig = toggleConfig or {}
-            local toggleText = toggleConfig.Text or "Toggle Menu"
-            local toggleIcon = toggleConfig.Icon
+        -- Function to create a textbox
+        function Tab:CreateTextbox(textboxConfig)
+            local textboxConfig = textboxConfig or {}
+            local textboxText = textboxConfig.Text or "Textbox"
+            local placeholderText = textboxConfig.PlaceholderText or "Enter text..."
+            local defaultValue = textboxConfig.Default or ""
+            local clearOnFocus = textboxConfig.ClearOnFocus
+            if clearOnFocus == nil then clearOnFocus = true end
+            local textboxCallback = textboxConfig.Callback or function() end
             
-            local MenuToggleFrame = Instance.new("Frame")
-            MenuToggleFrame.Name = "MenuToggleFrame"
-            MenuToggleFrame.Size = UDim2.new(1, 0, 0, 35)
-            MenuToggleFrame.BackgroundTransparency = 1
-            MenuToggleFrame.LayoutOrder = self.ElementCount
-            MenuToggleFrame.Parent = self.Container
+            local TextboxFrame = Instance.new("Frame")
+            TextboxFrame.Name = textboxText .. "TextboxFrame"
+            TextboxFrame.Size = UDim2.new(1, 0, 0, 60)
+            TextboxFrame.BackgroundTransparency = 1
+            TextboxFrame.LayoutOrder = self.ElementCount
+            TextboxFrame.Parent = self.Container
             
-            local MenuToggleBtn = Instance.new("TextButton")
-            MenuToggleBtn.Name = "MenuToggleBtn"
-            MenuToggleBtn.Size = UDim2.new(1, 0, 1, 0)
-            MenuToggleBtn.BackgroundColor3 = CurrentTheme.ButtonColor
-            MenuToggleBtn.TextColor3 = CurrentTheme.PrimaryTextColor
-            MenuToggleBtn.TextSize = 14
-            MenuToggleBtn.Font = Enum.Font.Gotham
-            MenuToggleBtn.Text = toggleText
-            MenuToggleBtn.Parent = MenuToggleFrame
-            createUICorner(MenuToggleBtn, 6)
-            createUIStroke(MenuToggleBtn, 1, CurrentTheme.UIStrokeColor)
+            local TextboxLabel = Instance.new("TextLabel")
+            TextboxLabel.Name = "TextboxLabel"
+            TextboxLabel.Size = UDim2.new(1, 0, 0, 20)
+            TextboxLabel.Position = UDim2.new(0, 0, 0, 0)
+            TextboxLabel.BackgroundTransparency = 1
+            TextboxLabel.TextColor3 = CurrentTheme.PrimaryTextColor
+            TextboxLabel.TextSize = 14
+            TextboxLabel.Font = Enum.Font.Gotham
+            TextboxLabel.TextXAlignment = Enum.TextXAlignment.Left
+            TextboxLabel.Text = textboxText
+            TextboxLabel.Parent = TextboxFrame
             
-            -- Toggle icon (if provided)
-            if toggleIcon then
-                local Icon = Instance.new("ImageLabel")
-                Icon.Name = "Icon"
-                Icon.Size = UDim2.new(0, 20, 0, 20)
-                Icon.Position = UDim2.new(0, 8, 0.5, -10)
-                Icon.BackgroundTransparency = 1
-                Icon.Image = toggleIcon
-                Icon.Parent = MenuToggleBtn
-                
-                -- Adjust text position for icon
-                MenuToggleBtn.TextXAlignment = Enum.TextXAlignment.Center
+            local TextboxContainer = Instance.new("Frame")
+            TextboxContainer.Name = "TextboxContainer"
+            TextboxContainer.Size = UDim2.new(1, 0, 0, 30)
+            TextboxContainer.Position = UDim2.new(0, 0, 0, 25)
+            TextboxContainer.BackgroundColor3 = CurrentTheme.TextboxColor
+            TextboxContainer.Parent = TextboxFrame
+            createUICorner(TextboxContainer, 6)
+            createUIStroke(TextboxContainer, 1, CurrentTheme.UIStrokeColor)
+            
+            local Textbox = Instance.new("TextBox")
+            Textbox.Name = "Textbox"
+            Textbox.Size = UDim2.new(1, -16, 1, 0)
+            Textbox.Position = UDim2.new(0, 8, 0, 0)
+            Textbox.BackgroundTransparency = 1
+            Textbox.TextColor3 = CurrentTheme.PrimaryTextColor
+            Textbox.PlaceholderColor3 = CurrentTheme.SecondaryTextColor
+            Textbox.TextSize = 14
+            Textbox.Font = Enum.Font.Gotham
+            Textbox.TextXAlignment = Enum.TextXAlignment.Left
+            Textbox.PlaceholderText = placeholderText
+            Textbox.Text = defaultValue
+            Textbox.ClearTextOnFocus = clearOnFocus
+            Textbox.Parent = TextboxContainer
+            
+            -- Focused and unfocused animations
+            Textbox.Focused:Connect(function()
+                createTween(TextboxContainer, {BackgroundColor3 = CurrentTheme.ButtonHoverColor}):Play()
+            end)
+            
+            Textbox.FocusLost:Connect(function(enterPressed)
+                createTween(TextboxContainer, {BackgroundColor3 = CurrentTheme.TextboxColor}):Play()
+                textboxCallback(Textbox.Text, enterPressed)
+            end)
+            
+            -- Textbox object and methods
+            local TextboxObject = {}
+            
+            function TextboxObject:SetValue(newValue)
+                Textbox.Text = newValue
             end
             
-            -- Button click handler
-            MenuToggleBtn.MouseButton1Click:Connect(function()
-                -- Animation
-                createTween(MenuToggleBtn, {BackgroundColor3 = CurrentTheme.AccentColor}, 0.1):Play()
-                task.wait(0.1)
-                createTween(MenuToggleBtn, {BackgroundColor3 = CurrentTheme.ButtonColor}, 0.1):Play()
+            function TextboxObject:GetValue()
+                return Textbox.Text
+            end
+            
+            self.ElementCount = self.ElementCount + 1
+            return TextboxObject
+        end
+        
+        -- Function to create a dropdown
+        function Tab:CreateDropdown(dropdownConfig)
+            local dropdownConfig = dropdownConfig or {}
+            local dropdownText = dropdownConfig.Text or "Dropdown"
+            local options = dropdownConfig.Options or {}
+            local defaultOption = dropdownConfig.Default or (options[1] or "")
+            local dropdownCallback = dropdownConfig.Callback or function() end
+            
+            local DropdownFrame = Instance.new("Frame")
+            DropdownFrame.Name = dropdownText .. "DropdownFrame"
+            DropdownFrame.Size = UDim2.new(1, 0, 0, 60)
+            DropdownFrame.BackgroundTransparency = 1
+            DropdownFrame.LayoutOrder = self.ElementCount
+            DropdownFrame.Parent = self.Container
+            
+            local DropdownLabel = Instance.new("TextLabel")
+            DropdownLabel.Name = "DropdownLabel"
+            DropdownLabel.Size = UDim2.new(1, 0, 0, 20)
+            DropdownLabel.Position = UDim2.new(0, 0, 0, 0)
+            DropdownLabel.BackgroundTransparency = 1
+            DropdownLabel.TextColor3 = CurrentTheme.PrimaryTextColor
+            DropdownLabel.TextSize = 14
+            DropdownLabel.Font = Enum.Font.Gotham
+            DropdownLabel.TextXAlignment = Enum.TextXAlignment.Left
+            DropdownLabel.Text = dropdownText
+            DropdownLabel.Parent = DropdownFrame
+            
+            local DropdownButton = Instance.new("TextButton")
+            DropdownButton.Name = "DropdownButton"
+            DropdownButton.Size = UDim2.new(1, 0, 0, 30)
+            DropdownButton.Position = UDim2.new(0, 0, 0, 25)
+            DropdownButton.BackgroundColor3 = CurrentTheme.DropdownColor
+            DropdownButton.TextColor3 = CurrentTheme.PrimaryTextColor
+            DropdownButton.TextSize = 14
+            DropdownButton.Font = Enum.Font.Gotham
+            DropdownButton.Text = defaultOption
+            DropdownButton.TextXAlignment = Enum.TextXAlignment.Left
+            DropdownButton.TextTruncate = Enum.TextTruncate.AtEnd
+            DropdownButton.Parent = DropdownFrame
+            createUICorner(DropdownButton, 6)
+            createUIStroke(DropdownButton, 1, CurrentTheme.UIStrokeColor)
+            
+            -- Add padding to text
+            local UIPadding = Instance.new("UIPadding")
+            UIPadding.PaddingLeft = UDim.new(0, 8)
+            UIPadding.Parent = DropdownButton
+            
+            -- Dropdown arrow
+            local DropdownArrow = Instance.new("TextLabel")
+            DropdownArrow.Name = "DropdownArrow"
+            DropdownArrow.Size = UDim2.new(0, 20, 0, 20)
+            DropdownArrow.Position = UDim2.new(1, -25, 0.5, -10)
+            DropdownArrow.BackgroundTransparency = 1
+            DropdownArrow.TextColor3 = CurrentTheme.SecondaryTextColor
+            DropdownArrow.TextSize = 18
+            DropdownArrow.Font = Enum.Font.GothamBold
+            DropdownArrow.Text = "▼"
+            DropdownArrow.Parent = DropdownButton
+            
+            -- Dropdown list container
+            local DropdownListContainer = Instance.new("Frame")
+            DropdownListContainer.Name = "DropdownListContainer"
+            DropdownListContainer.Size = UDim2.new(1, 0, 0, 0)
+            DropdownListContainer.Position = UDim2.new(0, 0, 1, 5)
+            DropdownListContainer.BackgroundColor3 = CurrentTheme.DropdownColor
+            DropdownListContainer.ClipsDescendants = true
+            DropdownListContainer.Visible = false
+            DropdownListContainer.ZIndex = 5
+            DropdownListContainer.Parent = DropdownButton
+            createUICorner(DropdownListContainer, 6)
+            createUIStroke(DropdownListContainer, 1, CurrentTheme.UIStrokeColor)
+            
+            local DropdownList = Instance.new("ScrollingFrame")
+            DropdownList.Name = "DropdownList"
+            DropdownList.Size = UDim2.new(1, 0, 1, 0)
+            DropdownList.BackgroundTransparency = 1
+            DropdownList.BorderSizePixel = 0
+            DropdownList.ScrollBarThickness = 4
+            DropdownList.ScrollBarImageColor3 = CurrentTheme.AccentColor
+            DropdownList.ZIndex = 5
+            DropdownList.Parent = DropdownListContainer
+            
+            local UIListLayout = Instance.new("UIListLayout")
+            UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+            UIListLayout.Padding = UDim.new(0, 2)
+            UIListLayout.Parent = DropdownList
+            
+            local UIPadding = Instance.new("UIPadding")
+            UIPadding.PaddingTop = UDim.new(0, 2)
+            UIPadding.PaddingBottom = UDim.new(0, 2)
+            UIPadding.PaddingLeft = UDim.new(0, 2)
+            UIPadding.PaddingRight = UDim.new(0, 2)
+            UIPadding.Parent = DropdownList
+            
+            -- Current selected option
+            local selectedOption = defaultOption
+            
+            -- Dropdown open/close state
+            local isOpen = false
+            
+            -- Function to toggle dropdown
+            local function toggleDropdown()
+                isOpen = not isOpen
                 
-                -- Toggle the menu
-                toggleMenu()
+                if isOpen then
+                    -- Calculate the dropdown height based on number of options (max 150 pixels)
+                    local optionHeight = 25
+                    local listHeight = math.min(#options * (optionHeight + 2), 150)
+                    
+                    DropdownListContainer.Visible = true
+                    DropdownArrow.Text = "▲"
+                    
+                    -- Animate open
+                    createTween(DropdownListContainer, {Size = UDim2.new(1, 0, 0, listHeight)}, 0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out):Play()
+                    
+                    -- Update dropdown list content size
+                    DropdownList.CanvasSize = UDim2.new(0, 0, 0, #options * (optionHeight + 2))
+                else
+                    DropdownArrow.Text = "▼"
+                    
+                    -- Animate close
+                    local closeTween = createTween(DropdownListContainer, {Size = UDim2.new(1, 0, 0, 0)}, 0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+                    closeTween:Play()
+                    
+                    closeTween.Completed:Connect(function()
+                        if not isOpen then
+                            DropdownListContainer.Visible = false
+                        end
+                    end)
+                end
+            end
+            
+            -- Populate dropdown options
+            local function refreshOptions(newOptions)
+                -- Clear existing options
+                for _, child in pairs(DropdownList:GetChildren()) do
+                    if child:IsA("TextButton") then
+                        child:Destroy()
+                    end
+                end
+                
+                -- Add new options
+                for i, option in ipairs(newOptions) do
+                    local OptionButton = Instance.new("TextButton")
+                    OptionButton.Name = "Option_" .. option
+                    OptionButton.Size = UDim2.new(1, -4, 0, 25)
+                    OptionButton.BackgroundColor3 = CurrentTheme.ButtonColor
+                    OptionButton.TextColor3 = CurrentTheme.PrimaryTextColor
+                    OptionButton.TextSize = 14
+                    OptionButton.Font = Enum.Font.Gotham
+                    OptionButton.Text = option
+                    OptionButton.TextXAlignment = Enum.TextXAlignment.Left
+                    OptionButton.ZIndex = 6
+                    OptionButton.LayoutOrder = i
+                    OptionButton.Parent = DropdownList
+                    createUICorner(OptionButton, 4)
+                    
+                    -- Add padding to option text
+                    local UIPadding = Instance.new("UIPadding")
+                    UIPadding.PaddingLeft = UDim.new(0, 8)
+                    UIPadding.Parent = OptionButton
+                    
+                    -- Option button hover effect
+                    OptionButton.MouseEnter:Connect(function()
+                        createTween(OptionButton, {BackgroundColor3 = CurrentTheme.ButtonHoverColor}):Play()
+                    end)
+                    
+                    OptionButton.MouseLeave:Connect(function()
+                        createTween(OptionButton, {BackgroundColor3 = CurrentTheme.ButtonColor}):Play()
+                    end)
+                    
+                    -- Option button click
+                    OptionButton.MouseButton1Click:Connect(function()
+                        selectedOption = option
+                        DropdownButton.Text = option
+                        toggleDropdown()
+                        dropdownCallback(option)
+                    end)
+                end
+            end
+            
+            -- Initial population of options
+            refreshOptions(options)
+            
+            -- Dropdown button click handler
+            DropdownButton.MouseButton1Click:Connect(toggleDropdown)
+            
+            -- Close dropdown when clicking elsewhere
+            UserInputService.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                    if isOpen and not DropdownButton:IsDescendantOf(game) then return end
+                    
+                    local mousePosition = UserInputService:GetMouseLocation()
+                    local dropdownPosition = DropdownButton.AbsolutePosition
+                    local dropdownSize = DropdownButton.AbsoluteSize
+                    local listSize = DropdownListContainer.AbsoluteSize
+                    
+                    -- Check if click is outside dropdown area
+                    if isOpen and (
+                        mousePosition.X < dropdownPosition.X or
+                        mousePosition.X > dropdownPosition.X + dropdownSize.X or
+                        mousePosition.Y < dropdownPosition.Y or
+                        mousePosition.Y > dropdownPosition.Y + dropdownSize.Y + listSize.Y
+                    ) then
+                        toggleDropdown()
+                    end
+                end
             end)
             
             -- Button hover effects
-            MenuToggleBtn.MouseEnter:Connect(function()
-                createTween(MenuToggleBtn, {BackgroundColor3 = CurrentTheme.ButtonHoverColor}):Play()
+            DropdownButton.MouseEnter:Connect(function()
+                if not isOpen then
+                    createTween(DropdownButton, {BackgroundColor3 = CurrentTheme.ButtonHoverColor}):Play()
+                end
             end)
             
-            MenuToggleBtn.MouseLeave:Connect(function()
-                createTween(MenuToggleBtn, {BackgroundColor3 = CurrentTheme.ButtonColor}):Play()
+            DropdownButton.MouseLeave:Connect(function()
+                if not isOpen then
+                    createTween(DropdownButton, {BackgroundColor3 = CurrentTheme.DropdownColor}):Play()
+                end
             end)
+            
+            -- Dropdown object and methods
+            local Dropdown = {}
+            
+            function Dropdown:SetValue(option)
+                if table.find(options, option) then
+                    selectedOption = option
+                    DropdownButton.Text = option
+                    dropdownCallback(option)
+                end
+            end
+            
+            function Dropdown:GetValue()
+                return selectedOption
+            end
+            
+            function Dropdown:Refresh(newOptions)
+                options = newOptions or {}
+                refreshOptions(options)
+                
+                -- Reset selection if current selection is not in new options
+                if not table.find(options, selectedOption) then
+                    selectedOption = options[1] or ""
+                    DropdownButton.Text = selectedOption
+                end
+            end
             
             self.ElementCount = self.ElementCount + 1
-            return MenuToggleBtn
+            return Dropdown
         end
         
         -- Add tab to window tabs table
