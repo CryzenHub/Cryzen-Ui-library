@@ -1,11 +1,13 @@
--- Ultra Lord UI Library
+-- Ultra Lord UI Library v2
 local UltraLordLibrary = {}
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
+local TextService = game:GetService("TextService")
 local Player = Players.LocalPlayer
+local Mouse = Player:GetMouse()
 
 -- Themes
 local Themes = {
@@ -21,7 +23,8 @@ local Themes = {
         ToggleOnColor = Color3.fromRGB(114, 137, 218),
         ToggleOffColor = Color3.fromRGB(80, 80, 90),
         SliderColor = Color3.fromRGB(114, 137, 218),
-        SliderBackgroundColor = Color3.fromRGB(50, 50, 60)
+        SliderBackgroundColor = Color3.fromRGB(50, 50, 60),
+        MenuToggleIconColor = Color3.fromRGB(255, 255, 255)
     },
     Dark = {
         BackgroundColor = Color3.fromRGB(20, 20, 25),
@@ -35,7 +38,8 @@ local Themes = {
         ToggleOnColor = Color3.fromRGB(90, 120, 200),
         ToggleOffColor = Color3.fromRGB(70, 70, 80),
         SliderColor = Color3.fromRGB(90, 120, 200),
-        SliderBackgroundColor = Color3.fromRGB(40, 40, 50)
+        SliderBackgroundColor = Color3.fromRGB(40, 40, 50),
+        MenuToggleIconColor = Color3.fromRGB(255, 255, 255)
     },
     Light = {
         BackgroundColor = Color3.fromRGB(240, 240, 245),
@@ -49,7 +53,8 @@ local Themes = {
         ToggleOnColor = Color3.fromRGB(90, 120, 200),
         ToggleOffColor = Color3.fromRGB(180, 180, 190),
         SliderColor = Color3.fromRGB(90, 120, 200),
-        SliderBackgroundColor = Color3.fromRGB(220, 220, 230)
+        SliderBackgroundColor = Color3.fromRGB(220, 220, 230),
+        MenuToggleIconColor = Color3.fromRGB(40, 40, 45)
     }
 }
 
@@ -81,6 +86,44 @@ local function createTween(instance, properties, duration, easingStyle, easingDi
     )
     local tween = TweenService:Create(instance, tweenInfo, properties)
     return tween
+end
+
+-- Improved draggable function that works on all devices
+local function makeDraggable(dragUI, dragFrame)
+    local dragging = false
+    local dragInput, mousePos, framePos
+    
+    dragUI.InputBegan:Connect(function(input)
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+            dragging = true
+            mousePos = input.Position
+            framePos = dragFrame.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+    
+    dragUI.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - mousePos
+            dragFrame.Position = UDim2.new(
+                framePos.X.Scale,
+                framePos.X.Offset + delta.X,
+                framePos.Y.Scale,
+                framePos.Y.Offset + delta.Y
+            )
+        end
+    end)
 end
 
 -- Create notification function
@@ -121,6 +164,7 @@ function UltraLordLibrary:CreateNotification(title, description, duration)
     DescriptionLabel.TextSize = 14
     DescriptionLabel.Font = Enum.Font.Gotham
     DescriptionLabel.TextXAlignment = Enum.TextXAlignment.Left
+    DescriptionLabel.TextYAlignment = Enum.TextYAlignment.Top
     DescriptionLabel.TextWrapped = true
     DescriptionLabel.Text = description or ""
     DescriptionLabel.Parent = NotificationFrame
@@ -144,12 +188,14 @@ function UltraLordLibrary:MakeWindow(config)
     local config = config or {}
     local windowName = config.Name or "Ultra Lord UI"
     local windowSize = config.Size or UDim2.new(0, 600, 0, 400)
+    local hideMenu = config.HideMenu or false
     
     -- Create main GUI
     local UltraLordGUI = Instance.new("ScreenGui")
     UltraLordGUI.Name = "UltraLordGUI"
     UltraLordGUI.Parent = CoreGui
     UltraLordGUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    UltraLordGUI.ResetOnSpawn = false
     
     -- Create main window frame
     local MainWindow = Instance.new("Frame")
@@ -184,8 +230,8 @@ function UltraLordLibrary:MakeWindow(config)
     -- Title text
     local TitleText = Instance.new("TextLabel")
     TitleText.Name = "TitleText"
-    TitleText.Size = UDim2.new(1, -10, 1, 0)
-    TitleText.Position = UDim2.new(0, 10, 0, 0)
+    TitleText.Size = UDim2.new(1, -80, 1, 0)
+    TitleText.Position = UDim2.new(0, 40, 0, 0)
     TitleText.BackgroundTransparency = 1
     TitleText.TextColor3 = CurrentTheme.PrimaryTextColor
     TitleText.TextSize = 16
@@ -193,6 +239,18 @@ function UltraLordLibrary:MakeWindow(config)
     TitleText.TextXAlignment = Enum.TextXAlignment.Left
     TitleText.Text = windowName
     TitleText.Parent = TitleBar
+    
+    -- Menu toggle button
+    local MenuToggleButton = Instance.new("TextButton")
+    MenuToggleButton.Name = "MenuToggleButton"
+    MenuToggleButton.Size = UDim2.new(0, 24, 0, 24)
+    MenuToggleButton.Position = UDim2.new(0, 8, 0, 3)
+    MenuToggleButton.BackgroundTransparency = 1
+    MenuToggleButton.TextColor3 = CurrentTheme.MenuToggleIconColor
+    MenuToggleButton.TextSize = 20
+    MenuToggleButton.Font = Enum.Font.GothamBold
+    MenuToggleButton.Text = "≡" -- Menu icon
+    MenuToggleButton.Parent = TitleBar
     
     -- Close button
     local CloseButton = Instance.new("TextButton")
@@ -244,42 +302,48 @@ function UltraLordLibrary:MakeWindow(config)
     TabContent.BackgroundTransparency = 1
     TabContent.Parent = MainWindow
     
-    -- Make window draggable
-    local dragging = false
-    local dragInput
-    local dragStart
-    local startPos
-    
-    TitleBar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            dragStart = input.Position
-            startPos = MainWindow.Position
-        end
-    end)
-    
-    TitleBar.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = false
-        end
-    end)
-    
-    UserInputService.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            local delta = input.Position - dragStart
-            MainWindow.Position = UDim2.new(
-                startPos.X.Scale, 
-                startPos.X.Offset + delta.X, 
-                startPos.Y.Scale, 
-                startPos.Y.Offset + delta.Y
-            )
-        end
-    end)
+    -- Make window draggable (improved for all devices)
+    makeDraggable(TitleBar, MainWindow)
     
     -- Close button functionality
     CloseButton.MouseButton1Click:Connect(function()
         UltraLordGUI:Destroy()
     end)
+    
+    -- Menu toggle functionality
+    local menuVisible = not hideMenu
+    
+    -- Function to toggle menu
+    local function toggleMenu()
+        menuVisible = not menuVisible
+        
+        local targetSidebarPos, targetContentPos, targetContentSize
+        
+        if menuVisible then
+            -- Show menu
+            targetSidebarPos = UDim2.new(0, 0, 0, 30)
+            targetContentPos = UDim2.new(0, 125, 0, 35)
+            targetContentSize = UDim2.new(1, -130, 1, -40)
+            MenuToggleButton.Text = "≡"
+        else
+            -- Hide menu
+            targetSidebarPos = UDim2.new(0, -120, 0, 30)
+            targetContentPos = UDim2.new(0, 5, 0, 35)
+            targetContentSize = UDim2.new(1, -10, 1, -40)
+            MenuToggleButton.Text = "≡"
+        end
+        
+        -- Animate the sidebar and content
+        createTween(Sidebar, {Position = targetSidebarPos}):Play()
+        createTween(TabContent, {Position = targetContentPos, Size = targetContentSize}):Play()
+    end
+    
+    MenuToggleButton.MouseButton1Click:Connect(toggleMenu)
+    
+    -- Set initial state based on hideMenu
+    if hideMenu then
+        task.defer(toggleMenu)
+    end
     
     -- Window methods and properties
     local Window = {}
@@ -528,13 +592,7 @@ function UltraLordLibrary:MakeWindow(config)
             
             -- Make both button and label clickable
             ToggleButton.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    toggleClicked()
-                end
-            end)
-            
-            ToggleLabel.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                     toggleClicked()
                 end
             end)
@@ -564,13 +622,14 @@ function UltraLordLibrary:MakeWindow(config)
             return Toggle
         end
         
-        -- Function to create a slider
+        -- Function to create a slider (improved for all devices)
         function Tab:CreateSlider(sliderConfig)
             local sliderConfig = sliderConfig or {}
             local sliderText = sliderConfig.Text or "Slider"
             local minValue = sliderConfig.Min or 0
             local maxValue = sliderConfig.Max or 100
             local defaultValue = math.clamp(sliderConfig.Default or minValue, minValue, maxValue)
+            local sliderPrecision = sliderConfig.Precision or 1
             local sliderCallback = sliderConfig.Callback or function() end
             
             local SliderFrame = Instance.new("Frame")
@@ -629,10 +688,20 @@ function UltraLordLibrary:MakeWindow(config)
             -- Current value
             local value = defaultValue
             
+            -- Function to format value based on precision
+            local function formatValue(val)
+                if sliderPrecision == 0 then
+                    return math.floor(val)
+                else
+                    local fmt = "%." .. sliderPrecision .. "f"
+                    return string.format(fmt, val)
+                end
+            end
+            
             -- Function to update slider
             local function updateSlider(newValue)
                 value = math.clamp(newValue, minValue, maxValue)
-                SliderValueLabel.Text = tostring(math.floor(value * 10) / 10)
+                SliderValueLabel.Text = formatValue(value)
                 
                 local fillRatio = (value - minValue) / (maxValue - minValue)
                 createTween(SliderFill, {Size = UDim2.new(fillRatio, 0, 1, 0)}, 0.1):Play()
@@ -640,34 +709,37 @@ function UltraLordLibrary:MakeWindow(config)
                 sliderCallback(value)
             end
             
-            -- Slider drag functionality
+            -- Improved slider functionality for all devices
             local isDragging = false
             
+            -- Calculate value based on position
+            local function calculateValue(inputPosition)
+                local sliderPosition = SliderBackground.AbsolutePosition
+                local sliderSize = SliderBackground.AbsoluteSize
+                
+                local relativeX = math.clamp((inputPosition.X - sliderPosition.X) / sliderSize.X, 0, 1)
+                return minValue + (maxValue - minValue) * relativeX
+            end
+            
+            -- Handle input begin
             SliderButton.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                     isDragging = true
+                    updateSlider(calculateValue(input.Position))
                 end
             end)
             
+            -- Handle input ended
             UserInputService.InputEnded:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and isDragging then
                     isDragging = false
                 end
             end)
             
-            SliderButton.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    local relativeX = math.clamp((input.Position.X - SliderBackground.AbsolutePosition.X) / SliderBackground.AbsoluteSize.X, 0, 1)
-                    local newValue = minValue + (maxValue - minValue) * relativeX
-                    updateSlider(newValue)
-                end
-            end)
-            
+            -- Handle input changed for dragging
             UserInputService.InputChanged:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseMovement and isDragging then
-                    local relativeX = math.clamp((input.Position.X - SliderBackground.AbsolutePosition.X) / SliderBackground.AbsoluteSize.X, 0, 1)
-                    local newValue = minValue + (maxValue - minValue) * relativeX
-                    updateSlider(newValue)
+                if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and isDragging then
+                    updateSlider(calculateValue(input.Position))
                 end
             end)
             
@@ -677,6 +749,10 @@ function UltraLordLibrary:MakeWindow(config)
             
             function Slider:SetValue(newValue)
                 updateSlider(newValue)
+            end
+            
+            function Slider:GetValue()
+                return value
             end
             
             self.ElementCount = self.ElementCount + 1
@@ -716,6 +792,69 @@ function UltraLordLibrary:MakeWindow(config)
             
             self.ElementCount = self.ElementCount + 1
             return LabelObject
+        end
+        
+        -- Function to create a menu toggle
+        function Tab:CreateMenuToggle(toggleConfig)
+            local toggleConfig = toggleConfig or {}
+            local toggleText = toggleConfig.Text or "Toggle Menu"
+            local toggleIcon = toggleConfig.Icon
+            
+            local MenuToggleFrame = Instance.new("Frame")
+            MenuToggleFrame.Name = "MenuToggleFrame"
+            MenuToggleFrame.Size = UDim2.new(1, 0, 0, 35)
+            MenuToggleFrame.BackgroundTransparency = 1
+            MenuToggleFrame.LayoutOrder = self.ElementCount
+            MenuToggleFrame.Parent = self.Container
+            
+            local MenuToggleBtn = Instance.new("TextButton")
+            MenuToggleBtn.Name = "MenuToggleBtn"
+            MenuToggleBtn.Size = UDim2.new(1, 0, 1, 0)
+            MenuToggleBtn.BackgroundColor3 = CurrentTheme.ButtonColor
+            MenuToggleBtn.TextColor3 = CurrentTheme.PrimaryTextColor
+            MenuToggleBtn.TextSize = 14
+            MenuToggleBtn.Font = Enum.Font.Gotham
+            MenuToggleBtn.Text = toggleText
+            MenuToggleBtn.Parent = MenuToggleFrame
+            createUICorner(MenuToggleBtn, 6)
+            createUIStroke(MenuToggleBtn, 1, CurrentTheme.UIStrokeColor)
+            
+            -- Toggle icon (if provided)
+            if toggleIcon then
+                local Icon = Instance.new("ImageLabel")
+                Icon.Name = "Icon"
+                Icon.Size = UDim2.new(0, 20, 0, 20)
+                Icon.Position = UDim2.new(0, 8, 0.5, -10)
+                Icon.BackgroundTransparency = 1
+                Icon.Image = toggleIcon
+                Icon.Parent = MenuToggleBtn
+                
+                -- Adjust text position for icon
+                MenuToggleBtn.TextXAlignment = Enum.TextXAlignment.Center
+            end
+            
+            -- Button click handler
+            MenuToggleBtn.MouseButton1Click:Connect(function()
+                -- Animation
+                createTween(MenuToggleBtn, {BackgroundColor3 = CurrentTheme.AccentColor}, 0.1):Play()
+                task.wait(0.1)
+                createTween(MenuToggleBtn, {BackgroundColor3 = CurrentTheme.ButtonColor}, 0.1):Play()
+                
+                -- Toggle the menu
+                toggleMenu()
+            end)
+            
+            -- Button hover effects
+            MenuToggleBtn.MouseEnter:Connect(function()
+                createTween(MenuToggleBtn, {BackgroundColor3 = CurrentTheme.ButtonHoverColor}):Play()
+            end)
+            
+            MenuToggleBtn.MouseLeave:Connect(function()
+                createTween(MenuToggleBtn, {BackgroundColor3 = CurrentTheme.ButtonColor}):Play()
+            end)
+            
+            self.ElementCount = self.ElementCount + 1
+            return MenuToggleBtn
         end
         
         -- Add tab to window tabs table
