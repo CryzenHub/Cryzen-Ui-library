@@ -1,63 +1,110 @@
-** Complete Full start **
+**Complete Full start**
 
 ```
 local UltraLordLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Ultra-Lord-Hub/Ultra-Lord-Ui-library/refs/heads/main/source.lua"))()
 
--- Create a window
+-- Create window
 local Window = UltraLordLib:MakeWindow({
-    Name = "Ultra Lord Hub",
-    Size = UDim2.new(0, 400, 0, 400)
+    Name = "Ultra Lord Example",
+    Size = UDim2.new(0, 600, 0, 400),
+    Theme = "Dark"
 })
 
--- Create a notification
-UltraLordLib:CreateNotification("Welcome", "Thanks for using Ultra Lord Library!", 5)
+-- Create notification
+UltraLordLib:CreateNotification("Welcome", "Thanks for using the script!", 5)
 
--- Create tabs with icons (optional)
-local MainTab = Window:CreateTab({
-    Name = "Main",
-    Icon = "rbxassetid://7072706318" -- Optional
+-- Create tabs
+local PlayerTab = Window:CreateTab({
+    Name = "Player",
+    Icon = "rbxassetid://7072706318"
+})
+
+local WorldTab = Window:CreateTab({
+    Name = "World"
 })
 
 local SettingsTab = Window:CreateTab({
     Name = "Settings"
 })
 
--- Create a section
-MainTab:CreateSection("Player Options")
+-- Player Tab Elements
+PlayerTab:CreateSection("Character Modifications")
 
--- Create a button
-MainTab:CreateButton({
-    Text = "Teleport",
-    Icon = "rbxassetid://7072717857", -- Optional
-    Callback = function()
-        print("Button clicked!")
-    end
-})
-
--- Create a toggle
-local SpeedToggle = MainTab:CreateToggle({
+-- Speed settings
+local speedEnabled = false
+PlayerTab:CreateToggle({
     Text = "Speed Boost",
     Default = false,
     Callback = function(Value)
-        print("Toggle set to:", Value)
+        speedEnabled = Value
+        if speedEnabled then
+            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 50
+        else
+            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 16
+        end
     end
 })
 
--- Create a slider
-local JumpSlider = MainTab:CreateSlider({
+-- Jump power settings
+local jumpPower = 50
+local JumpSlider = PlayerTab:CreateSlider({
     Text = "Jump Power",
     Min = 50,
     Max = 250,
     Default = 50,
+    Precision = 0,
     Callback = function(Value)
-        print("Slider value:", Value)
+        jumpPower = Value
+        game.Players.LocalPlayer.Character.Humanoid.JumpPower = Value
     end
 })
 
--- Create a label
-local StatusLabel = MainTab:CreateLabel({
-    Text = "Status: Ready"
+-- Teleport function
+PlayerTab:CreateSection("Teleportation")
+
+local teleportLocations = {
+    ["Spawn"] = Vector3.new(0, 10, 0),
+    ["Shop"] = Vector3.new(100, 10, 100),
+    ["Arena"] = Vector3.new(-100, 10, -100)
+}
+
+PlayerTab:CreateDropdown({
+    Text = "Teleport Location",
+    Options = {"Spawn", "Shop", "Arena"},
+    Default = "Spawn",
+    Callback = function(Option)
+        local location = teleportLocations[Option]
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(location)
+    end
 })
 
--- Update label later
-StatusLabel:SetText("Status: Running")```
+-- World Tab Elements
+WorldTab:CreateSection("Time Controls")
+
+WorldTab:CreateButton({
+    Text = "Set Day",
+    Callback = function()
+        game.Lighting.TimeOfDay = "12:00:00"
+    end
+})
+
+WorldTab:CreateButton({
+    Text = "Set Night",
+    Callback = function()
+        game.Lighting.TimeOfDay = "00:00:00"
+    end
+})
+
+WorldTab:CreateSlider({
+    Text = "Time of Day",
+    Min = 0,
+    Max = 24,
+    Default = 12,
+    Precision = 1,
+    Callback = function(Value)
+        local hours = math.floor(Value)
+        local minutes = math.floor((Value - hours) * 60)
+        game.Lighting.TimeOfDay = string.format("%02d:%02d:00", hours, minutes)
+    end
+})
+```
