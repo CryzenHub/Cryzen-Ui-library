@@ -215,7 +215,7 @@ local currentKey = MyKeybind:GetKey()
 # 15. Example Full complete
 
 ```lua
-local UltraLordLibrary = loadstring(game:HttpGet("YOUR_RAW_SCRIPT_URL"))()
+local UltraLordLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/Ultra-Lord-Hub/Ultra-Lord-Ui-library/refs/heads/main/source.lua"))()
 
 local Window = UltraLordLibrary:MakeWindow({
     Name = "Ultra Lord Example",
