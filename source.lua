@@ -1,4 +1,4 @@
--- Ultra Lord UI Library v3.2
+-- Ultra Lord UI Library v3.3
 local UltraLordLibrary = {}
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -29,7 +29,8 @@ local Themes = {
         KeySystemColor = Color3.fromRGB(35, 35, 40),
         KeySystemAccentColor = Color3.fromRGB(114, 137, 218),
         NotificationColor = Color3.fromRGB(30, 30, 35),
-        MenuToggleIconColor = Color3.fromRGB(255, 255, 255)
+        MenuToggleIconColor = Color3.fromRGB(255, 255, 255),
+        ColorPickerBackgroundColor = Color3.fromRGB(35, 35, 40)
     },
     Dark = {
         BackgroundColor = Color3.fromRGB(20, 20, 25),
@@ -49,7 +50,8 @@ local Themes = {
         KeySystemColor = Color3.fromRGB(25, 25, 30),
         KeySystemAccentColor = Color3.fromRGB(90, 120, 200),
         NotificationColor = Color3.fromRGB(20, 20, 25),
-        MenuToggleIconColor = Color3.fromRGB(255, 255, 255)
+        MenuToggleIconColor = Color3.fromRGB(255, 255, 255),
+        ColorPickerBackgroundColor = Color3.fromRGB(25, 25, 30)
     },
     Light = {
         BackgroundColor = Color3.fromRGB(240, 240, 245),
@@ -69,7 +71,8 @@ local Themes = {
         KeySystemColor = Color3.fromRGB(235, 235, 240),
         KeySystemAccentColor = Color3.fromRGB(90, 120, 200),
         NotificationColor = Color3.fromRGB(240, 240, 245),
-        MenuToggleIconColor = Color3.fromRGB(40, 40, 45)
+        MenuToggleIconColor = Color3.fromRGB(40, 40, 45),
+        ColorPickerBackgroundColor = Color3.fromRGB(235, 235, 240)
     },
     Rainbow = {
         BackgroundColor = Color3.fromRGB(30, 30, 35),
@@ -90,6 +93,7 @@ local Themes = {
         KeySystemAccentColor = Color3.fromRGB(114, 137, 218), -- This will be rainbow
         NotificationColor = Color3.fromRGB(30, 30, 35),
         MenuToggleIconColor = Color3.fromRGB(255, 255, 255),
+        ColorPickerBackgroundColor = Color3.fromRGB(35, 35, 40),
         IsRainbowTheme = true
     }
 }
@@ -97,6 +101,21 @@ local Themes = {
 -- Current theme
 local CurrentTheme = Themes.Default
 local RainbowConnection = nil
+local ActiveKeybinds = {}
+local UIHidden = false
+
+-- Protected call to avoid errors when accessing CoreGui
+local function safeGetCoreGui()
+    local success, result = pcall(function()
+        return game:GetService("CoreGui")
+    end)
+    
+    if success then
+        return result
+    else
+        return game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+    end
+end
 
 -- Rainbow color function
 local function getRainbowColor(offset)
@@ -112,18 +131,21 @@ local function setupRainbowTheme(elements)
         RainbowConnection = nil
     end
     
-    if CurrentTheme.IsRainbowTheme then
+    if CurrentTheme.IsRainbowTheme and elements and #elements > 0 then
         RainbowConnection = RunService.Heartbeat:Connect(function()
-            if elements and #elements > 0 then
-                local rainbowColor = getRainbowColor()
-                for _, element in ipairs(elements) do
-                    if element.Type == "Accent" and element.Instance then
-                        element.Instance.BackgroundColor3 = rainbowColor
-                    elseif element.Type == "Text" and element.Instance then
-                        element.Instance.TextColor3 = rainbowColor
-                    elseif element.Type == "Stroke" and element.Instance then
-                        element.Instance.Color = rainbowColor
-                    end
+            local rainbowColor = getRainbowColor()
+            for _, element in ipairs(elements) do
+                if not element.Instance or not element.Instance:IsDescendantOf(game) then
+                    -- Skip invalid elements to prevent errors
+                    continue
+                end
+                
+                if element.Type == "Accent" and element.Instance then
+                    element.Instance.BackgroundColor3 = rainbowColor
+                elseif element.Type == "Text" and element.Instance then
+                    element.Instance.TextColor3 = rainbowColor
+                elseif element.Type == "Stroke" and element.Instance then
+                    element.Instance.Color = rainbowColor
                 end
             end
         end)
@@ -132,6 +154,8 @@ end
 
 -- Utility functions
 local function createUICorner(parent, radius)
+    if not parent or not parent:IsDescendantOf(game) then return nil end
+    
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, radius or 5)
     corner.Parent = parent
@@ -139,6 +163,8 @@ local function createUICorner(parent, radius)
 end
 
 local function createUIStroke(parent, thickness, color)
+    if not parent or not parent:IsDescendantOf(game) then return nil end
+    
     local stroke = Instance.new("UIStroke")
     stroke.Thickness = thickness or 1
     stroke.Color = color or CurrentTheme.UIStrokeColor
@@ -148,6 +174,8 @@ local function createUIStroke(parent, thickness, color)
 end
 
 local function createTween(instance, properties, duration, easingStyle, easingDirection)
+    if not instance or not instance:IsDescendantOf(game) then return nil end
+    
     local tweenInfo = TweenInfo.new(
         duration or 0.3,
         easingStyle or Enum.EasingStyle.Quad,
@@ -159,31 +187,39 @@ end
 
 -- Improved draggable function that works on all devices
 local function makeDraggable(dragUI, dragFrame)
+    if not dragUI or not dragFrame then return end
+    
     local dragging = false
     local dragInput, mousePos, framePos
     
-    dragUI.InputBegan:Connect(function(input)
+    local dragConnection1, dragConnection2, dragConnection3
+    
+    dragConnection1 = dragUI.InputBegan:Connect(function(input)
         if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
             dragging = true
             mousePos = input.Position
             framePos = dragFrame.Position
             
-            input.Changed:Connect(function()
+            local connection
+            connection = input.Changed:Connect(function()
                 if input.UserInputState == Enum.UserInputState.End then
                     dragging = false
+                    if connection then
+                        connection:Disconnect()
+                    end
                 end
             end)
         end
     end)
     
-    dragUI.InputChanged:Connect(function(input)
+    dragConnection2 = dragUI.InputChanged:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
             dragInput = input
         end
     end)
     
-    UserInputService.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
+    dragConnection3 = UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging and dragFrame:IsDescendantOf(game) then
             local delta = input.Position - mousePos
             dragFrame.Position = UDim2.new(
                 framePos.X.Scale,
@@ -193,6 +229,13 @@ local function makeDraggable(dragUI, dragFrame)
             )
         end
     end)
+    
+    -- Return disconnect function
+    return function()
+        if dragConnection1 then dragConnection1:Disconnect() end
+        if dragConnection2 then dragConnection2:Disconnect() end
+        if dragConnection3 then dragConnection3:Disconnect() end
+    end
 end
 
 -- Create notification function (Enhanced with icon support)
@@ -203,18 +246,42 @@ function UltraLordLibrary:CreateNotification(notifConfig)
     local duration = notifConfig.Duration or 5
     local icon = notifConfig.Icon
     
-    local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "UltraLordNotification"
-    ScreenGui.Parent = CoreGui
-    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    local CoreGuiService = safeGetCoreGui()
     
+    -- Find existing notification GUI or create a new one
+    local ScreenGui = CoreGuiService:FindFirstChild("UltraLordNotifications")
+    
+    if not ScreenGui then
+        ScreenGui = Instance.new("ScreenGui")
+        ScreenGui.Name = "UltraLordNotifications"
+        ScreenGui.Parent = CoreGuiService
+        ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+        
+        -- Create container for notifications
+        local NotificationsContainer = Instance.new("Frame")
+        NotificationsContainer.Name = "NotificationsContainer"
+        NotificationsContainer.Size = UDim2.new(0, 300, 1, 0)
+        NotificationsContainer.Position = UDim2.new(1, -310, 0, 0)
+        NotificationsContainer.BackgroundTransparency = 1
+        NotificationsContainer.Parent = ScreenGui
+        
+        local UIListLayout = Instance.new("UIListLayout")
+        UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        UIListLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+        UIListLayout.Padding = UDim.new(0, 10)
+        UIListLayout.Parent = NotificationsContainer
+    end
+    
+    local NotificationsContainer = ScreenGui:FindFirstChild("NotificationsContainer")
+    
+    -- Create notification frame
     local NotificationFrame = Instance.new("Frame")
     NotificationFrame.Name = "NotificationFrame"
-    NotificationFrame.Size = UDim2.new(0, 280, 0, 80)
-    NotificationFrame.Position = UDim2.new(1, 10, 0.8, 0)
+    NotificationFrame.Size = UDim2.new(1, -20, 0, 80)
     NotificationFrame.BackgroundColor3 = CurrentTheme.NotificationColor
     NotificationFrame.BorderSizePixel = 0
-    NotificationFrame.Parent = ScreenGui
+    NotificationFrame.Parent = NotificationsContainer
+    NotificationFrame.LayoutOrder = -tick() -- Use negative tick for sorting (newest at bottom)
     createUICorner(NotificationFrame, 8)
     createUIStroke(NotificationFrame, 1)
     
@@ -258,20 +325,24 @@ function UltraLordLibrary:CreateNotification(notifConfig)
     DescriptionLabel.Parent = NotificationFrame
     
     -- Animation
-    NotificationFrame.Position = UDim2.new(1, 300, 0.8, 0)
-    local showTween = createTween(NotificationFrame, {Position = UDim2.new(1, -290, 0.8, 0)}, 0.5, Enum.EasingStyle.Back)
+    NotificationFrame.Position = UDim2.new(1, 300, 0, 0)
+    local showTween = createTween(NotificationFrame, {Position = UDim2.new(0, 0, 0, 0)}, 0.5, Enum.EasingStyle.Back)
     showTween:Play()
     
     task.delay(duration, function()
-        local hideTween = createTween(NotificationFrame, {Position = UDim2.new(1, 300, 0.8, 0)}, 0.5)
-        hideTween:Play()
-        hideTween.Completed:Connect(function()
-            ScreenGui:Destroy()
-        end)
+        if NotificationFrame and NotificationFrame:IsDescendantOf(game) then
+            local hideTween = createTween(NotificationFrame, {Position = UDim2.new(1, 300, 0, 0)}, 0.5)
+            hideTween:Play()
+            hideTween.Completed:Connect(function()
+                if NotificationFrame and NotificationFrame:IsDescendantOf(game) then
+                    NotificationFrame:Destroy()
+                end
+            end)
+        end
     end)
 end
 
--- Key system function
+-- Key system function (Fixed for reliability)
 function UltraLordLibrary:CreateKeySystem(keySystemConfig)
     local keySystemConfig = keySystemConfig or {}
     local title = keySystemConfig.Title or "Key System"
@@ -281,15 +352,21 @@ function UltraLordLibrary:CreateKeySystem(keySystemConfig)
     local saveKey = keySystemConfig.SaveKey or false
     local onCorrectCallback = keySystemConfig.OnCorrect or function() end
     local onIncorrectCallback = keySystemConfig.OnIncorrect or function() end
+    local filePath = keySystemConfig.FilePath or "UltraLordKey.json"
+    
+    local CoreGuiService = safeGetCoreGui()
     
     -- Check for saved key
     local savedKey = ""
     if saveKey then
         local success, result = pcall(function()
-            return game:GetService("HttpService"):JSONDecode(readfile("UltraLordKey.json"))
+            if isfile and readfile and isfile(filePath) then
+                return game:GetService("HttpService"):JSONDecode(readfile(filePath))
+            end
+            return nil
         end)
         
-        if success and result.Key then
+        if success and result and result.Key then
             savedKey = result.Key
             
             -- Validate saved key
@@ -305,11 +382,22 @@ function UltraLordLibrary:CreateKeySystem(keySystemConfig)
         end
     end
     
+    -- Create promise to handle key system
+    local keyPromise = {}
+    local keyPromiseResolve
+    keyPromise.promise = function()
+        return coroutine.create(function()
+            keyPromiseResolve = coroutine.yield()
+            return keyPromiseResolve
+        end)
+    end
+    
     -- Create key system UI
     local KeySystemGui = Instance.new("ScreenGui")
     KeySystemGui.Name = "UltraLordKeySystem"
-    KeySystemGui.Parent = CoreGui
+    KeySystemGui.Parent = CoreGuiService
     KeySystemGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    KeySystemGui.DisplayOrder = 999
     
     local BackgroundFrame = Instance.new("Frame")
     BackgroundFrame.Name = "Background"
@@ -409,13 +497,13 @@ function UltraLordLibrary:CreateKeySystem(keySystemConfig)
     
     -- Button hover effect
     SubmitButton.MouseEnter:Connect(function()
-        if not CurrentTheme.IsRainbowTheme then
+        if not CurrentTheme.IsRainbowTheme and SubmitButton:IsDescendantOf(game) then
             createTween(SubmitButton, {BackgroundColor3 = CurrentTheme.ButtonHoverColor}):Play()
         end
     end)
     
     SubmitButton.MouseLeave:Connect(function()
-        if not CurrentTheme.IsRainbowTheme then
+        if not CurrentTheme.IsRainbowTheme and SubmitButton:IsDescendantOf(game) then
             createTween(SubmitButton, {BackgroundColor3 = CurrentTheme.KeySystemAccentColor}):Play()
         end
     end)
@@ -436,7 +524,9 @@ function UltraLordLibrary:CreateKeySystem(keySystemConfig)
             -- Save key if needed
             if saveKey then
                 pcall(function()
-                    writefile("UltraLordKey.json", game:GetService("HttpService"):JSONEncode({Key = inputKey}))
+                    if writefile then
+                        writefile(filePath, game:GetService("HttpService"):JSONEncode({Key = inputKey}))
+                    end
                 end)
             end
             
@@ -444,17 +534,27 @@ function UltraLordLibrary:CreateKeySystem(keySystemConfig)
             StatusLabel.Text = "Key Verified! Loading..."
             StatusLabel.TextColor3 = Color3.fromRGB(0, 255, 100)
             
-            createTween(SubmitButton, {BackgroundColor3 = Color3.fromRGB(0, 200, 0)}):Play()
+            if SubmitButton:IsDescendantOf(game) then
+                createTween(SubmitButton, {BackgroundColor3 = Color3.fromRGB(0, 200, 0)}):Play()
+            end
+            
             task.wait(1)
             
             -- Close key system
             local closeTween = createTween(KeySystemFrame, {Position = UDim2.new(0.5, -175, 1.5, -100)}, 0.5)
-            closeTween:Play()
+            if closeTween then
+                closeTween:Play()
             
-            closeTween.Completed:Connect(function()
+                closeTween.Completed:Connect(function()
+                    KeySystemGui:Destroy()
+                    keyPromiseResolve = true
+                    onCorrectCallback()
+                end)
+            else
                 KeySystemGui:Destroy()
+                keyPromiseResolve = true
                 onCorrectCallback()
-            end)
+            end
             
             return true
         else
@@ -462,18 +562,22 @@ function UltraLordLibrary:CreateKeySystem(keySystemConfig)
             StatusLabel.Text = "Invalid Key!"
             StatusLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
             
-            createTween(SubmitButton, {BackgroundColor3 = Color3.fromRGB(200, 0, 0)}, 0.2):Play()
-            task.wait(0.2)
-            createTween(SubmitButton, {BackgroundColor3 = CurrentTheme.KeySystemAccentColor}, 0.2):Play()
+            if SubmitButton:IsDescendantOf(game) then
+                createTween(SubmitButton, {BackgroundColor3 = Color3.fromRGB(200, 0, 0)}, 0.2):Play()
+                task.wait(0.2)
+                createTween(SubmitButton, {BackgroundColor3 = CurrentTheme.KeySystemAccentColor}, 0.2):Play()
+            end
             
             -- Shake effect
-            local originalPos = KeySystemFrame.Position
-            local shake = 10
-            for i = 1, 5 do
-                KeySystemFrame.Position = UDim2.new(originalPos.X.Scale, originalPos.X.Offset + (i % 2 == 0 and shake or -shake), originalPos.Y.Scale, originalPos.Y.Offset)
-                task.wait(0.03)
+            if KeySystemFrame:IsDescendantOf(game) then
+                local originalPos = KeySystemFrame.Position
+                local shake = 10
+                for i = 1, 5 do
+                    KeySystemFrame.Position = UDim2.new(originalPos.X.Scale, originalPos.X.Offset + (i % 2 == 0 and shake or -shake), originalPos.Y.Scale, originalPos.Y.Offset)
+                    task.wait(0.03)
+                end
+                KeySystemFrame.Position = originalPos
             end
-            KeySystemFrame.Position = originalPos
             
             onIncorrectCallback(inputKey)
             return false
@@ -491,14 +595,193 @@ function UltraLordLibrary:CreateKeySystem(keySystemConfig)
     end)
     
     -- Return control functions
-    return {
+    local keySystem = {
         Destroy = function()
-            KeySystemGui:Destroy()
+            if KeySystemGui and KeySystemGui:IsDescendantOf(game) then
+                KeySystemGui:Destroy()
+            end
+        end,
+        WaitForVerification = function()
+            local co = keyPromise.promise()
+            coroutine.resume(co)
+            local result = coroutine.status(co) ~= "dead" and true or false
+            return result
         end
     }
+    
+    return keySystem
 end
 
--- Make window function (Enhanced with icon support)
+-- Color Picker Component
+local function createColorPicker(parent, defaultColor, callback)
+    local ColorPickerFrame = Instance.new("Frame")
+    ColorPickerFrame.Name = "ColorPickerFrame"
+    ColorPickerFrame.Size = UDim2.new(0, 200, 0, 220)
+    ColorPickerFrame.Position = UDim2.new(0.5, -100, 0.5, -110)
+    ColorPickerFrame.BackgroundColor3 = CurrentTheme.ColorPickerBackgroundColor
+    ColorPickerFrame.Visible = false
+    ColorPickerFrame.ZIndex = 100
+    ColorPickerFrame.Parent = parent
+    createUICorner(ColorPickerFrame, 8)
+    createUIStroke(ColorPickerFrame, 1)
+    
+    -- Color display
+    local ColorDisplay = Instance.new("Frame")
+    ColorDisplay.Name = "ColorDisplay"
+    ColorDisplay.Size = UDim2.new(0, 180, 0, 30)
+    ColorDisplay.Position = UDim2.new(0.5, -90, 0, 10)
+    ColorDisplay.BackgroundColor3 = defaultColor or Color3.fromRGB(255, 0, 0)
+    ColorDisplay.ZIndex = 101
+    ColorDisplay.Parent = ColorPickerFrame
+    createUICorner(ColorDisplay, 6)
+    
+    -- HSV color picker
+    local HSVPicker = Instance.new("ImageLabel")
+    HSVPicker.Name = "HSVPicker"
+    HSVPicker.Size = UDim2.new(0, 180, 0, 120)
+    HSVPicker.Position = UDim2.new(0.5, -90, 0, 50)
+    HSVPicker.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    HSVPicker.Image = "rbxassetid://4155801252"
+    HSVPicker.ZIndex = 101
+    HSVPicker.Parent = ColorPickerFrame
+    createUICorner(HSVPicker, 6)
+    
+    -- HSV selector
+    local HSVSelector = Instance.new("Frame")
+    HSVSelector.Name = "HSVSelector"
+    HSVSelector.Size = UDim2.new(0, 10, 0, 10)
+    HSVSelector.Position = UDim2.new(0.5, -5, 0.5, -5)
+    HSVSelector.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    HSVSelector.ZIndex = 102
+    HSVSelector.Parent = HSVPicker
+    createUICorner(HSVSelector, 10)
+    createUIStroke(HSVSelector, 1, Color3.fromRGB(0, 0, 0))
+    
+    -- RGB inputs
+    local RGBLabel = Instance.new("TextLabel")
+    RGBLabel.Name = "RGBLabel"
+    RGBLabel.Size = UDim2.new(0, 180, 0, 20)
+    RGBLabel.Position = UDim2.new(0.5, -90, 0, 180)
+    RGBLabel.BackgroundTransparency = 1
+    RGBLabel.TextColor3 = CurrentTheme.PrimaryTextColor
+    RGBLabel.TextSize = 14
+    RGBLabel.Font = Enum.Font.Gotham
+    RGBLabel.Text = "R: 255   G: 0   B: 0"
+    RGBLabel.ZIndex = 101
+    RGBLabel.Parent = ColorPickerFrame
+    
+    -- Close button
+    local CloseButton = Instance.new("TextButton")
+    CloseButton.Name = "CloseButton"
+    CloseButton.Size = UDim2.new(0, 24, 0, 24)
+    CloseButton.Position = UDim2.new(1, -30, 0, 6)
+    CloseButton.BackgroundTransparency = 1
+    CloseButton.TextColor3 = CurrentTheme.PrimaryTextColor
+    CloseButton.TextSize = 16
+    CloseButton.Font = Enum.Font.GothamBold
+    CloseButton.Text = "X"
+    CloseButton.ZIndex = 101
+    CloseButton.Parent = ColorPickerFrame
+    
+    -- Current color
+    local currentColor = defaultColor or Color3.fromRGB(255, 0, 0)
+    local h, s, v = Color3.toHSV(currentColor)
+    
+    -- Update color display
+    local function updateColorDisplay()
+        ColorDisplay.BackgroundColor3 = currentColor
+        RGBLabel.Text = string.format(
+            "R: %d   G: %d   B: %d", 
+            math.floor(currentColor.R * 255 + 0.5),
+            math.floor(currentColor.G * 255 + 0.5),
+            math.floor(currentColor.B * 255 + 0.5)
+        )
+    end
+    
+    -- HSV picker handling
+    local function updateHSVSelector()
+        HSVSelector.Position = UDim2.new(s, -5, 1 - v, -5)
+    end
+    
+    -- Update initial selector position
+    updateHSVSelector()
+    
+    -- HSV picker input
+    local isDraggingHSV = false
+    
+    HSVPicker.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            isDraggingHSV = true
+            
+            -- Update color based on input position
+            local relativeX = math.clamp((input.Position.X - HSVPicker.AbsolutePosition.X) / HSVPicker.AbsoluteSize.X, 0, 1)
+            local relativeY = math.clamp((input.Position.Y - HSVPicker.AbsolutePosition.Y) / HSVPicker.AbsoluteSize.Y, 0, 1)
+            
+            s = relativeX
+            v = 1 - relativeY
+            
+            currentColor = Color3.fromHSV(h, s, v)
+            updateColorDisplay()
+            updateHSVSelector()
+            callback(currentColor)
+        end
+    end)
+    
+    HSVPicker.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            isDraggingHSV = false
+        end
+    end)
+    
+    HSVPicker.InputChanged:Connect(function(input)
+        if isDraggingHSV and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            -- Update color based on input position
+            local relativeX = math.clamp((input.Position.X - HSVPicker.AbsolutePosition.X) / HSVPicker.AbsoluteSize.X, 0, 1)
+            local relativeY = math.clamp((input.Position.Y - HSVPicker.AbsolutePosition.Y) / HSVPicker.AbsoluteSize.Y, 0, 1)
+            
+            s = relativeX
+            v = 1 - relativeY
+            
+            currentColor = Color3.fromHSV(h, s, v)
+            updateColorDisplay()
+            updateHSVSelector()
+            callback(currentColor)
+        end
+    end)
+    
+    -- Close button functionality
+    CloseButton.MouseButton1Click:Connect(function()
+        ColorPickerFrame.Visible = false
+    end)
+    
+    -- Color picker object
+    local ColorPicker = {
+        Frame = ColorPickerFrame,
+        
+        Show = function()
+            ColorPickerFrame.Visible = true
+        end,
+        
+        Hide = function()
+            ColorPickerFrame.Visible = false
+        end,
+        
+        SetColor = function(color)
+            currentColor = color
+            h, s, v = Color3.toHSV(color)
+            updateColorDisplay()
+            updateHSVSelector()
+        end,
+        
+        GetColor = function()
+            return currentColor
+        end
+    }
+    
+    return ColorPicker
+end
+
+-- Make window function (Enhanced with icon support and toggle functionality)
 function UltraLordLibrary:MakeWindow(config)
     local config = config or {}
     local windowName = config.Name or "Ultra Lord UI"
@@ -507,26 +790,32 @@ function UltraLordLibrary:MakeWindow(config)
     local icon = config.Icon
     local keySystem = config.KeySystem or false
     local keySettings = config.KeySettings or {}
+    local toggleKeybind = config.ToggleKeybind or Enum.KeyCode.LeftControl
     
     -- Set theme
     if Themes[theme] then
         CurrentTheme = Themes[theme]
     end
     
+    -- Create main GUI
+    local CoreGuiService = safeGetCoreGui()
+    local UltraLordGUI = Instance.new("ScreenGui")
+    UltraLordGUI.Name = "UltraLordGUI"
+    UltraLordGUI.Parent = CoreGuiService
+    UltraLordGUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    UltraLordGUI.ResetOnSpawn = false
+    UltraLordGUI.DisplayOrder = 100
+    
     -- Handle key system first if enabled
     if keySystem then
         local keySystemResult = UltraLordLibrary:CreateKeySystem(keySettings)
-        if not keySystemResult then
-            return false
+        if keySystemResult and keySystemResult.WaitForVerification then
+            if not keySystemResult.WaitForVerification() then
+                UltraLordGUI:Destroy()
+                return false
+            end
         end
     end
-    
-    -- Create main GUI
-    local UltraLordGUI = Instance.new("ScreenGui")
-    UltraLordGUI.Name = "UltraLordGUI"
-    UltraLordGUI.Parent = CoreGui
-    UltraLordGUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    UltraLordGUI.ResetOnSpawn = false
     
     -- Create main window frame
     local MainWindow = Instance.new("Frame")
@@ -574,7 +863,7 @@ function UltraLordLibrary:MakeWindow(config)
     -- Title text
     local TitleText = Instance.new("TextLabel")
     TitleText.Name = "TitleText"
-    TitleText.Size = UDim2.new(1, -80 - iconSize, 1, 0)
+    TitleText.Size = UDim2.new(1, -120 - iconSize, 1, 0)
     TitleText.Position = UDim2.new(0, 10 + iconSize, 0, 0)
     TitleText.BackgroundTransparency = 1
     TitleText.TextColor3 = CurrentTheme.PrimaryTextColor
@@ -583,6 +872,18 @@ function UltraLordLibrary:MakeWindow(config)
     TitleText.TextXAlignment = Enum.TextXAlignment.Left
     TitleText.Text = windowName
     TitleText.Parent = TitleBar
+    
+    -- Toggle button (minimize)
+    local ToggleButton = Instance.new("TextButton")
+    ToggleButton.Name = "ToggleButton"
+    ToggleButton.Size = UDim2.new(0, 24, 0, 24)
+    ToggleButton.Position = UDim2.new(1, -54, 0, 3)
+    ToggleButton.BackgroundTransparency = 1
+    ToggleButton.TextColor3 = CurrentTheme.MenuToggleIconColor
+    ToggleButton.TextSize = 16
+    ToggleButton.Font = Enum.Font.GothamBold
+    ToggleButton.Text = "-"
+    ToggleButton.Parent = TitleBar
     
     -- Close button
     local CloseButton = Instance.new("TextButton")
@@ -634,18 +935,89 @@ function UltraLordLibrary:MakeWindow(config)
     TabContent.BackgroundTransparency = 1
     TabContent.Parent = MainWindow
     
+    -- Keybind indicator
+    local KeybindIndicator = Instance.new("Frame")
+    KeybindIndicator.Name = "KeybindIndicator"
+    KeybindIndicator.Size = UDim2.new(0, 200, 0, 30)
+    KeybindIndicator.Position = UDim2.new(0.5, -100, 0, -40)
+    KeybindIndicator.BackgroundColor3 = CurrentTheme.NotificationColor
+    KeybindIndicator.BackgroundTransparency = 0.2
+    KeybindIndicator.Visible = false
+    KeybindIndicator.Parent = UltraLordGUI
+    createUICorner(KeybindIndicator, 6)
+    createUIStroke(KeybindIndicator, 1, CurrentTheme.UIStrokeColor)
+    
+    local KeybindText = Instance.new("TextLabel")
+    KeybindText.Name = "KeybindText"
+    KeybindText.Size = UDim2.new(1, -10, 1, 0)
+    KeybindText.Position = UDim2.new(0, 5, 0, 0)
+    KeybindText.BackgroundTransparency = 1
+    KeybindText.TextColor3 = CurrentTheme.PrimaryTextColor
+    KeybindText.TextSize = 14
+    KeybindText.Font = Enum.Font.GothamBold
+    KeybindText.Text = "Press a key..."
+    KeybindText.Parent = KeybindIndicator
+    
     -- Rainbow elements collection
     local rainbowElements = {}
     
     -- Make window draggable (improved for all devices)
-    makeDraggable(TitleBar, MainWindow)
+    local disconnectDrag = makeDraggable(TitleBar, MainWindow)
+    
+    -- Toggle window visibility
+    local isWindowMinimized = false
+    local originalSize = MainWindow.Size
+    local minimizedSize = UDim2.new(0, windowSize.X.Offset, 0, 30)
+    
+    -- Function to toggle window visibility
+    local function toggleWindowVisibility()
+        isWindowMinimized = not isWindowMinimized
+        
+        if isWindowMinimized then
+            ToggleButton.Text = "+"
+            createTween(MainWindow, {Size = minimizedSize}, 0.3):Play()
+        else
+            ToggleButton.Text = "-"
+            createTween(MainWindow, {Size = originalSize}, 0.3):Play()
+        end
+    end
+    
+    ToggleButton.MouseButton1Click:Connect(toggleWindowVisibility)
+    
+    -- Function to toggle UI with keybind
+    local function toggleUI()
+        UIHidden = not UIHidden
+        UltraLordGUI.Enabled = not UIHidden
+        
+        -- Show notification
+        UltraLordLibrary:CreateNotification({
+            Title = "UI Toggled",
+            Description = UIHidden and "Interface Hidden (Press " .. toggleKeybind.Name .. " to show)" or "Interface Visible",
+            Duration = 3
+        })
+    end
+    
+    -- Setup UI toggle keybind
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if not gameProcessed and input.KeyCode == toggleKeybind then
+            toggleUI()
+        end
+        
+        -- Check for registered keybinds
+        for _, keybind in pairs(ActiveKeybinds) do
+            if keybind.Key == input.KeyCode then
+                keybind.Callback()
+            end
+        end
+    end)
     
     -- Close button functionality
     CloseButton.MouseButton1Click:Connect(function()
-        UltraLordGUI:Destroy()
+        if disconnectDrag then disconnectDrag() end
         if RainbowConnection then
             RainbowConnection:Disconnect()
         end
+        UltraLordGUI:Destroy()
     end)
     
     -- Window methods and properties
@@ -718,15 +1090,18 @@ function UltraLordLibrary:MakeWindow(config)
         TabButton.MouseButton1Click:Connect(function()
             -- Hide all tab frames
             for _, tab in pairs(self.Tabs) do
-                tab.Frame.Visible = false
-                if not CurrentTheme.IsRainbowTheme then
+                if tab.Frame:IsDescendantOf(game) then
+                    tab.Frame.Visible = false
+                end
+                
+                if tab.Button:IsDescendantOf(game) and not CurrentTheme.IsRainbowTheme then
                     createTween(tab.Button, {BackgroundColor3 = CurrentTheme.ButtonColor}):Play()
                 end
             end
             
             -- Show selected tab
             TabFrame.Visible = true
-            if not CurrentTheme.IsRainbowTheme then
+            if TabButton:IsDescendantOf(game) and not CurrentTheme.IsRainbowTheme then
                 createTween(TabButton, {BackgroundColor3 = CurrentTheme.AccentColor}):Play()
             end
             self.CurrentTab = tabName
@@ -734,13 +1109,13 @@ function UltraLordLibrary:MakeWindow(config)
         
         -- Tab button hover effects
         TabButton.MouseEnter:Connect(function()
-            if self.CurrentTab ~= tabName and not CurrentTheme.IsRainbowTheme then
+            if self.CurrentTab ~= tabName and TabButton:IsDescendantOf(game) and not CurrentTheme.IsRainbowTheme then
                 createTween(TabButton, {BackgroundColor3 = CurrentTheme.ButtonHoverColor}):Play()
             end
         end)
         
         TabButton.MouseLeave:Connect(function()
-            if self.CurrentTab ~= tabName and not CurrentTheme.IsRainbowTheme then
+            if self.CurrentTab ~= tabName and TabButton:IsDescendantOf(game) and not CurrentTheme.IsRainbowTheme then
                 createTween(TabButton, {BackgroundColor3 = CurrentTheme.ButtonColor}):Play()
             end
         end)
@@ -824,16 +1199,18 @@ function UltraLordLibrary:MakeWindow(config)
             -- Button click animation and callback
             Button.MouseButton1Click:Connect(function()
                 -- Animation
-                if not CurrentTheme.IsRainbowTheme then
-                    createTween(Button, {BackgroundColor3 = CurrentTheme.AccentColor}, 0.1):Play()
-                    task.wait(0.1)
-                    createTween(Button, {BackgroundColor3 = CurrentTheme.ButtonColor}, 0.1):Play()
-                else
-                    -- For rainbow theme, use white flash
-                    local originalText = Button.TextColor3
-                    createTween(Button, {TextColor3 = Color3.fromRGB(255, 255, 255)}, 0.1):Play()
-                    task.wait(0.1)
-                    createTween(Button, {TextColor3 = originalText}, 0.1):Play()
+                if Button:IsDescendantOf(game) then
+                    if not CurrentTheme.IsRainbowTheme then
+                        createTween(Button, {BackgroundColor3 = CurrentTheme.AccentColor}, 0.1):Play()
+                        task.wait(0.1)
+                        createTween(Button, {BackgroundColor3 = CurrentTheme.ButtonColor}, 0.1):Play()
+                    else
+                        -- For rainbow theme, use white flash
+                        local originalText = Button.TextColor3
+                        createTween(Button, {TextColor3 = Color3.fromRGB(255, 255, 255)}, 0.1):Play()
+                        task.wait(0.1)
+                        createTween(Button, {TextColor3 = originalText}, 0.1):Play()
+                    end
                 end
                 
                 -- Callback
@@ -842,13 +1219,13 @@ function UltraLordLibrary:MakeWindow(config)
             
             -- Button hover effects
             Button.MouseEnter:Connect(function()
-                if not CurrentTheme.IsRainbowTheme then
+                if Button:IsDescendantOf(game) and not CurrentTheme.IsRainbowTheme then
                     createTween(Button, {BackgroundColor3 = CurrentTheme.ButtonHoverColor}):Play()
                 end
             end)
             
             Button.MouseLeave:Connect(function()
-                if not CurrentTheme.IsRainbowTheme then
+                if Button:IsDescendantOf(game) and not CurrentTheme.IsRainbowTheme then
                     createTween(Button, {BackgroundColor3 = CurrentTheme.ButtonColor}):Play()
                 end
             end)
@@ -862,7 +1239,7 @@ function UltraLordLibrary:MakeWindow(config)
             return Button
         end
         
-        -- Function to create a toggle (improved to not require click-hold)
+        -- Function to create a toggle
         function Tab:CreateToggle(toggleConfig)
             local toggleConfig = toggleConfig or {}
             local toggleText = toggleConfig.Text or "Toggle"
@@ -910,6 +1287,8 @@ function UltraLordLibrary:MakeWindow(config)
             
             -- Function to update toggle visuals
             local function updateToggle()
+                if not ToggleButton:IsDescendantOf(game) then return end
+                
                 local targetPosition = toggled and UDim2.new(0.6, 0, 0.5, -8) or UDim2.new(0.1, 0, 0.5, -8)
                 local targetColor
                 
@@ -921,7 +1300,7 @@ function UltraLordLibrary:MakeWindow(config)
                 createTween(ToggleCircle, {Position = targetPosition}):Play()
             end
             
-            -- Toggle click handler (improved to work with single click)
+            -- Toggle click handler
             local function toggleClicked()
                 if not toggleEnabled then return end
                 
@@ -971,7 +1350,7 @@ function UltraLordLibrary:MakeWindow(config)
             return Toggle
         end
         
-        -- Function to create a slider (improved for all devices)
+        -- Function to create a slider
         function Tab:CreateSlider(sliderConfig)
             local sliderConfig = sliderConfig or {}
             local sliderText = sliderConfig.Text or "Slider"
@@ -1055,6 +1434,10 @@ function UltraLordLibrary:MakeWindow(config)
             
             -- Function to update slider
             local function updateSlider(newValue)
+                if not SliderFill:IsDescendantOf(game) or not SliderValueLabel:IsDescendantOf(game) then
+                    return
+                end
+                
                 value = math.clamp(newValue, minValue, maxValue)
                 SliderValueLabel.Text = formatValue(value)
                 
@@ -1069,6 +1452,8 @@ function UltraLordLibrary:MakeWindow(config)
             
             -- Calculate value based on position
             local function calculateValue(inputPosition)
+                if not SliderBackground:IsDescendantOf(game) then return value end
+                
                 local sliderPosition = SliderBackground.AbsolutePosition
                 local sliderSize = SliderBackground.AbsoluteSize
                 
@@ -1142,7 +1527,9 @@ function UltraLordLibrary:MakeWindow(config)
             local LabelObject = {}
             
             function LabelObject:SetText(newText)
-                Label.Text = newText
+                if Label:IsDescendantOf(game) then
+                    Label.Text = newText
+                end
             end
             
             self.ElementCount = self.ElementCount + 1
@@ -1204,11 +1591,15 @@ function UltraLordLibrary:MakeWindow(config)
             
             -- Focused and unfocused animations
             Textbox.Focused:Connect(function()
-                createTween(TextboxContainer, {BackgroundColor3 = CurrentTheme.ButtonHoverColor}):Play()
+                if TextboxContainer:IsDescendantOf(game) then
+                    createTween(TextboxContainer, {BackgroundColor3 = CurrentTheme.ButtonHoverColor}):Play()
+                end
             end)
             
             Textbox.FocusLost:Connect(function(enterPressed)
-                createTween(TextboxContainer, {BackgroundColor3 = CurrentTheme.TextboxColor}):Play()
+                if TextboxContainer:IsDescendantOf(game) then
+                    createTween(TextboxContainer, {BackgroundColor3 = CurrentTheme.TextboxColor}):Play()
+                end
                 textboxCallback(Textbox.Text, enterPressed)
             end)
             
@@ -1216,18 +1607,23 @@ function UltraLordLibrary:MakeWindow(config)
             local TextboxObject = {}
             
             function TextboxObject:SetValue(newValue)
-                Textbox.Text = newValue
+                if Textbox:IsDescendantOf(game) then
+                    Textbox.Text = newValue
+                end
             end
             
             function TextboxObject:GetValue()
-                return Textbox.Text
+                if Textbox:IsDescendantOf(game) then
+                    return Textbox.Text
+                end
+                return ""
             end
             
             self.ElementCount = self.ElementCount + 1
             return TextboxObject
         end
         
-        -- Function to create a dropdown (FIXED)
+        -- Function to create a dropdown
         function Tab:CreateDropdown(dropdownConfig)
             local dropdownConfig = dropdownConfig or {}
             local dropdownText = dropdownConfig.Text or "Dropdown"
@@ -1345,17 +1741,23 @@ function UltraLordLibrary:MakeWindow(config)
                 
                 -- Option button hover effects
                 OptionButton.MouseEnter:Connect(function()
-                    createTween(OptionButton, {BackgroundColor3 = CurrentTheme.ButtonHoverColor}):Play()
+                    if OptionButton:IsDescendantOf(game) then
+                        createTween(OptionButton, {BackgroundColor3 = CurrentTheme.ButtonHoverColor}):Play()
+                    end
                 end)
                 
                 OptionButton.MouseLeave:Connect(function()
-                    createTween(OptionButton, {BackgroundColor3 = CurrentTheme.ButtonColor}):Play()
+                    if OptionButton:IsDescendantOf(game) then
+                        createTween(OptionButton, {BackgroundColor3 = CurrentTheme.ButtonColor}):Play()
+                    end
                 end)
                 
                 -- Option selection
                 OptionButton.MouseButton1Click:Connect(function()
                     selectedOption = option
-                    SelectionButton.Text = "  " .. option
+                    if SelectionButton:IsDescendantOf(game) then
+                        SelectionButton.Text = "  " .. option
+                    end
                     toggleDropdown()
                     dropdownCallback(option)
                 end)
@@ -1365,6 +1767,8 @@ function UltraLordLibrary:MakeWindow(config)
             
             -- Function to toggle dropdown visibility
             function toggleDropdown()
+                if not DropdownListOuterFrame:IsDescendantOf(game) then return end
+                
                 isOpen = not isOpen
                 
                 if isOpen then
@@ -1374,7 +1778,9 @@ function UltraLordLibrary:MakeWindow(config)
                     
                     -- Show dropdown
                     DropdownListOuterFrame.Visible = true
-                    Arrow.Text = "▲"  -- Up arrow
+                    if Arrow:IsDescendantOf(game) then
+                        Arrow.Text = "▲"  -- Up arrow
+                    end
                     
                     -- Animate dropdown opening
                     createTween(DropdownListOuterFrame, {Size = UDim2.new(1, 0, 0, listHeight)}):Play()
@@ -1383,7 +1789,9 @@ function UltraLordLibrary:MakeWindow(config)
                     OptionsContainer.CanvasSize = UDim2.new(0, 0, 0, #options * optionHeight)
                 else
                     -- Change arrow
-                    Arrow.Text = "▼"  -- Down arrow
+                    if Arrow:IsDescendantOf(game) then
+                        Arrow.Text = "▼"  -- Down arrow
+                    end
                     
                     -- Animate dropdown closing
                     local closeTween = createTween(DropdownListOuterFrame, {Size = UDim2.new(1, 0, 0, 0)})
@@ -1391,7 +1799,7 @@ function UltraLordLibrary:MakeWindow(config)
                     
                     -- Hide after animation completes
                     closeTween.Completed:Connect(function()
-                        if not isOpen then
+                        if not isOpen and DropdownListOuterFrame:IsDescendantOf(game) then
                             DropdownListOuterFrame.Visible = false
                         end
                     end)
@@ -1409,7 +1817,7 @@ function UltraLordLibrary:MakeWindow(config)
             -- Close dropdown when clicking elsewhere
             UserInputService.InputBegan:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                    if isOpen and (not DropdownFrame:IsDescendantOf(game) or not DropdownFrame.Parent) then 
+                    if isOpen and (not DropdownFrame:IsDescendantOf(game)) then 
                         return 
                     end
                     
@@ -1441,13 +1849,13 @@ function UltraLordLibrary:MakeWindow(config)
             
             -- Button hover effects
             SelectionButton.MouseEnter:Connect(function()
-                if not isOpen then
+                if not isOpen and SelectionButton:IsDescendantOf(game) then
                     createTween(SelectionButton, {BackgroundColor3 = CurrentTheme.ButtonHoverColor}):Play()
                 end
             end)
             
             SelectionButton.MouseLeave:Connect(function()
-                if not isOpen then
+                if not isOpen and SelectionButton:IsDescendantOf(game) then
                     createTween(SelectionButton, {BackgroundColor3 = CurrentTheme.DropdownColor}):Play()
                 end
             end)
@@ -1456,7 +1864,7 @@ function UltraLordLibrary:MakeWindow(config)
             local Dropdown = {}
             
             function Dropdown:SetValue(option)
-                if table.find(options, option) then
+                if table.find(options, option) and SelectionButton:IsDescendantOf(game) then
                     selectedOption = option
                     SelectionButton.Text = "  " .. option
                     dropdownCallback(option)
@@ -1485,7 +1893,9 @@ function UltraLordLibrary:MakeWindow(config)
                 -- Reset selection if needed
                 if not keepSelection or not table.find(options, selectedOption) then
                     selectedOption = options[1] or ""
-                    SelectionButton.Text = "  " .. selectedOption
+                    if SelectionButton:IsDescendantOf(game) then
+                        SelectionButton.Text = "  " .. selectedOption
+                    end
                 end
                 
                 -- Update canvas size
@@ -1502,13 +1912,227 @@ function UltraLordLibrary:MakeWindow(config)
             return Dropdown
         end
         
+        -- Function to create a color picker
+        function Tab:CreateColorPicker(colorPickerConfig)
+            local colorPickerConfig = colorPickerConfig or {}
+            local colorPickerText = colorPickerConfig.Text or "Color Picker"
+            local defaultColor = colorPickerConfig.Default or Color3.fromRGB(255, 0, 0)
+            local colorPickerCallback = colorPickerConfig.Callback or function() end
+            
+            local ColorPickerFrame = Instance.new("Frame")
+            ColorPickerFrame.Name = colorPickerText .. "ColorPickerFrame"
+            ColorPickerFrame.Size = UDim2.new(1, 0, 0, 55)
+            ColorPickerFrame.BackgroundTransparency = 1
+            ColorPickerFrame.LayoutOrder = self.ElementCount
+            ColorPickerFrame.Parent = self.Container
+            
+            local ColorPickerLabel = Instance.new("TextLabel")
+            ColorPickerLabel.Name = "ColorPickerLabel"
+            ColorPickerLabel.Size = UDim2.new(1, -55, 0, 20)
+            ColorPickerLabel.Position = UDim2.new(0, 0, 0, 0)
+            ColorPickerLabel.BackgroundTransparency = 1
+            ColorPickerLabel.TextColor3 = CurrentTheme.PrimaryTextColor
+            ColorPickerLabel.TextSize = 14
+            ColorPickerLabel.Font = Enum.Font.Gotham
+            ColorPickerLabel.TextXAlignment = Enum.TextXAlignment.Left
+            ColorPickerLabel.Text = colorPickerText
+            ColorPickerLabel.Parent = ColorPickerFrame
+            
+            local ColorDisplay = Instance.new("TextButton")
+            ColorDisplay.Name = "ColorDisplay"
+            ColorDisplay.Size = UDim2.new(0, 40, 0, 20)
+            ColorDisplay.Position = UDim2.new(1, -45, 0, 0)
+            ColorDisplay.BackgroundColor3 = defaultColor
+            ColorDisplay.Text = ""
+            ColorDisplay.Parent = ColorPickerFrame
+            createUICorner(ColorDisplay, 4)
+            createUIStroke(ColorDisplay, 1, CurrentTheme.UIStrokeColor)
+            
+            -- Create the color picker popup
+            local colorPicker = createColorPicker(ColorPickerFrame, defaultColor, function(newColor)
+                ColorDisplay.BackgroundColor3 = newColor
+                colorPickerCallback(newColor)
+            end)
+            
+            -- Open color picker on click
+            ColorDisplay.MouseButton1Click:Connect(function()
+                colorPicker:Show()
+            end)
+            
+            -- Color picker object
+            local ColorPickerObject = {}
+            
+            function ColorPickerObject:SetColor(color)
+                if ColorDisplay:IsDescendantOf(game) then
+                    ColorDisplay.BackgroundColor3 = color
+                    colorPicker:SetColor(color)
+                    colorPickerCallback(color)
+                end
+            end
+            
+            function ColorPickerObject:GetColor()
+                if ColorDisplay:IsDescendantOf(game) then
+                    return ColorDisplay.BackgroundColor3
+                end
+                return defaultColor
+            end
+            
+            self.ElementCount = self.ElementCount + 1
+            return ColorPickerObject
+        end
+        
+        -- Function to create a keybind
+        function Tab:CreateKeybind(keybindConfig)
+            local keybindConfig = keybindConfig or {}
+            local keybindText = keybindConfig.Text or "Keybind"
+            local defaultKey = keybindConfig.Default or Enum.KeyCode.Unknown
+            local keybindCallback = keybindConfig.Callback or function() end
+            
+            local KeybindFrame = Instance.new("Frame")
+            KeybindFrame.Name = keybindText .. "KeybindFrame"
+            KeybindFrame.Size = UDim2.new(1, 0, 0, 35)
+            KeybindFrame.BackgroundTransparency = 1
+            KeybindFrame.LayoutOrder = self.ElementCount
+            KeybindFrame.Parent = self.Container
+            
+            local KeybindLabel = Instance.new("TextLabel")
+            KeybindLabel.Name = "KeybindLabel"
+            KeybindLabel.Size = UDim2.new(1, -80, 1, 0)
+            KeybindLabel.Position = UDim2.new(0, 0, 0, 0)
+            KeybindLabel.BackgroundTransparency = 1
+            KeybindLabel.TextColor3 = CurrentTheme.PrimaryTextColor
+            KeybindLabel.TextSize = 14
+            KeybindLabel.Font = Enum.Font.Gotham
+            KeybindLabel.TextXAlignment = Enum.TextXAlignment.Left
+            KeybindLabel.Text = keybindText
+            KeybindLabel.Parent = KeybindFrame
+            
+            local KeybindButton = Instance.new("TextButton")
+            KeybindButton.Name = "KeybindButton"
+            KeybindButton.Size = UDim2.new(0, 70, 0, 25)
+            KeybindButton.Position = UDim2.new(1, -75, 0.5, -12.5)
+            KeybindButton.BackgroundColor3 = CurrentTheme.ButtonColor
+            KeybindButton.TextColor3 = CurrentTheme.PrimaryTextColor
+            KeybindButton.TextSize = 12
+            KeybindButton.Font = Enum.Font.Gotham
+            KeybindButton.Text = defaultKey ~= Enum.KeyCode.Unknown and defaultKey.Name or "None"
+            KeybindButton.Parent = KeybindFrame
+            createUICorner(KeybindButton, 4)
+            createUIStroke(KeybindButton, 1, CurrentTheme.UIStrokeColor)
+            
+            -- Current key
+            local currentKey = defaultKey
+            local isChangingKey = false
+            
+            -- Register the keybind
+            if currentKey ~= Enum.KeyCode.Unknown then
+                local keybindEntry = {
+                    Key = currentKey,
+                    Callback = keybindCallback
+                }
+                table.insert(ActiveKeybinds, keybindEntry)
+            end
+            
+            -- Function to change key
+            local function startChangingKey()
+                isChangingKey = true
+                KeybindButton.Text = "..."
+                
+                -- Show keybind indicator
+                if KeybindIndicator:IsDescendantOf(game) then
+                    KeybindText.Text = "Press a key..."
+                    KeybindIndicator.Visible = true
+                    createTween(KeybindIndicator, {Position = UDim2.new(0.5, -100, 0, 10)}, 0.3, Enum.EasingStyle.Back):Play()
+                end
+            end
+            
+            -- Function to set the key
+            local function setKey(key)
+                -- Remove old keybind
+                for i, keybind in pairs(ActiveKeybinds) do
+                    if keybind.Callback == keybindCallback then
+                        table.remove(ActiveKeybinds, i)
+                        break
+                    end
+                end
+                
+                currentKey = key
+                isChangingKey = false
+                
+                if key ~= Enum.KeyCode.Unknown then
+                    KeybindButton.Text = key.Name
+                    
+                    -- Register new keybind
+                    local keybindEntry = {
+                        Key = key,
+                        Callback = keybindCallback
+                    }
+                    table.insert(ActiveKeybinds, keybindEntry)
+                else
+                    KeybindButton.Text = "None"
+                end
+                
+                -- Hide keybind indicator
+                if KeybindIndicator:IsDescendantOf(game) then
+                    createTween(KeybindIndicator, {Position = UDim2.new(0.5, -100, 0, -40)}, 0.3):Play()
+                    task.delay(0.3, function()
+                        KeybindIndicator.Visible = false
+                    end)
+                end
+            end
+            
+            -- Button click
+            KeybindButton.MouseButton1Click:Connect(startChangingKey)
+            
+            -- Capture keys
+            UserInputService.InputBegan:Connect(function(input, gameProcessed)
+                if isChangingKey and not gameProcessed then
+                    if input.UserInputType == Enum.UserInputType.Keyboard then
+                        -- Special handling for Escape key (clear binding)
+                        if input.KeyCode == Enum.KeyCode.Escape then
+                            setKey(Enum.KeyCode.Unknown)
+                        else
+                            setKey(input.KeyCode)
+                        end
+                    end
+                end
+            end)
+            
+            -- Button hover effects
+            KeybindButton.MouseEnter:Connect(function()
+                if KeybindButton:IsDescendantOf(game) then
+                    createTween(KeybindButton, {BackgroundColor3 = CurrentTheme.ButtonHoverColor}):Play()
+                end
+            end)
+            
+            KeybindButton.MouseLeave:Connect(function()
+                if KeybindButton:IsDescendantOf(game) then
+                    createTween(KeybindButton, {BackgroundColor3 = CurrentTheme.ButtonColor}):Play()
+                end
+            end)
+            
+            -- Keybind object
+            local Keybind = {}
+            
+            function Keybind:SetKey(key)
+                setKey(key)
+            end
+            
+            function Keybind:GetKey()
+                return currentKey
+            end
+            
+            self.ElementCount = self.ElementCount + 1
+            return Keybind
+        end
+        
         -- Add tab to window tabs table
         table.insert(self.Tabs, Tab)
         
         -- If this is the first tab, select it
         if #self.Tabs == 1 then
             TabFrame.Visible = true
-            if not CurrentTheme.IsRainbowTheme then
+            if not CurrentTheme.IsRainbowTheme and TabButton:IsDescendantOf(game) then
                 createTween(TabButton, {BackgroundColor3 = CurrentTheme.AccentColor}):Play()
             end
             self.CurrentTab = tabName
@@ -1542,10 +2166,22 @@ function UltraLordLibrary:MakeWindow(config)
         UltraLordLibrary:CreateNotification(notifConfig)
     end
     
+    -- Function to toggle UI visibility
+    function Window:ToggleUI()
+        toggleUI()
+    end
+    
     -- Set up rainbow theme if needed
     if CurrentTheme.IsRainbowTheme then
         setupRainbowTheme(rainbowElements)
     end
+    
+    -- Notify about UI toggle keybind
+    UltraLordLibrary:CreateNotification({
+        Title = "UI Library Loaded",
+        Description = "Press " .. toggleKeybind.Name .. " to toggle UI visibility",
+        Duration = 5
+    })
     
     return Window
 end
