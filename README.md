@@ -11,70 +11,55 @@ local UltraLordLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/
 
 # 2. Create The Main Window
 ```lua
-local Window = UltraLordLib:MakeWindow({
-    Name = "My Awesome UI",       -- Title of the window [cite: 46]
-    Size = UDim2.new(0, 500, 0, 350), -- Size of the window [cite: 46]
-    Theme = "Dark"                 -- Optional theme ("Default", "Dark", "Light", "Rainbow") [cite: 47]
-    -- Icon = "rbxassetid://..."   -- Optional window icon [cite: 46, 50, 51]
-    -- KeySystem = true             -- Optional: Enable the key system [cite: 46, 47]
-    -- KeySettings = { ... }      -- Optional: Settings for the key system [cite: 47]
+local Window = UltraLordLibrary:MakeWindow({
+    Name = "Ultra Lord Example",
+    Size = UDim2.new(0, 600, 0, 400),
+    Theme = "Default", -- Options: Default, Dark, Light, Rainbow
+    Icon = "rbxassetid://10618644218", -- Optional icon
+    ToggleKeybind = Enum.KeyCode.LeftControl -- Key to toggle UI visibility
 })
-
--- If KeySystem is enabled and validation fails, Window will be false[cite: 47].
-if not Window then return end -- Stop script if key system fails
 ```
 or
 
-# 3. optional key system
+# 3. key system
 ```lua
-local Window = UltraLordLib:MakeWindow({
-    Name = "Protected UI",
-    Size = UDim2.new(0, 500, 0, 350),
-    Theme = "Dark",
-    KeySystem = true, -- Enable key system [cite: 46]
-    KeySettings = {   -- Configure the key system [cite: 47]
-        Title = "Enter Key", -- [cite: 25]
-        Subtitle = "Enter your access key below.", -- [cite: 25]
-        -- KeyList = {"key1", "secret_key"}, -- Option 1: List of valid keys [cite: 25]
-        CustomKeyFunction = function(inputKey) -- Option 2: Custom validation function [cite: 25, 37]
-            -- Example: Check if the key matches a specific pattern or web request
-            return string.sub(inputKey, 1, 4) == "PRO-"
+local Window = UltraLordLibrary:MakeWindow({
+    Name = "Protected Script",
+    KeySystem = true,
+    KeySettings = {
+        Title = "Authentication",
+        Subtitle = "Enter your license key",
+        KeyList = {"key1", "key2", "key3"},
+        SaveKey = true,
+        FilePath = "MyScriptKeys.json",
+        OnCorrect = function()
+            print("Correct key entered!")
         end,
-        SaveKey = true, -- Optional: Try to save/load the key locally [cite: 25, 26, 38]
-        OnCorrect = function() -- Runs after correct key [cite: 25, 41]
-            print("Key accepted!")
-        end,
-        OnIncorrect = function(inputKey) -- Runs after incorrect key [cite: 25, 44]
-            print("Incorrect key entered:", inputKey)
+        OnIncorrect = function(key)
+            print("Incorrect key:", key)
         end
     }
 })
-
-if not Window then
-    print("Key validation failed or user closed.")
-    return
-end
--- Continue with UI setup...
 ```
 
 # 4. Adding Tab
 ```lua
 local MainTab = Window:CreateTab({
-    Name = "Main",                -- Text on the tab button [cite: 57]
-    Icon = "rbxassetid://7072706318" -- Optional icon for the tab [cite: 57, 59]
+    Name = "Main",
+    Icon = "rbxassetid://10723424505" -- Optional tab icon
 })
 
-local SettingsTab = Window:CreateTab({ Name = "Settings" }) -- Another tab [cite: 57]
-
--- The first tab created is automatically selected[cite: 190].
+local SettingsTab = Window:CreateTab({
+    Name = "Settings"
+})
 ```
 
 # 5. Adding button
 ```lua
 MainTab:CreateButton({
-    Text = "Click Me!",        -- Button text [cite: 73]
-    -- Icon = "rbxassetid://..." -- Optional button icon [cite: 73, 76, 77]
-    Callback = function()      -- Function to run when clicked [cite: 73, 79]
+    Text = "Click Me",
+    Icon = "rbxassetid://10723424505", -- Optional
+    Callback = function()
         print("Button clicked!")
     end
 })
@@ -82,93 +67,257 @@ MainTab:CreateButton({
 
 # 6. Adding Toggle
 ```lua
-local myToggle = MainTab:CreateToggle({
-    Text = "Enable Feature", -- Label text [cite: 86]
-    Default = false,         -- Initial state (true=on, false=off) [cite: 86, 92]
-    -- Enabled = true,      -- Optional: Set if interactable initially [cite: 86]
-    Callback = function(isEnabled) -- Function runs on state change [cite: 86, 96]
-        print("Feature enabled:", isEnabled)
+local MyToggle = MainTab:CreateToggle({
+    Text = "Enable Feature",
+    Default = false,
+    Callback = function(Value)
+        print("Toggle set to:", Value)
     end
 })
 
--- You can control the toggle programmatically:
--- myToggle:SetValue(true)  -- Turns the toggle on [cite: 99]
--- local currentState = myToggle:GetValue() [cite: 100]
--- myToggle:SetEnabled(false) -- Disables the toggle [cite: 100, 101]
+-- You can change the value later:
+MyToggle:SetValue(true)
+
+-- Get the current value:
+local currentValue = MyToggle:GetValue()
+
+-- Enable/disable the toggle:
+MyToggle:SetEnabled(false) -- Disables interaction
 ```
 
 # 7. Adding Silder
 ```lua
-local mySlider = MainTab:CreateSlider({
-    Text = "Speed",          -- Label text [cite: 102]
-    Min = 10,                -- Minimum value [cite: 103]
-    Max = 100,               -- Maximum value [cite: 103]
-    Default = 16,            -- Initial value [cite: 103, 112]
-    Precision = 0,           -- Decimal places (0 for integer) [cite: 103, 113]
-    Callback = function(value) -- Function runs when value changes [cite: 103, 116]
-        print("Speed set to:", value)
+local MySlider = MainTab:CreateSlider({
+    Text = "Speed",
+    Min = 0,
+    Max = 100,
+    Default = 50,
+    Precision = 1, -- Decimal places
+    Callback = function(Value)
+        print("Slider value:", Value)
     end
 })
 
--- You can control the slider programmatically:
--- mySlider:SetValue(50) -- Sets the slider's value [cite: 123]
--- local currentValue = mySlider:GetValue() [cite: 123]
+-- Set the value programmatically:
+MySlider:SetValue(75)
+
+-- Get the current value:
+local sliderValue = MySlider:GetValue()
 ```
 
 # 8. Adding Label
 
 ```lua
-local myLabel = MainTab:CreateLabel({ Text = "This is informational text." }) -- [cite: 124]
+local MyLabel = MainTab:CreateLabel({
+    Text = "This is a label"
+})
 
--- You can change the label's text:
--- myLabel:SetText("Updated information.") [cite: 128]
+-- Update the text later:
+MyLabel:SetText("Updated text")
 ```
 # 9. Adding Textbox
 
 ```lua
-local myTextbox = MainTab:CreateTextbox({
-    Text = "Enter Name:",            -- Label text [cite: 129, 133]
-    PlaceholderText = "Type here...", -- Text shown when empty [cite: 129, 136]
-    Default = "",                   -- Initial text [cite: 130, 136]
-    -- ClearOnFocus = true,         -- Optional: Clear text on focus [cite: 130, 136]
-    Callback = function(text, enterPressed) -- Function runs when focus is lost [cite: 130, 138]
-        print("Textbox value:", text, "Enter pressed:", enterPressed)
+local MyTextbox = MainTab:CreateTextbox({
+    Text = "Username",
+    PlaceholderText = "Enter username...",
+    Default = "",
+    ClearOnFocus = true,
+    Callback = function(Text, EnterPressed)
+        print("Input:", Text, "Enter Pressed:", EnterPressed)
     end
 })
 
--- You can control the textbox programmatically:
--- myTextbox:SetValue("New Text") [cite: 138]
--- local currentValue = myTextbox:GetValue() [cite: 139]
+-- Set the value programmatically:
+MyTextbox:SetValue("New value")
+
+-- Get the current value:
+local textValue = MyTextbox:GetValue()
 ```
 
 # 10. Adding DropDown
 
 ```lua
-local optionsList = {"Option A", "Option B", "Option C"}
-local myDropdown = MainTab:CreateDropdown({
-    Text = "Select Option:",  -- Label text [cite: 140]
-    Options = optionsList,    -- Table of string options [cite: 141, 169]
-    Default = optionsList[1], -- Initial selection [cite: 141, 146]
-    Callback = function(selectedOption) -- Function runs on selection change [cite: 141, 161]
-        print("Selected:", selectedOption)
+local options = {"Option 1", "Option 2", "Option 3"}
+
+local MyDropdown = MainTab:CreateDropdown({
+    Text = "Select Option",
+    Options = options,
+    Default = options[1],
+    Callback = function(Option)
+        print("Selected:", Option)
     end
 })
 
--- You can control the dropdown programmatically:
--- myDropdown:SetValue("Option B") -- Selects "Option B" if it exists [cite: 181, 182]
--- local currentValue = myDropdown:GetValue() [cite: 183]
--- myDropdown:Refresh({"New Option 1", "New Option 2"}, false) -- Updates options [cite: 183, 184, 185]
+-- Set the selected option:
+MyDropdown:SetValue("Option 2")
+
+-- Get the current option:
+local currentOption = MyDropdown:GetValue()
+
+-- Update the options:
+MyDropdown:Refresh({"New 1", "New 2", "New 3"}, true) -- Keep selection if possible
 ```
 # 11. Adding Notification
 
 ```lua
-UltraLordLib:CreateNotification({
-    Title = "Action Complete",     -- Notification title [cite: 19]
-    Description = "The task finished successfully.", -- Body text [cite: 20]
-    Duration = 3,                  -- Display time in seconds [cite: 20]
-    -- Icon = "rbxassetid://..."   -- Optional icon [cite: 20, 21]
+Window:Notify({
+    Title = "Success",
+    Description = "Operation completed successfully!",
+    Duration = 5, -- Seconds
+    Icon = "rbxassetid://10723424505" -- Optional
+})
+```
+
+# 12. Toggle UI
+
+```lua
+-- Toggle programmatically
+Window:ToggleUI()
+```
+
+# 13. ColorPicker
+
+```lua
+local MyColorPicker = MainTab:CreateColorPicker({
+    Text = "Select Color",
+    Default = Color3.fromRGB(255, 0, 0),
+    Callback = function(Color)
+        print("Selected color:", Color)
+    end
 })
 
--- Or using the window object:
--- Window:Notify({ Title = "Warning", Description = "Something needs attention." }) [cite: 193]
+-- Set the color programmatically:
+MyColorPicker:SetColor(Color3.fromRGB(0, 255, 0))
+
+-- Get the current color:
+local currentColor = MyColorPicker:GetColor()
+```
+
+# 14. KeyBind
+
+```lua
+local MyKeybind = MainTab:CreateKeybind({
+    Text = "Toggle Action",
+    Default = Enum.KeyCode.F,
+    Callback = function()
+        print("Keybind pressed!")
+    end
+})
+
+-- Set the key programmatically:
+MyKeybind:SetKey(Enum.KeyCode.G)
+
+-- Get the current key:
+local currentKey = MyKeybind:GetKey()
+```
+
+# 15. Example Full complete
+
+```lua
+local UltraLordLibrary = loadstring(game:HttpGet("YOUR_RAW_SCRIPT_URL"))()
+
+local Window = UltraLordLibrary:MakeWindow({
+    Name = "Ultra Lord Example",
+    Theme = "Default"
+})
+
+local MainTab = Window:CreateTab({
+    Name = "Main"
+})
+
+MainTab:CreateSection("Features")
+
+MainTab:CreateButton({
+    Text = "Click Me",
+    Callback = function()
+        Window:Notify({
+            Title = "Button Clicked",
+            Description = "You clicked the button!",
+            Duration = 3
+        })
+    end
+})
+
+local toggle = MainTab:CreateToggle({
+    Text = "Toggle Feature",
+    Default = false,
+    Callback = function(Value)
+        print("Toggle:", Value)
+    end
+})
+
+local slider = MainTab:CreateSlider({
+    Text = "Speed",
+    Min = 0,
+    Max = 100,
+    Default = 50,
+    Callback = function(Value)
+        print("Speed:", Value)
+    end
+})
+
+local dropdown = MainTab:CreateDropdown({
+    Text = "Select Option",
+    Options = {"Option 1", "Option 2", "Option 3"},
+    Default = "Option 1",
+    Callback = function(Option)
+        print("Selected:", Option)
+    end
+})
+
+local colorPicker = MainTab:CreateColorPicker({
+    Text = "Select Color",
+    Default = Color3.fromRGB(255, 0, 0),
+    Callback = function(Color)
+        print("Color:", Color)
+    end
+})
+
+local keybind = MainTab:CreateKeybind({
+    Text = "Action Keybind",
+    Default = Enum.KeyCode.F,
+    Callback = function()
+        print("Keybind pressed!")
+    end
+})
+
+local SettingsTab = Window:CreateTab({
+    Name = "Settings"
+})
+
+SettingsTab:CreateSection("UI Settings")
+
+SettingsTab:CreateButton({
+    Text = "Destroy UI",
+    Callback = function()
+        Window.GUI:Destroy()
+    end
+})
+```
+
+## Create Your own theme
+
+```lua
+UltraLordLibrary:CreateTheme("MyTheme", {
+    BackgroundColor = Color3.fromRGB(30, 30, 35),
+    SidebarColor = Color3.fromRGB(25, 25, 30),
+    PrimaryTextColor = Color3.fromRGB(255, 255, 255),
+    SecondaryTextColor = Color3.fromRGB(200, 200, 200),
+    UIStrokeColor = Color3.fromRGB(60, 60, 70),
+    AccentColor = Color3.fromRGB(114, 137, 218),
+    ButtonColor = Color3.fromRGB(50, 50, 60),
+    ButtonHoverColor = Color3.fromRGB(60, 60, 70),
+    ToggleOnColor = Color3.fromRGB(114, 137, 218),
+    ToggleOffColor = Color3.fromRGB(80, 80, 90),
+    SliderColor = Color3.fromRGB(114, 137, 218),
+    SliderBackgroundColor = Color3.fromRGB(50, 50, 60),
+    DropdownColor = Color3.fromRGB(40, 40, 50),
+    TextboxColor = Color3.fromRGB(45, 45, 55),
+    KeySystemColor = Color3.fromRGB(35, 35, 40),
+    KeySystemAccentColor = Color3.fromRGB(114, 137, 218),
+    NotificationColor = Color3.fromRGB(30, 30, 35),
+    MenuToggleIconColor = Color3.fromRGB(255, 255, 255),
+    ColorPickerBackgroundColor = Color3.fromRGB(35, 35, 40)
+})
 ```
