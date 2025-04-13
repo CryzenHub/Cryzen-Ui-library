@@ -5,7 +5,7 @@
 First, you need to load the library using `game:HttpGet` and `loadstring`:
 
 ```lua
-local UltraLordLib = loadstring(game:HttpGet("[https://raw.githubusercontent.com/Ultra-Lord-Hub/Ultra-Lord-Ui-library/refs/heads/main/source.lua](https://raw.githubusercontent.com/Ultra-Lord-Hub/Ultra-Lord-Ui-library/refs/heads/main/source.lua)"))()
+local UltraLordLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/Ultra-Lord-Hub/Ultra-Lord-Ui-library/refs/heads/main/source.lua"))()
 -- UltraLordLib now holds the library's functions
 ```
 
