@@ -1,4 +1,4 @@
--- Ultra Lord UI Library v3.1
+-- Ultra Lord UI Library v3.2
 local UltraLordLibrary = {}
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -26,6 +26,9 @@ local Themes = {
         SliderBackgroundColor = Color3.fromRGB(50, 50, 60),
         DropdownColor = Color3.fromRGB(40, 40, 50),
         TextboxColor = Color3.fromRGB(45, 45, 55),
+        KeySystemColor = Color3.fromRGB(35, 35, 40),
+        KeySystemAccentColor = Color3.fromRGB(114, 137, 218),
+        NotificationColor = Color3.fromRGB(30, 30, 35),
         MenuToggleIconColor = Color3.fromRGB(255, 255, 255)
     },
     Dark = {
@@ -43,6 +46,9 @@ local Themes = {
         SliderBackgroundColor = Color3.fromRGB(40, 40, 50),
         DropdownColor = Color3.fromRGB(30, 30, 40),
         TextboxColor = Color3.fromRGB(35, 35, 45),
+        KeySystemColor = Color3.fromRGB(25, 25, 30),
+        KeySystemAccentColor = Color3.fromRGB(90, 120, 200),
+        NotificationColor = Color3.fromRGB(20, 20, 25),
         MenuToggleIconColor = Color3.fromRGB(255, 255, 255)
     },
     Light = {
@@ -60,12 +66,69 @@ local Themes = {
         SliderBackgroundColor = Color3.fromRGB(220, 220, 230),
         DropdownColor = Color3.fromRGB(230, 230, 240),
         TextboxColor = Color3.fromRGB(225, 225, 235),
+        KeySystemColor = Color3.fromRGB(235, 235, 240),
+        KeySystemAccentColor = Color3.fromRGB(90, 120, 200),
+        NotificationColor = Color3.fromRGB(240, 240, 245),
         MenuToggleIconColor = Color3.fromRGB(40, 40, 45)
+    },
+    Rainbow = {
+        BackgroundColor = Color3.fromRGB(30, 30, 35),
+        SidebarColor = Color3.fromRGB(25, 25, 30),
+        PrimaryTextColor = Color3.fromRGB(255, 255, 255),
+        SecondaryTextColor = Color3.fromRGB(200, 200, 200),
+        UIStrokeColor = Color3.fromRGB(60, 60, 70),
+        AccentColor = Color3.fromRGB(114, 137, 218), -- This will be rainbow
+        ButtonColor = Color3.fromRGB(50, 50, 60),
+        ButtonHoverColor = Color3.fromRGB(60, 60, 70),
+        ToggleOnColor = Color3.fromRGB(114, 137, 218), -- This will be rainbow
+        ToggleOffColor = Color3.fromRGB(80, 80, 90),
+        SliderColor = Color3.fromRGB(114, 137, 218), -- This will be rainbow
+        SliderBackgroundColor = Color3.fromRGB(50, 50, 60),
+        DropdownColor = Color3.fromRGB(40, 40, 50),
+        TextboxColor = Color3.fromRGB(45, 45, 55),
+        KeySystemColor = Color3.fromRGB(35, 35, 40),
+        KeySystemAccentColor = Color3.fromRGB(114, 137, 218), -- This will be rainbow
+        NotificationColor = Color3.fromRGB(30, 30, 35),
+        MenuToggleIconColor = Color3.fromRGB(255, 255, 255),
+        IsRainbowTheme = true
     }
 }
 
 -- Current theme
 local CurrentTheme = Themes.Default
+local RainbowConnection = nil
+
+-- Rainbow color function
+local function getRainbowColor(offset)
+    offset = offset or 0
+    local time = tick() * 0.5 + offset
+    return Color3.fromHSV(time % 1, 0.8, 1)
+end
+
+-- Function to apply rainbow effects
+local function setupRainbowTheme(elements)
+    if RainbowConnection then
+        RainbowConnection:Disconnect()
+        RainbowConnection = nil
+    end
+    
+    if CurrentTheme.IsRainbowTheme then
+        RainbowConnection = RunService.Heartbeat:Connect(function()
+            if elements and #elements > 0 then
+                local rainbowColor = getRainbowColor()
+                for _, element in ipairs(elements) do
+                    if element.Type == "Accent" and element.Instance then
+                        element.Instance.BackgroundColor3 = rainbowColor
+                    elseif element.Type == "Text" and element.Instance then
+                        element.Instance.TextColor3 = rainbowColor
+                    elseif element.Type == "Stroke" and element.Instance then
+                        element.Instance.Color = rainbowColor
+                    end
+                end
+            end
+        end)
+    end
+end
 
 -- Utility functions
 local function createUICorner(parent, radius)
@@ -132,8 +195,14 @@ local function makeDraggable(dragUI, dragFrame)
     end)
 end
 
--- Create notification function
-function UltraLordLibrary:CreateNotification(title, description, duration)
+-- Create notification function (Enhanced with icon support)
+function UltraLordLibrary:CreateNotification(notifConfig)
+    local notifConfig = notifConfig or {}
+    local title = notifConfig.Title or "Notification"
+    local description = notifConfig.Description or ""
+    local duration = notifConfig.Duration or 5
+    local icon = notifConfig.Icon
+    
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "UltraLordNotification"
     ScreenGui.Parent = CoreGui
@@ -143,22 +212,35 @@ function UltraLordLibrary:CreateNotification(title, description, duration)
     NotificationFrame.Name = "NotificationFrame"
     NotificationFrame.Size = UDim2.new(0, 280, 0, 80)
     NotificationFrame.Position = UDim2.new(1, 10, 0.8, 0)
-    NotificationFrame.BackgroundColor3 = CurrentTheme.BackgroundColor
+    NotificationFrame.BackgroundColor3 = CurrentTheme.NotificationColor
     NotificationFrame.BorderSizePixel = 0
     NotificationFrame.Parent = ScreenGui
     createUICorner(NotificationFrame, 8)
     createUIStroke(NotificationFrame, 1)
     
+    -- Icon (if provided)
+    local iconSize = 0
+    if icon then
+        local IconImage = Instance.new("ImageLabel")
+        IconImage.Name = "NotificationIcon"
+        IconImage.Size = UDim2.new(0, 20, 0, 20)
+        IconImage.Position = UDim2.new(0, 10, 0, 7)
+        IconImage.BackgroundTransparency = 1
+        IconImage.Image = icon
+        IconImage.Parent = NotificationFrame
+        iconSize = 30 -- Width of icon + padding
+    end
+    
     local TitleLabel = Instance.new("TextLabel")
     TitleLabel.Name = "Title"
-    TitleLabel.Size = UDim2.new(1, -20, 0, 25)
-    TitleLabel.Position = UDim2.new(0, 10, 0, 5)
+    TitleLabel.Size = UDim2.new(1, -(20 + iconSize), 0, 25)
+    TitleLabel.Position = UDim2.new(0, 10 + iconSize, 0, 5)
     TitleLabel.BackgroundTransparency = 1
     TitleLabel.TextColor3 = CurrentTheme.PrimaryTextColor
     TitleLabel.TextSize = 16
     TitleLabel.Font = Enum.Font.GothamBold
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    TitleLabel.Text = title or "Notification"
+    TitleLabel.Text = title
     TitleLabel.Parent = NotificationFrame
     
     local DescriptionLabel = Instance.new("TextLabel")
@@ -172,7 +254,7 @@ function UltraLordLibrary:CreateNotification(title, description, duration)
     DescriptionLabel.TextXAlignment = Enum.TextXAlignment.Left
     DescriptionLabel.TextYAlignment = Enum.TextYAlignment.Top
     DescriptionLabel.TextWrapped = true
-    DescriptionLabel.Text = description or ""
+    DescriptionLabel.Text = description
     DescriptionLabel.Parent = NotificationFrame
     
     -- Animation
@@ -180,7 +262,7 @@ function UltraLordLibrary:CreateNotification(title, description, duration)
     local showTween = createTween(NotificationFrame, {Position = UDim2.new(1, -290, 0.8, 0)}, 0.5, Enum.EasingStyle.Back)
     showTween:Play()
     
-    task.delay(duration or 5, function()
+    task.delay(duration, function()
         local hideTween = createTween(NotificationFrame, {Position = UDim2.new(1, 300, 0.8, 0)}, 0.5)
         hideTween:Play()
         hideTween.Completed:Connect(function()
@@ -189,16 +271,254 @@ function UltraLordLibrary:CreateNotification(title, description, duration)
     end)
 end
 
--- Make window function
+-- Key system function
+function UltraLordLibrary:CreateKeySystem(keySystemConfig)
+    local keySystemConfig = keySystemConfig or {}
+    local title = keySystemConfig.Title or "Key System"
+    local subtitle = keySystemConfig.Subtitle or "Enter your key to access the script"
+    local keyList = keySystemConfig.KeyList or {}
+    local customKeyFunction = keySystemConfig.CustomKeyFunction
+    local saveKey = keySystemConfig.SaveKey or false
+    local onCorrectCallback = keySystemConfig.OnCorrect or function() end
+    local onIncorrectCallback = keySystemConfig.OnIncorrect or function() end
+    
+    -- Check for saved key
+    local savedKey = ""
+    if saveKey then
+        local success, result = pcall(function()
+            return game:GetService("HttpService"):JSONDecode(readfile("UltraLordKey.json"))
+        end)
+        
+        if success and result.Key then
+            savedKey = result.Key
+            
+            -- Validate saved key
+            if customKeyFunction then
+                if customKeyFunction(savedKey) then
+                    onCorrectCallback()
+                    return true
+                end
+            elseif table.find(keyList, savedKey) then
+                onCorrectCallback()
+                return true
+            end
+        end
+    end
+    
+    -- Create key system UI
+    local KeySystemGui = Instance.new("ScreenGui")
+    KeySystemGui.Name = "UltraLordKeySystem"
+    KeySystemGui.Parent = CoreGui
+    KeySystemGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    
+    local BackgroundFrame = Instance.new("Frame")
+    BackgroundFrame.Name = "Background"
+    BackgroundFrame.Size = UDim2.new(1, 0, 1, 0)
+    BackgroundFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    BackgroundFrame.BackgroundTransparency = 0.5
+    BackgroundFrame.Parent = KeySystemGui
+    
+    local KeySystemFrame = Instance.new("Frame")
+    KeySystemFrame.Name = "KeySystem"
+    KeySystemFrame.Size = UDim2.new(0, 350, 0, 200)
+    KeySystemFrame.Position = UDim2.new(0.5, -175, 0.5, -100)
+    KeySystemFrame.BackgroundColor3 = CurrentTheme.KeySystemColor
+    KeySystemFrame.Parent = KeySystemGui
+    createUICorner(KeySystemFrame, 8)
+    createUIStroke(KeySystemFrame, 1, CurrentTheme.UIStrokeColor)
+    
+    local TitleLabel = Instance.new("TextLabel")
+    TitleLabel.Name = "Title"
+    TitleLabel.Size = UDim2.new(1, -20, 0, 30)
+    TitleLabel.Position = UDim2.new(0, 10, 0, 10)
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.TextColor3 = CurrentTheme.PrimaryTextColor
+    TitleLabel.TextSize = 18
+    TitleLabel.Font = Enum.Font.GothamBold
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Center
+    TitleLabel.Text = title
+    TitleLabel.Parent = KeySystemFrame
+    
+    local SubtitleLabel = Instance.new("TextLabel")
+    SubtitleLabel.Name = "Subtitle"
+    SubtitleLabel.Size = UDim2.new(1, -20, 0, 20)
+    SubtitleLabel.Position = UDim2.new(0, 10, 0, 40)
+    SubtitleLabel.BackgroundTransparency = 1
+    SubtitleLabel.TextColor3 = CurrentTheme.SecondaryTextColor
+    SubtitleLabel.TextSize = 14
+    SubtitleLabel.Font = Enum.Font.Gotham
+    SubtitleLabel.TextXAlignment = Enum.TextXAlignment.Center
+    SubtitleLabel.Text = subtitle
+    SubtitleLabel.Parent = KeySystemFrame
+    
+    local KeyBoxContainer = Instance.new("Frame")
+    KeyBoxContainer.Name = "KeyBoxContainer"
+    KeyBoxContainer.Size = UDim2.new(1, -40, 0, 35)
+    KeyBoxContainer.Position = UDim2.new(0, 20, 0, 80)
+    KeyBoxContainer.BackgroundColor3 = CurrentTheme.TextboxColor
+    KeyBoxContainer.Parent = KeySystemFrame
+    createUICorner(KeyBoxContainer, 6)
+    createUIStroke(KeyBoxContainer, 1, CurrentTheme.UIStrokeColor)
+    
+    local KeyBox = Instance.new("TextBox")
+    KeyBox.Name = "KeyBox"
+    KeyBox.Size = UDim2.new(1, -16, 1, 0)
+    KeyBox.Position = UDim2.new(0, 8, 0, 0)
+    KeyBox.BackgroundTransparency = 1
+    KeyBox.TextColor3 = CurrentTheme.PrimaryTextColor
+    KeyBox.PlaceholderColor3 = CurrentTheme.SecondaryTextColor
+    KeyBox.TextSize = 14
+    KeyBox.Font = Enum.Font.Gotham
+    KeyBox.TextXAlignment = Enum.TextXAlignment.Left
+    KeyBox.PlaceholderText = "Enter key here..."
+    KeyBox.Text = savedKey
+    KeyBox.ClearTextOnFocus = savedKey == ""
+    KeyBox.Parent = KeyBoxContainer
+    
+    local SubmitButton = Instance.new("TextButton")
+    SubmitButton.Name = "SubmitButton"
+    SubmitButton.Size = UDim2.new(0, 150, 0, 35)
+    SubmitButton.Position = UDim2.new(0.5, -75, 0, 135)
+    SubmitButton.BackgroundColor3 = CurrentTheme.KeySystemAccentColor
+    SubmitButton.TextColor3 = CurrentTheme.PrimaryTextColor
+    SubmitButton.TextSize = 14
+    SubmitButton.Font = Enum.Font.GothamBold
+    SubmitButton.Text = "Submit"
+    SubmitButton.Parent = KeySystemFrame
+    createUICorner(SubmitButton, 6)
+    
+    local StatusLabel = Instance.new("TextLabel")
+    StatusLabel.Name = "Status"
+    StatusLabel.Size = UDim2.new(1, -40, 0, 20)
+    StatusLabel.Position = UDim2.new(0, 20, 0, 175)
+    StatusLabel.BackgroundTransparency = 1
+    StatusLabel.TextColor3 = CurrentTheme.SecondaryTextColor
+    StatusLabel.TextSize = 12
+    StatusLabel.Font = Enum.Font.Gotham
+    StatusLabel.TextXAlignment = Enum.TextXAlignment.Center
+    StatusLabel.Text = ""
+    StatusLabel.Parent = KeySystemFrame
+    
+    -- Rainbow effects for accent elements if theme is Rainbow
+    if CurrentTheme.IsRainbowTheme then
+        local rainbowElements = {
+            {Type = "Accent", Instance = SubmitButton}
+        }
+        setupRainbowTheme(rainbowElements)
+    end
+    
+    -- Button hover effect
+    SubmitButton.MouseEnter:Connect(function()
+        if not CurrentTheme.IsRainbowTheme then
+            createTween(SubmitButton, {BackgroundColor3 = CurrentTheme.ButtonHoverColor}):Play()
+        end
+    end)
+    
+    SubmitButton.MouseLeave:Connect(function()
+        if not CurrentTheme.IsRainbowTheme then
+            createTween(SubmitButton, {BackgroundColor3 = CurrentTheme.KeySystemAccentColor}):Play()
+        end
+    end)
+    
+    -- Validate key function
+    local function validateKey()
+        local inputKey = KeyBox.Text
+        local isCorrect = false
+        
+        -- Check key
+        if customKeyFunction then
+            isCorrect = customKeyFunction(inputKey)
+        else
+            isCorrect = table.find(keyList, inputKey) ~= nil
+        end
+        
+        if isCorrect then
+            -- Save key if needed
+            if saveKey then
+                pcall(function()
+                    writefile("UltraLordKey.json", game:GetService("HttpService"):JSONEncode({Key = inputKey}))
+                end)
+            end
+            
+            -- Successful animation
+            StatusLabel.Text = "Key Verified! Loading..."
+            StatusLabel.TextColor3 = Color3.fromRGB(0, 255, 100)
+            
+            createTween(SubmitButton, {BackgroundColor3 = Color3.fromRGB(0, 200, 0)}):Play()
+            task.wait(1)
+            
+            -- Close key system
+            local closeTween = createTween(KeySystemFrame, {Position = UDim2.new(0.5, -175, 1.5, -100)}, 0.5)
+            closeTween:Play()
+            
+            closeTween.Completed:Connect(function()
+                KeySystemGui:Destroy()
+                onCorrectCallback()
+            end)
+            
+            return true
+        else
+            -- Failed animation
+            StatusLabel.Text = "Invalid Key!"
+            StatusLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
+            
+            createTween(SubmitButton, {BackgroundColor3 = Color3.fromRGB(200, 0, 0)}, 0.2):Play()
+            task.wait(0.2)
+            createTween(SubmitButton, {BackgroundColor3 = CurrentTheme.KeySystemAccentColor}, 0.2):Play()
+            
+            -- Shake effect
+            local originalPos = KeySystemFrame.Position
+            local shake = 10
+            for i = 1, 5 do
+                KeySystemFrame.Position = UDim2.new(originalPos.X.Scale, originalPos.X.Offset + (i % 2 == 0 and shake or -shake), originalPos.Y.Scale, originalPos.Y.Offset)
+                task.wait(0.03)
+            end
+            KeySystemFrame.Position = originalPos
+            
+            onIncorrectCallback(inputKey)
+            return false
+        end
+    end
+    
+    -- Submit button click
+    SubmitButton.MouseButton1Click:Connect(validateKey)
+    
+    -- Submit on Enter key
+    KeyBox.FocusLost:Connect(function(enterPressed)
+        if enterPressed then
+            validateKey()
+        end
+    end)
+    
+    -- Return control functions
+    return {
+        Destroy = function()
+            KeySystemGui:Destroy()
+        end
+    }
+end
+
+-- Make window function (Enhanced with icon support)
 function UltraLordLibrary:MakeWindow(config)
     local config = config or {}
     local windowName = config.Name or "Ultra Lord UI"
     local windowSize = config.Size or UDim2.new(0, 600, 0, 400)
     local theme = config.Theme or "Default"
+    local icon = config.Icon
+    local keySystem = config.KeySystem or false
+    local keySettings = config.KeySettings or {}
     
     -- Set theme
     if Themes[theme] then
         CurrentTheme = Themes[theme]
+    end
+    
+    -- Handle key system first if enabled
+    if keySystem then
+        local keySystemResult = UltraLordLibrary:CreateKeySystem(keySettings)
+        if not keySystemResult then
+            return false
+        end
     end
     
     -- Create main GUI
@@ -238,11 +558,24 @@ function UltraLordLibrary:MakeWindow(config)
     FixTitleBarCorners.BorderSizePixel = 0
     FixTitleBarCorners.Parent = TitleBar
     
+    -- Icon (if provided)
+    local iconSize = 0
+    if icon then
+        local WindowIcon = Instance.new("ImageLabel")
+        WindowIcon.Name = "WindowIcon"
+        WindowIcon.Size = UDim2.new(0, 20, 0, 20)
+        WindowIcon.Position = UDim2.new(0, 10, 0, 5)
+        WindowIcon.BackgroundTransparency = 1
+        WindowIcon.Image = icon
+        WindowIcon.Parent = TitleBar
+        iconSize = 30 -- Width of icon + padding
+    end
+    
     -- Title text
     local TitleText = Instance.new("TextLabel")
     TitleText.Name = "TitleText"
-    TitleText.Size = UDim2.new(1, -80, 1, 0)
-    TitleText.Position = UDim2.new(0, 10, 0, 0)
+    TitleText.Size = UDim2.new(1, -80 - iconSize, 1, 0)
+    TitleText.Position = UDim2.new(0, 10 + iconSize, 0, 0)
     TitleText.BackgroundTransparency = 1
     TitleText.TextColor3 = CurrentTheme.PrimaryTextColor
     TitleText.TextSize = 16
@@ -301,12 +634,18 @@ function UltraLordLibrary:MakeWindow(config)
     TabContent.BackgroundTransparency = 1
     TabContent.Parent = MainWindow
     
+    -- Rainbow elements collection
+    local rainbowElements = {}
+    
     -- Make window draggable (improved for all devices)
     makeDraggable(TitleBar, MainWindow)
     
     -- Close button functionality
     CloseButton.MouseButton1Click:Connect(function()
         UltraLordGUI:Destroy()
+        if RainbowConnection then
+            RainbowConnection:Disconnect()
+        end
     end)
     
     -- Window methods and properties
@@ -346,8 +685,7 @@ function UltraLordLibrary:MakeWindow(config)
             Icon.Parent = TabButton
             
             -- Adjust text position for icon
-            TabButton.TextXAlignment = Enum.TextXAlignment.Right
-            TabButton.Text = "  " .. tabName
+            TabButton.TextXAlignment = Enum.TextXAlignment.Center
         end
         
         -- Tab content frame
@@ -381,27 +719,36 @@ function UltraLordLibrary:MakeWindow(config)
             -- Hide all tab frames
             for _, tab in pairs(self.Tabs) do
                 tab.Frame.Visible = false
-                createTween(tab.Button, {BackgroundColor3 = CurrentTheme.ButtonColor}):Play()
+                if not CurrentTheme.IsRainbowTheme then
+                    createTween(tab.Button, {BackgroundColor3 = CurrentTheme.ButtonColor}):Play()
+                end
             end
             
             -- Show selected tab
             TabFrame.Visible = true
-            createTween(TabButton, {BackgroundColor3 = CurrentTheme.AccentColor}):Play()
+            if not CurrentTheme.IsRainbowTheme then
+                createTween(TabButton, {BackgroundColor3 = CurrentTheme.AccentColor}):Play()
+            end
             self.CurrentTab = tabName
         end)
         
         -- Tab button hover effects
         TabButton.MouseEnter:Connect(function()
-            if self.CurrentTab ~= tabName then
+            if self.CurrentTab ~= tabName and not CurrentTheme.IsRainbowTheme then
                 createTween(TabButton, {BackgroundColor3 = CurrentTheme.ButtonHoverColor}):Play()
             end
         end)
         
         TabButton.MouseLeave:Connect(function()
-            if self.CurrentTab ~= tabName then
+            if self.CurrentTab ~= tabName and not CurrentTheme.IsRainbowTheme then
                 createTween(TabButton, {BackgroundColor3 = CurrentTheme.ButtonColor}):Play()
             end
         end)
+        
+        -- Add to rainbow elements if theme is Rainbow
+        if CurrentTheme.IsRainbowTheme then
+            table.insert(rainbowElements, {Type = "Accent", Instance = TabButton})
+        end
         
         -- Tab object and methods
         local Tab = {}
@@ -424,6 +771,11 @@ function UltraLordLibrary:MakeWindow(config)
             SectionLabel.Text = sectionName
             SectionLabel.LayoutOrder = self.ElementCount
             SectionLabel.Parent = self.Container
+            
+            -- Add to rainbow elements if theme is Rainbow
+            if CurrentTheme.IsRainbowTheme then
+                table.insert(rainbowElements, {Type = "Text", Instance = SectionLabel})
+            end
             
             self.ElementCount = self.ElementCount + 1
             return SectionLabel
@@ -472,9 +824,17 @@ function UltraLordLibrary:MakeWindow(config)
             -- Button click animation and callback
             Button.MouseButton1Click:Connect(function()
                 -- Animation
-                createTween(Button, {BackgroundColor3 = CurrentTheme.AccentColor}, 0.1):Play()
-                task.wait(0.1)
-                createTween(Button, {BackgroundColor3 = CurrentTheme.ButtonColor}, 0.1):Play()
+                if not CurrentTheme.IsRainbowTheme then
+                    createTween(Button, {BackgroundColor3 = CurrentTheme.AccentColor}, 0.1):Play()
+                    task.wait(0.1)
+                    createTween(Button, {BackgroundColor3 = CurrentTheme.ButtonColor}, 0.1):Play()
+                else
+                    -- For rainbow theme, use white flash
+                    local originalText = Button.TextColor3
+                    createTween(Button, {TextColor3 = Color3.fromRGB(255, 255, 255)}, 0.1):Play()
+                    task.wait(0.1)
+                    createTween(Button, {TextColor3 = originalText}, 0.1):Play()
+                end
                 
                 -- Callback
                 buttonCallback()
@@ -482,23 +842,33 @@ function UltraLordLibrary:MakeWindow(config)
             
             -- Button hover effects
             Button.MouseEnter:Connect(function()
-                createTween(Button, {BackgroundColor3 = CurrentTheme.ButtonHoverColor}):Play()
+                if not CurrentTheme.IsRainbowTheme then
+                    createTween(Button, {BackgroundColor3 = CurrentTheme.ButtonHoverColor}):Play()
+                end
             end)
             
             Button.MouseLeave:Connect(function()
-                createTween(Button, {BackgroundColor3 = CurrentTheme.ButtonColor}):Play()
+                if not CurrentTheme.IsRainbowTheme then
+                    createTween(Button, {BackgroundColor3 = CurrentTheme.ButtonColor}):Play()
+                end
             end)
+            
+            -- Add to rainbow elements if theme is Rainbow
+            if CurrentTheme.IsRainbowTheme then
+                table.insert(rainbowElements, {Type = "Accent", Instance = Button})
+            end
             
             self.ElementCount = self.ElementCount + 1
             return Button
         end
         
-        -- Function to create a toggle
+        -- Function to create a toggle (improved to not require click-hold)
         function Tab:CreateToggle(toggleConfig)
             local toggleConfig = toggleConfig or {}
             local toggleText = toggleConfig.Text or "Toggle"
             local defaultValue = toggleConfig.Default or false
             local toggleCallback = toggleConfig.Callback or function() end
+            local toggleEnabled = toggleConfig.Enabled ~= nil and toggleConfig.Enabled or true
             
             local ToggleFrame = Instance.new("Frame")
             ToggleFrame.Name = toggleText .. "ToggleFrame"
@@ -541,25 +911,24 @@ function UltraLordLibrary:MakeWindow(config)
             -- Function to update toggle visuals
             local function updateToggle()
                 local targetPosition = toggled and UDim2.new(0.6, 0, 0.5, -8) or UDim2.new(0.1, 0, 0.5, -8)
-                local targetColor = toggled and CurrentTheme.ToggleOnColor or CurrentTheme.ToggleOffColor
+                local targetColor
+                
+                if not CurrentTheme.IsRainbowTheme then
+                    targetColor = toggled and CurrentTheme.ToggleOnColor or CurrentTheme.ToggleOffColor
+                    createTween(ToggleButton, {BackgroundColor3 = targetColor}):Play()
+                end
                 
                 createTween(ToggleCircle, {Position = targetPosition}):Play()
-                createTween(ToggleButton, {BackgroundColor3 = targetColor}):Play()
             end
             
-            -- Toggle click handler
+            -- Toggle click handler (improved to work with single click)
             local function toggleClicked()
+                if not toggleEnabled then return end
+                
                 toggled = not toggled
                 updateToggle()
                 toggleCallback(toggled)
             end
-            
-            -- Make both button and label clickable
-            ToggleButton.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                    toggleClicked()
-                end
-            end)
             
             -- Make the entire frame clickable
             local ToggleClickArea = Instance.new("TextButton")
@@ -571,6 +940,11 @@ function UltraLordLibrary:MakeWindow(config)
             ToggleClickArea.Parent = ToggleFrame
             
             ToggleClickArea.MouseButton1Click:Connect(toggleClicked)
+            
+            -- Add to rainbow elements if theme is Rainbow
+            if CurrentTheme.IsRainbowTheme then
+                table.insert(rainbowElements, {Type = "Accent", Instance = ToggleButton})
+            end
             
             -- Toggle object and methods
             local Toggle = {}
@@ -584,6 +958,13 @@ function UltraLordLibrary:MakeWindow(config)
             
             function Toggle:GetValue()
                 return toggled
+            end
+            
+            function Toggle:SetEnabled(enabled)
+                toggleEnabled = enabled
+                ToggleLabel.TextTransparency = enabled and 0 or 0.5
+                ToggleButton.BackgroundTransparency = enabled and 0 or 0.5
+                ToggleCircle.BackgroundTransparency = enabled and 0 or 0.5
             end
             
             self.ElementCount = self.ElementCount + 1
@@ -652,6 +1033,12 @@ function UltraLordLibrary:MakeWindow(config)
             SliderButton.BackgroundTransparency = 1
             SliderButton.Text = ""
             SliderButton.Parent = SliderBackground
+            
+            -- Add to rainbow elements if theme is Rainbow
+            if CurrentTheme.IsRainbowTheme then
+                table.insert(rainbowElements, {Type = "Accent", Instance = SliderFill})
+                table.insert(rainbowElements, {Type = "Text", Instance = SliderValueLabel})
+            end
             
             -- Current value
             local value = defaultValue
@@ -905,6 +1292,7 @@ function UltraLordLibrary:MakeWindow(config)
             DropdownListOuterFrame.BackgroundTransparency = 1
             DropdownListOuterFrame.ClipsDescendants = true
             DropdownListOuterFrame.Visible = false
+            DropdownListOuterFrame.ZIndex = 10  -- Ensure it's above other elements
             DropdownListOuterFrame.Parent = DropdownFrame
             
             -- The actual dropdown list
@@ -912,6 +1300,7 @@ function UltraLordLibrary:MakeWindow(config)
             DropdownList.Name = "DropdownList"
             DropdownList.Size = UDim2.new(1, 0, 1, 0)
             DropdownList.BackgroundColor3 = CurrentTheme.DropdownColor
+            DropdownList.ZIndex = 10
             DropdownList.Parent = DropdownListOuterFrame
             createUICorner(DropdownList, 6)
             createUIStroke(DropdownList, 1, CurrentTheme.UIStrokeColor)
@@ -925,6 +1314,7 @@ function UltraLordLibrary:MakeWindow(config)
             OptionsContainer.BorderSizePixel = 0
             OptionsContainer.ScrollBarThickness = 3
             OptionsContainer.ScrollBarImageColor3 = CurrentTheme.AccentColor
+            OptionsContainer.ZIndex = 11
             OptionsContainer.Parent = DropdownList
             
             -- List layout for options
@@ -949,6 +1339,7 @@ function UltraLordLibrary:MakeWindow(config)
                 OptionButton.TextXAlignment = Enum.TextXAlignment.Left
                 OptionButton.Text = "  " .. option
                 OptionButton.LayoutOrder = index
+                OptionButton.ZIndex = 12
                 OptionButton.Parent = OptionsContainer
                 createUICorner(OptionButton, 6)
                 
@@ -1117,7 +1508,9 @@ function UltraLordLibrary:MakeWindow(config)
         -- If this is the first tab, select it
         if #self.Tabs == 1 then
             TabFrame.Visible = true
-            createTween(TabButton, {BackgroundColor3 = CurrentTheme.AccentColor}):Play()
+            if not CurrentTheme.IsRainbowTheme then
+                createTween(TabButton, {BackgroundColor3 = CurrentTheme.AccentColor}):Play()
+            end
             self.CurrentTab = tabName
         end
         
@@ -1128,8 +1521,30 @@ function UltraLordLibrary:MakeWindow(config)
     function Window:SetTheme(themeName)
         if Themes[themeName] then
             CurrentTheme = Themes[themeName]
-            -- Update UI elements with new theme (would need to implement)
+            
+            -- Stop existing rainbow connection if exists
+            if RainbowConnection then
+                RainbowConnection:Disconnect()
+                RainbowConnection = nil
+            end
+            
+            -- If new theme is rainbow, set up rainbow effects
+            if CurrentTheme.IsRainbowTheme then
+                setupRainbowTheme(rainbowElements)
+            end
+            
+            -- Would need to implement full UI update here
         end
+    end
+    
+    -- Function to create notification from window
+    function Window:Notify(notifConfig)
+        UltraLordLibrary:CreateNotification(notifConfig)
+    end
+    
+    -- Set up rainbow theme if needed
+    if CurrentTheme.IsRainbowTheme then
+        setupRainbowTheme(rainbowElements)
     end
     
     return Window
