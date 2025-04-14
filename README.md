@@ -321,3 +321,11 @@ UltraLordLibrary:CreateTheme("MyTheme", {
     ColorPickerBackgroundColor = Color3.fromRGB(35, 35, 40)
 })
 ```
+
+## Game script ultra lord
+
+# MM2 Script
+
+```lua
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Ultra-Lord-Hub/Ultra-Lord-script-game/refs/heads/main/Mm2.lua"))()
+```
