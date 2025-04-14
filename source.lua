@@ -1,4 +1,4 @@
--- Ultra Lord UI Library v3.3
+-- Ultra Lord UI Library v3.5
 local UltraLordLibrary = {}
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -73,36 +73,14 @@ local Themes = {
         NotificationColor = Color3.fromRGB(240, 240, 245),
         MenuToggleIconColor = Color3.fromRGB(40, 40, 45),
         ColorPickerBackgroundColor = Color3.fromRGB(235, 235, 240)
-    },
-    Rainbow = {
-        BackgroundColor = Color3.fromRGB(30, 30, 35),
-        SidebarColor = Color3.fromRGB(25, 25, 30),
-        PrimaryTextColor = Color3.fromRGB(255, 255, 255),
-        SecondaryTextColor = Color3.fromRGB(200, 200, 200),
-        UIStrokeColor = Color3.fromRGB(60, 60, 70),
-        AccentColor = Color3.fromRGB(114, 137, 218), -- This will be rainbow
-        ButtonColor = Color3.fromRGB(50, 50, 60),
-        ButtonHoverColor = Color3.fromRGB(60, 60, 70),
-        ToggleOnColor = Color3.fromRGB(114, 137, 218), -- This will be rainbow
-        ToggleOffColor = Color3.fromRGB(80, 80, 90),
-        SliderColor = Color3.fromRGB(114, 137, 218), -- This will be rainbow
-        SliderBackgroundColor = Color3.fromRGB(50, 50, 60),
-        DropdownColor = Color3.fromRGB(40, 40, 50),
-        TextboxColor = Color3.fromRGB(45, 45, 55),
-        KeySystemColor = Color3.fromRGB(35, 35, 40),
-        KeySystemAccentColor = Color3.fromRGB(114, 137, 218), -- This will be rainbow
-        NotificationColor = Color3.fromRGB(30, 30, 35),
-        MenuToggleIconColor = Color3.fromRGB(255, 255, 255),
-        ColorPickerBackgroundColor = Color3.fromRGB(35, 35, 40),
-        IsRainbowTheme = true
     }
 }
 
 -- Current theme
 local CurrentTheme = Themes.Default
-local RainbowConnection = nil
 local ActiveKeybinds = {}
 local UIHidden = false
+local OpenedDropdowns = {}
 
 -- Protected call to avoid errors when accessing CoreGui
 local function safeGetCoreGui()
@@ -114,41 +92,6 @@ local function safeGetCoreGui()
         return result
     else
         return game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
-    end
-end
-
--- Rainbow color function
-local function getRainbowColor(offset)
-    offset = offset or 0
-    local time = tick() * 0.5 + offset
-    return Color3.fromHSV(time % 1, 0.8, 1)
-end
-
--- Function to apply rainbow effects
-local function setupRainbowTheme(elements)
-    if RainbowConnection then
-        RainbowConnection:Disconnect()
-        RainbowConnection = nil
-    end
-    
-    if CurrentTheme.IsRainbowTheme and elements and #elements > 0 then
-        RainbowConnection = RunService.Heartbeat:Connect(function()
-            local rainbowColor = getRainbowColor()
-            for _, element in ipairs(elements) do
-                if not element.Instance or not element.Instance:IsDescendantOf(game) then
-                    -- Skip invalid elements to prevent errors
-                    continue
-                end
-                
-                if element.Type == "Accent" and element.Instance then
-                    element.Instance.BackgroundColor3 = rainbowColor
-                elseif element.Type == "Text" and element.Instance then
-                    element.Instance.TextColor3 = rainbowColor
-                elseif element.Type == "Stroke" and element.Instance then
-                    element.Instance.Color = rainbowColor
-                end
-            end
-        end)
     end
 end
 
@@ -235,6 +178,15 @@ local function makeDraggable(dragUI, dragFrame)
         if dragConnection1 then dragConnection1:Disconnect() end
         if dragConnection2 then dragConnection2:Disconnect() end
         if dragConnection3 then dragConnection3:Disconnect() end
+    end
+end
+
+-- Function to close all open dropdowns except the one specified
+local function closeAllDropdowns(exceptDropdown)
+    for _, dropdown in pairs(OpenedDropdowns) do
+        if dropdown ~= exceptDropdown and dropdown.IsOpen then
+            dropdown:Close()
+        end
     end
 end
 
@@ -487,23 +439,15 @@ function UltraLordLibrary:CreateKeySystem(keySystemConfig)
     StatusLabel.Text = ""
     StatusLabel.Parent = KeySystemFrame
     
-    -- Rainbow effects for accent elements if theme is Rainbow
-    if CurrentTheme.IsRainbowTheme then
-        local rainbowElements = {
-            {Type = "Accent", Instance = SubmitButton}
-        }
-        setupRainbowTheme(rainbowElements)
-    end
-    
     -- Button hover effect
     SubmitButton.MouseEnter:Connect(function()
-        if not CurrentTheme.IsRainbowTheme and SubmitButton:IsDescendantOf(game) then
+        if SubmitButton:IsDescendantOf(game) then
             createTween(SubmitButton, {BackgroundColor3 = CurrentTheme.ButtonHoverColor}):Play()
         end
     end)
     
     SubmitButton.MouseLeave:Connect(function()
-        if not CurrentTheme.IsRainbowTheme and SubmitButton:IsDescendantOf(game) then
+        if SubmitButton:IsDescendantOf(game) then
             createTween(SubmitButton, {BackgroundColor3 = CurrentTheme.KeySystemAccentColor}):Play()
         end
     end)
@@ -958,9 +902,6 @@ function UltraLordLibrary:MakeWindow(config)
     KeybindText.Text = "Press a key..."
     KeybindText.Parent = KeybindIndicator
     
-    -- Rainbow elements collection
-    local rainbowElements = {}
-    
     -- Make window draggable (improved for all devices)
     local disconnectDrag = makeDraggable(TitleBar, MainWindow)
     
@@ -1014,9 +955,6 @@ function UltraLordLibrary:MakeWindow(config)
     -- Close button functionality
     CloseButton.MouseButton1Click:Connect(function()
         if disconnectDrag then disconnectDrag() end
-        if RainbowConnection then
-            RainbowConnection:Disconnect()
-        end
         UltraLordGUI:Destroy()
     end)
     
@@ -1088,20 +1026,23 @@ function UltraLordLibrary:MakeWindow(config)
         
         -- Tab button click handler
         TabButton.MouseButton1Click:Connect(function()
+            -- Close any open dropdowns
+            closeAllDropdowns()
+            
             -- Hide all tab frames
             for _, tab in pairs(self.Tabs) do
                 if tab.Frame:IsDescendantOf(game) then
                     tab.Frame.Visible = false
                 end
                 
-                if tab.Button:IsDescendantOf(game) and not CurrentTheme.IsRainbowTheme then
+                if tab.Button:IsDescendantOf(game) then
                     createTween(tab.Button, {BackgroundColor3 = CurrentTheme.ButtonColor}):Play()
                 end
             end
             
             -- Show selected tab
             TabFrame.Visible = true
-            if TabButton:IsDescendantOf(game) and not CurrentTheme.IsRainbowTheme then
+            if TabButton:IsDescendantOf(game) then
                 createTween(TabButton, {BackgroundColor3 = CurrentTheme.AccentColor}):Play()
             end
             self.CurrentTab = tabName
@@ -1109,21 +1050,16 @@ function UltraLordLibrary:MakeWindow(config)
         
         -- Tab button hover effects
         TabButton.MouseEnter:Connect(function()
-            if self.CurrentTab ~= tabName and TabButton:IsDescendantOf(game) and not CurrentTheme.IsRainbowTheme then
+            if self.CurrentTab ~= tabName and TabButton:IsDescendantOf(game) then
                 createTween(TabButton, {BackgroundColor3 = CurrentTheme.ButtonHoverColor}):Play()
             end
         end)
         
         TabButton.MouseLeave:Connect(function()
-            if self.CurrentTab ~= tabName and TabButton:IsDescendantOf(game) and not CurrentTheme.IsRainbowTheme then
+            if self.CurrentTab ~= tabName and TabButton:IsDescendantOf(game) then
                 createTween(TabButton, {BackgroundColor3 = CurrentTheme.ButtonColor}):Play()
             end
         end)
-        
-        -- Add to rainbow elements if theme is Rainbow
-        if CurrentTheme.IsRainbowTheme then
-            table.insert(rainbowElements, {Type = "Accent", Instance = TabButton})
-        end
         
         -- Tab object and methods
         local Tab = {}
@@ -1146,11 +1082,6 @@ function UltraLordLibrary:MakeWindow(config)
             SectionLabel.Text = sectionName
             SectionLabel.LayoutOrder = self.ElementCount
             SectionLabel.Parent = self.Container
-            
-            -- Add to rainbow elements if theme is Rainbow
-            if CurrentTheme.IsRainbowTheme then
-                table.insert(rainbowElements, {Type = "Text", Instance = SectionLabel})
-            end
             
             self.ElementCount = self.ElementCount + 1
             return SectionLabel
@@ -1198,19 +1129,14 @@ function UltraLordLibrary:MakeWindow(config)
             
             -- Button click animation and callback
             Button.MouseButton1Click:Connect(function()
+                -- Close any open dropdowns
+                closeAllDropdowns()
+                
                 -- Animation
                 if Button:IsDescendantOf(game) then
-                    if not CurrentTheme.IsRainbowTheme then
-                        createTween(Button, {BackgroundColor3 = CurrentTheme.AccentColor}, 0.1):Play()
-                        task.wait(0.1)
-                        createTween(Button, {BackgroundColor3 = CurrentTheme.ButtonColor}, 0.1):Play()
-                    else
-                        -- For rainbow theme, use white flash
-                        local originalText = Button.TextColor3
-                        createTween(Button, {TextColor3 = Color3.fromRGB(255, 255, 255)}, 0.1):Play()
-                        task.wait(0.1)
-                        createTween(Button, {TextColor3 = originalText}, 0.1):Play()
-                    end
+                    createTween(Button, {BackgroundColor3 = CurrentTheme.AccentColor}, 0.1):Play()
+                    task.wait(0.1)
+                    createTween(Button, {BackgroundColor3 = CurrentTheme.ButtonColor}, 0.1):Play()
                 end
                 
                 -- Callback
@@ -1219,21 +1145,16 @@ function UltraLordLibrary:MakeWindow(config)
             
             -- Button hover effects
             Button.MouseEnter:Connect(function()
-                if Button:IsDescendantOf(game) and not CurrentTheme.IsRainbowTheme then
+                if Button:IsDescendantOf(game) then
                     createTween(Button, {BackgroundColor3 = CurrentTheme.ButtonHoverColor}):Play()
                 end
             end)
             
             Button.MouseLeave:Connect(function()
-                if Button:IsDescendantOf(game) and not CurrentTheme.IsRainbowTheme then
+                if Button:IsDescendantOf(game) then
                     createTween(Button, {BackgroundColor3 = CurrentTheme.ButtonColor}):Play()
                 end
             end)
-            
-            -- Add to rainbow elements if theme is Rainbow
-            if CurrentTheme.IsRainbowTheme then
-                table.insert(rainbowElements, {Type = "Accent", Instance = Button})
-            end
             
             self.ElementCount = self.ElementCount + 1
             return Button
@@ -1290,18 +1211,17 @@ function UltraLordLibrary:MakeWindow(config)
                 if not ToggleButton:IsDescendantOf(game) then return end
                 
                 local targetPosition = toggled and UDim2.new(0.6, 0, 0.5, -8) or UDim2.new(0.1, 0, 0.5, -8)
-                local targetColor
+                local targetColor = toggled and CurrentTheme.ToggleOnColor or CurrentTheme.ToggleOffColor
                 
-                if not CurrentTheme.IsRainbowTheme then
-                    targetColor = toggled and CurrentTheme.ToggleOnColor or CurrentTheme.ToggleOffColor
-                    createTween(ToggleButton, {BackgroundColor3 = targetColor}):Play()
-                end
-                
+                createTween(ToggleButton, {BackgroundColor3 = targetColor}):Play()
                 createTween(ToggleCircle, {Position = targetPosition}):Play()
             end
             
             -- Toggle click handler
             local function toggleClicked()
+                -- Close any open dropdowns
+                closeAllDropdowns()
+                
                 if not toggleEnabled then return end
                 
                 toggled = not toggled
@@ -1319,11 +1239,6 @@ function UltraLordLibrary:MakeWindow(config)
             ToggleClickArea.Parent = ToggleFrame
             
             ToggleClickArea.MouseButton1Click:Connect(toggleClicked)
-            
-            -- Add to rainbow elements if theme is Rainbow
-            if CurrentTheme.IsRainbowTheme then
-                table.insert(rainbowElements, {Type = "Accent", Instance = ToggleButton})
-            end
             
             -- Toggle object and methods
             local Toggle = {}
@@ -1413,12 +1328,6 @@ function UltraLordLibrary:MakeWindow(config)
             SliderButton.Text = ""
             SliderButton.Parent = SliderBackground
             
-            -- Add to rainbow elements if theme is Rainbow
-            if CurrentTheme.IsRainbowTheme then
-                table.insert(rainbowElements, {Type = "Accent", Instance = SliderFill})
-                table.insert(rainbowElements, {Type = "Text", Instance = SliderValueLabel})
-            end
-            
             -- Current value
             local value = defaultValue
             
@@ -1464,6 +1373,9 @@ function UltraLordLibrary:MakeWindow(config)
             -- Handle input begin
             SliderButton.InputBegan:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                    -- Close any open dropdowns
+                    closeAllDropdowns()
+                    
                     isDragging = true
                     updateSlider(calculateValue(input.Position))
                 end
@@ -1591,6 +1503,9 @@ function UltraLordLibrary:MakeWindow(config)
             
             -- Focused and unfocused animations
             Textbox.Focused:Connect(function()
+                -- Close any open dropdowns
+                closeAllDropdowns()
+                
                 if TextboxContainer:IsDescendantOf(game) then
                     createTween(TextboxContainer, {BackgroundColor3 = CurrentTheme.ButtonHoverColor}):Play()
                 end
@@ -1772,6 +1687,9 @@ function UltraLordLibrary:MakeWindow(config)
                 isOpen = not isOpen
                 
                 if isOpen then
+                    -- Close all other dropdowns
+                    closeAllDropdowns(Dropdown)
+                    
                     -- Calculate total height needed for the list (limit to 150px max)
                     local optionHeight = 25 + 5  -- Button height + padding
                     local listHeight = math.min(#options * optionHeight, 150)
@@ -1812,39 +1730,8 @@ function UltraLordLibrary:MakeWindow(config)
             end
             
             -- Toggle dropdown on button click
-            SelectionButton.MouseButton1Click:Connect(toggleDropdown)
-            
-            -- Close dropdown when clicking elsewhere
-            UserInputService.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                    if isOpen and (not DropdownFrame:IsDescendantOf(game)) then 
-                        return 
-                    end
-                    
-                    if isOpen then
-                        local mousePos = UserInputService:GetMouseLocation()
-                        local dropdownPos = DropdownFrame.AbsolutePosition
-                        local dropdownSize = DropdownFrame.AbsoluteSize
-                        local dropdownListSize = DropdownListOuterFrame.AbsoluteSize
-                        
-                        -- Check if click is outside dropdown area
-                        local isInDropdownButton = 
-                            mousePos.X >= dropdownPos.X and
-                            mousePos.X <= dropdownPos.X + dropdownSize.X and
-                            mousePos.Y >= dropdownPos.Y and
-                            mousePos.Y <= dropdownPos.Y + 55
-                            
-                        local isInDropdownList = 
-                            mousePos.X >= dropdownPos.X and
-                            mousePos.X <= dropdownPos.X + dropdownSize.X and
-                            mousePos.Y >= dropdownPos.Y + 55 and
-                            mousePos.Y <= dropdownPos.Y + 55 + dropdownListSize.Y
-                        
-                        if not (isInDropdownButton or isInDropdownList) then
-                            toggleDropdown()
-                        end
-                    end
-                end
+            SelectionButton.MouseButton1Click:Connect(function()
+                toggleDropdown()
             end)
             
             -- Button hover effects
@@ -1862,6 +1749,7 @@ function UltraLordLibrary:MakeWindow(config)
             
             -- Dropdown object and methods
             local Dropdown = {}
+            Dropdown.IsOpen = isOpen
             
             function Dropdown:SetValue(option)
                 if table.find(options, option) and SelectionButton:IsDescendantOf(game) then
@@ -1873,6 +1761,27 @@ function UltraLordLibrary:MakeWindow(config)
             
             function Dropdown:GetValue()
                 return selectedOption
+            end
+            
+            function Dropdown:Close()
+                if isOpen then
+                    isOpen = false
+                    
+                    if Arrow:IsDescendantOf(game) then
+                        Arrow.Text = "▼"  -- Down arrow
+                    end
+                    
+                    -- Animate dropdown closing
+                    local closeTween = createTween(DropdownListOuterFrame, {Size = UDim2.new(1, 0, 0, 0)})
+                    closeTween:Play()
+                    
+                    -- Hide after animation completes
+                    closeTween.Completed:Connect(function()
+                        if not isOpen and DropdownListOuterFrame:IsDescendantOf(game) then
+                            DropdownListOuterFrame.Visible = false
+                        end
+                    end)
+                end
             end
             
             function Dropdown:Refresh(newOptions, keepSelection)
@@ -1907,6 +1816,9 @@ function UltraLordLibrary:MakeWindow(config)
                     toggleDropdown()
                 end
             end
+            
+            -- Add to OpenedDropdowns for global management
+            table.insert(OpenedDropdowns, Dropdown)
             
             self.ElementCount = self.ElementCount + 1
             return Dropdown
@@ -1956,6 +1868,9 @@ function UltraLordLibrary:MakeWindow(config)
             
             -- Open color picker on click
             ColorDisplay.MouseButton1Click:Connect(function()
+                -- Close any open dropdowns
+                closeAllDropdowns()
+                
                 colorPicker:Show()
             end)
             
@@ -2035,6 +1950,9 @@ function UltraLordLibrary:MakeWindow(config)
             
             -- Function to change key
             local function startChangingKey()
+                -- Close any open dropdowns
+                closeAllDropdowns()
+                
                 isChangingKey = true
                 KeybindButton.Text = "..."
                 
@@ -2132,7 +2050,7 @@ function UltraLordLibrary:MakeWindow(config)
         -- If this is the first tab, select it
         if #self.Tabs == 1 then
             TabFrame.Visible = true
-            if not CurrentTheme.IsRainbowTheme and TabButton:IsDescendantOf(game) then
+            if TabButton:IsDescendantOf(game) then
                 createTween(TabButton, {BackgroundColor3 = CurrentTheme.AccentColor}):Play()
             end
             self.CurrentTab = tabName
@@ -2145,18 +2063,6 @@ function UltraLordLibrary:MakeWindow(config)
     function Window:SetTheme(themeName)
         if Themes[themeName] then
             CurrentTheme = Themes[themeName]
-            
-            -- Stop existing rainbow connection if exists
-            if RainbowConnection then
-                RainbowConnection:Disconnect()
-                RainbowConnection = nil
-            end
-            
-            -- If new theme is rainbow, set up rainbow effects
-            if CurrentTheme.IsRainbowTheme then
-                setupRainbowTheme(rainbowElements)
-            end
-            
             -- Would need to implement full UI update here
         end
     end
@@ -2171,17 +2077,30 @@ function UltraLordLibrary:MakeWindow(config)
         toggleUI()
     end
     
-    -- Set up rainbow theme if needed
-    if CurrentTheme.IsRainbowTheme then
-        setupRainbowTheme(rainbowElements)
-    end
-    
     -- Notify about UI toggle keybind
     UltraLordLibrary:CreateNotification({
         Title = "UI Library Loaded",
         Description = "Press " .. toggleKeybind.Name .. " to toggle UI visibility",
         Duration = 5
     })
+    
+    -- Setup global click detection to close dropdowns
+    UserInputService.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            -- Check if we clicked outside any dropdown
+            local mousePos = UserInputService:GetMouseLocation()
+            local clickedOnDropdown = false
+            
+            -- Close all dropdowns when clicking outside them
+            for _, dropdown in pairs(OpenedDropdowns) do
+                if dropdown.IsOpen then
+                    -- We would need to implement proper hit-testing here
+                    -- For now, we'll close dropdowns when clicking anywhere else
+                    -- This is handled by closeAllDropdowns() in each UI element's click event
+                end
+            end
+        end
+    end)
     
     return Window
 end
