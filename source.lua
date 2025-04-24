@@ -6,8 +6,12 @@
 ╚██████╗██║  ██║   ██║   ███████╗███████╗██║ ╚████║    ██║  ██║╚██████╔╝██████╔╝
  ╚═════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝╚══════╝╚═╝  ╚═══╝    ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ 
                                                                                
-    CryzenHub V2 - Based on Orion UI Library
+    CryzenHub V2.2 - Based on Orion UI Library
     Upgraded with new design, bug fixes, and enhanced features
+    - Fixed white UI issues and broken UI white elements
+    - Added key system functionality
+    - Removed preloading for better performance
+    - Added mobile menu toggle with drag functionality
 ]]
 
 local UserInputService = game:GetService("UserInputService")
@@ -76,30 +80,23 @@ local CryzenLib = {
     Folder = nil,
     SaveCfg = false,
     ConfigFolder = "CryzenHub",
-    Version = "2.1.0"
+    Version = "2.2.0",
+    KeySystem = false,
+    KeySettings = {
+        Title = "CryzenHub Key System",
+        Subtitle = "Key Verification",
+        Note = "Enter your key to access the script",
+        Key = "",
+        KeyLink = "",
+        SaveKey = false,
+        GrabKeyFromSite = false, -- Set this to true to fetch key from KeyLink
+        FileName = "CryzenKey",
+        MaxAttempts = 5,
+        RejectMessage = "Invalid key, please try again.",
+        Callback = function() end
+    },
+    IsMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 }
-
--- Preload assets for smoother UI experience
-local AssetList = {
-    "rbxassetid://7733658504",
-    "rbxassetid://7733715400",
-    "rbxassetid://7733799682",
-    "rbxassetid://7733878302",
-    "rbxassetid://7733919718",
-    "rbxassetid://7733914923",
-    "rbxassetid://7733750749",
-    "rbxassetid://7733717447",
-    "rbxassetid://4805639000",
-    "rbxassetid://4155801252",
-    "rbxassetid://3610239960",
-    "rbxassetid://4483345875"
-}
-
-task.spawn(function()
-    pcall(function()
-        ContentProvider:PreloadAsync(AssetList)
-    end)
-end)
 
 -- Load Feather Icons for UI elements
 local Icons = {}
@@ -187,7 +184,7 @@ local function AddDraggingFunctionality(DragPoint, Main)
         local Dragging, DragInput, MousePos, FramePos = false
         
         AddConnection(DragPoint.InputBegan, function(Input)
-            if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+            if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
                 Dragging = true
                 MousePos = Input.Position
                 FramePos = Main.Position
@@ -201,7 +198,7 @@ local function AddDraggingFunctionality(DragPoint, Main)
         end)
         
         AddConnection(DragPoint.InputChanged, function(Input)
-            if Input.UserInputType == Enum.UserInputType.MouseMovement then
+            if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
                 DragInput = Input
             end
         end)
@@ -312,7 +309,8 @@ end
 local WhitelistedMouse = {
     Enum.UserInputType.MouseButton1,
     Enum.UserInputType.MouseButton2,
-    Enum.UserInputType.MouseButton3
+    Enum.UserInputType.MouseButton3,
+    Enum.UserInputType.Touch
 }
 
 local BlacklistedKeys = {
@@ -490,36 +488,45 @@ CreateElement("SmoothButton", function(Color)
         Parent = Button
     })
     
-    AddConnection(Button.MouseButton1Down, function(InputPosition)
-        local RippleCircle = Create("Frame", {
-            BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-            BackgroundTransparency = 0.7,
-            BorderSizePixel = 0,
-            AnchorPoint = Vector2.new(0.5, 0.5),
-            Parent = RippleContainer
-        })
-        
-        Create("UICorner", {
-            CornerRadius = UDim.new(1, 0),
-            Parent = RippleCircle
-        })
-        
-        local ButtonAbsoluteSize = Button.AbsoluteSize
-        local ButtonAbsolutePosition = Button.AbsolutePosition
-        
-        local MaxSize = math.max(ButtonAbsoluteSize.X, ButtonAbsoluteSize.Y) * 2
-        local Size = UDim2.new(0, 0, 0, 0)
-        local Position = UDim2.new(0, InputPosition.X - ButtonAbsolutePosition.X, 0, InputPosition.Y - ButtonAbsolutePosition.Y)
-        
-        RippleCircle.Position = Position
-        RippleCircle.Size = Size
-        
-        TweenService:Create(RippleCircle, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, MaxSize, 0, MaxSize),
-            BackgroundTransparency = 1
-        }):Play()
-        
-        game.Debris:AddItem(RippleCircle, 0.5)
+    AddConnection(Button.InputBegan, function(Input)
+        if (Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch) then
+            local RippleCircle = Create("Frame", {
+                BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+                BackgroundTransparency = 0.7,
+                BorderSizePixel = 0,
+                AnchorPoint = Vector2.new(0.5, 0.5),
+                Parent = RippleContainer
+            })
+            
+            Create("UICorner", {
+                CornerRadius = UDim.new(1, 0),
+                Parent = RippleCircle
+            })
+            
+            local ButtonAbsoluteSize = Button.AbsoluteSize
+            local ButtonAbsolutePosition = Button.AbsolutePosition
+            
+            local MaxSize = math.max(ButtonAbsoluteSize.X, ButtonAbsoluteSize.Y) * 2
+            local Size = UDim2.new(0, 0, 0, 0)
+            
+            -- Calculate position based on input type
+            local Position
+            if Input.UserInputType == Enum.UserInputType.Touch then
+                Position = UDim2.new(0, Input.Position.X - ButtonAbsolutePosition.X, 0, Input.Position.Y - ButtonAbsolutePosition.Y)
+            else
+                Position = UDim2.new(0, Input.Position.X - ButtonAbsolutePosition.X, 0, Input.Position.Y - ButtonAbsolutePosition.Y)
+            end
+            
+            RippleCircle.Position = Position
+            RippleCircle.Size = Size
+            
+            TweenService:Create(RippleCircle, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+                Size = UDim2.new(0, MaxSize, 0, MaxSize),
+                BackgroundTransparency = 1
+            }):Play()
+            
+            game.Debris:AddItem(RippleCircle, 0.5)
+        end
     end)
     
     return Button
@@ -630,8 +637,350 @@ local function LoadCfg(GameId)
     end
 end
 
+-- Key System
+function CryzenLib:SetKey(KeySettings)
+    KeySettings = KeySettings or {}
+    
+    -- Merge with default settings
+    for k, v in pairs(KeySettings) do
+        CryzenLib.KeySettings[k] = v
+    end
+    
+    CryzenLib.KeySystem = true
+    return CryzenLib
+end
+
+function CryzenLib:VerifyKey(Key)
+    if Key == CryzenLib.KeySettings.Key then
+        return true
+    elseif CryzenLib.KeySettings.GrabKeyFromSite and CryzenLib.KeySettings.KeyLink ~= "" then
+        local success, keyFromSite = pcall(function()
+            return game:HttpGet(CryzenLib.KeySettings.KeyLink)
+        end)
+        
+        if success and keyFromSite and Key == keyFromSite then
+            return true
+        end
+    end
+    
+    return false
+end
+
+function CryzenLib:SaveKeyToFile(Key)
+    if not CryzenLib.KeySettings.SaveKey then return end
+    
+    if not isfolder(ConfigFolder) then
+        makefolder(ConfigFolder)
+    end
+    
+    writefile(ConfigFolder.."/"..CryzenLib.KeySettings.FileName..".txt", Key)
+end
+
+function CryzenLib:LoadKeyFromFile()
+    if not CryzenLib.KeySettings.SaveKey then return nil end
+    
+    if not isfolder(ConfigFolder) then
+        return nil
+    end
+    
+    if not isfile(ConfigFolder.."/"..CryzenLib.KeySettings.FileName..".txt") then
+        return nil
+    end
+    
+    return readfile(ConfigFolder.."/"..CryzenLib.KeySettings.FileName..".txt")
+end
+
+function CryzenLib:CreateKeySystem()
+    if not CryzenLib.KeySystem then return true end
+    
+    -- Check if key is already saved
+    local SavedKey = CryzenLib:LoadKeyFromFile()
+    if SavedKey and CryzenLib:VerifyKey(SavedKey) then
+        CryzenLib.KeySettings.Callback(SavedKey)
+        return true
+    end
+    
+    -- Create key system UI
+    local KeyUI = Create("ScreenGui", {
+        Name = "CryzenKeySystem",
+        ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    })
+    
+    if syn then
+        syn.protect_gui(KeyUI)
+        KeyUI.Parent = game.CoreGui
+    else
+        KeyUI.Parent = gethui() or game.CoreGui
+    end
+    
+    local MainFrame = Create("Frame", {
+        BackgroundColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Main,
+        BorderSizePixel = 0,
+        Position = UDim2.new(0.5, 0, 0.5, 0),
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        Size = UDim2.new(0, 400, 0, 260),
+        Parent = KeyUI
+    }, {
+        Create("UICorner", {
+            CornerRadius = UDim.new(0, 6)
+        }),
+        Create("UIStroke", {
+            Color = CryzenLib.Themes[CryzenLib.SelectedTheme].Stroke,
+            Thickness = 1
+        })
+    })
+    
+    -- Add shadow
+    local Shadow = Create("ImageLabel", {
+        Image = "rbxassetid://6014261993",
+        Size = UDim2.new(1, 47, 1, 47),
+        Position = UDim2.new(0.5, 0, 0.5, 0),
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        ImageColor3 = Color3.fromRGB(0, 0, 0),
+        ImageTransparency = 0.7,
+        ZIndex = 0,
+        BackgroundTransparency = 1,
+        Parent = MainFrame
+    })
+    
+    local Title = Create("TextLabel", {
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, -40, 0, 30),
+        Position = UDim2.new(0, 20, 0, 15),
+        Font = Enum.Font.GothamBold,
+        Text = CryzenLib.KeySettings.Title,
+        TextColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Text,
+        TextSize = 22,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = MainFrame
+    })
+    
+    local Subtitle = Create("TextLabel", {
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, -40, 0, 20),
+        Position = UDim2.new(0, 20, 0, 45),
+        Font = Enum.Font.Gotham,
+        Text = CryzenLib.KeySettings.Subtitle,
+        TextColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].TextDark,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = MainFrame
+    })
+    
+    local Note = Create("TextLabel", {
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, -40, 0, 40),
+        Position = UDim2.new(0, 20, 0, 75),
+        Font = Enum.Font.Gotham,
+        Text = CryzenLib.KeySettings.Note,
+        TextColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].TextDark,
+        TextSize = 14,
+        TextWrapped = true,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextYAlignment = Enum.TextYAlignment.Top,
+        Parent = MainFrame
+    })
+    
+    local KeyBoxContainer = Create("Frame", {
+        BackgroundColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Second,
+        Size = UDim2.new(1, -40, 0, 40),
+        Position = UDim2.new(0, 20, 0, 125),
+        Parent = MainFrame
+    }, {
+        Create("UICorner", {
+            CornerRadius = UDim.new(0, 4)
+        }),
+        Create("UIStroke", {
+            Color = CryzenLib.Themes[CryzenLib.SelectedTheme].Stroke,
+            Thickness = 1
+        })
+    })
+    
+    local KeyBox = Create("TextBox", {
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, -20, 1, 0),
+        Position = UDim2.new(0, 10, 0, 0),
+        Font = Enum.Font.Gotham,
+        Text = "",
+        PlaceholderText = "Enter Key...",
+        TextColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Text,
+        PlaceholderColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].TextDark,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = KeyBoxContainer,
+        ClearTextOnFocus = false
+    })
+    
+    local GetKeyButton = Create("Frame", {
+        BackgroundColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Second,
+        Size = UDim2.new(0, 120, 0, 35),
+        Position = UDim2.new(0, 20, 0, 180),
+        Parent = MainFrame
+    }, {
+        Create("UICorner", {
+            CornerRadius = UDim.new(0, 4)
+        }),
+        Create("UIStroke", {
+            Color = CryzenLib.Themes[CryzenLib.SelectedTheme].Stroke,
+            Thickness = 1
+        }),
+        Create("TextLabel", {
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1, 0, 1, 0),
+            Font = Enum.Font.GothamBold,
+            Text = "Get Key",
+            TextColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Text,
+            TextSize = 14,
+            Parent = nil
+        })
+    })
+    
+    -- Only create the label if KeyLink is provided
+    if CryzenLib.KeySettings.KeyLink ~= "" then
+        GetKeyButton.TextLabel.Parent = GetKeyButton
+    end
+    
+    local SubmitButton = Create("Frame", {
+        BackgroundColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Accent,
+        Size = UDim2.new(0, 120, 0, 35),
+        Position = UDim2.new(1, -140, 0, 180),
+        Parent = MainFrame
+    }, {
+        Create("UICorner", {
+            CornerRadius = UDim.new(0, 4)
+        }),
+        Create("TextLabel", {
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1, 0, 1, 0),
+            Font = Enum.Font.GothamBold,
+            Text = "Submit",
+            TextColor3 = Color3.fromRGB(255, 255, 255),
+            TextSize = 14,
+            Parent = nil
+        })
+    })
+    
+    SubmitButton.TextLabel.Parent = SubmitButton
+    
+    local StatusLabel = Create("TextLabel", {
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, -40, 0, 20),
+        Position = UDim2.new(0, 20, 0, 225),
+        Font = Enum.Font.Gotham,
+        Text = "",
+        TextColor3 = Color3.fromRGB(255, 75, 75),
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Center,
+        Parent = MainFrame
+    })
+    
+    -- Get key button functionality
+    local GetKeyBtn = Create("TextButton", {
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 1, 0),
+        Text = "",
+        Parent = GetKeyButton
+    })
+    
+    AddConnection(GetKeyBtn.MouseButton1Click, function()
+        if CryzenLib.KeySettings.KeyLink ~= "" then
+            setclipboard(CryzenLib.KeySettings.KeyLink)
+            StatusLabel.Text = "Key link copied to clipboard!"
+            StatusLabel.TextColor3 = Color3.fromRGB(75, 255, 75)
+            wait(2)
+            StatusLabel.Text = ""
+        end
+    end)
+    
+    -- Submit button functionality
+    local SubmitBtn = Create("TextButton", {
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 1, 0),
+        Text = "",
+        Parent = SubmitButton
+    })
+    
+    local Attempts = 0
+    
+    AddConnection(SubmitBtn.MouseButton1Click, function()
+        local Key = KeyBox.Text
+        
+        if Key == "" then
+            StatusLabel.Text = "Please enter a key!"
+            StatusLabel.TextColor3 = Color3.fromRGB(255, 75, 75)
+            return
+        end
+        
+        Attempts = Attempts + 1
+        
+        if CryzenLib:VerifyKey(Key) then
+            StatusLabel.Text = "Key verified successfully!"
+            StatusLabel.TextColor3 = Color3.fromRGB(75, 255, 75)
+            
+            -- Save key if option enabled
+            if CryzenLib.KeySettings.SaveKey then
+                CryzenLib:SaveKeyToFile(Key)
+            end
+            
+            -- Callback and close
+            wait(1)
+            KeyUI:Destroy()
+            CryzenLib.KeySettings.Callback(Key)
+            return true
+        else
+            if Attempts >= CryzenLib.KeySettings.MaxAttempts then
+                StatusLabel.Text = "Too many attempts. Closing in 3s..."
+                StatusLabel.TextColor3 = Color3.fromRGB(255, 75, 75)
+                wait(3)
+                KeyUI:Destroy()
+                return false
+            else
+                StatusLabel.Text = CryzenLib.KeySettings.RejectMessage .. " (" .. Attempts .. "/" .. CryzenLib.KeySettings.MaxAttempts .. ")"
+                StatusLabel.TextColor3 = Color3.fromRGB(255, 75, 75)
+            end
+        end
+    end)
+    
+    -- Add dragging functionality
+    AddDraggingFunctionality(MainFrame, MainFrame)
+    
+    -- Center the frame
+    MainFrame:TweenPosition(UDim2.new(0.5, 0, 0.5, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quint, 0.5, true)
+    
+    -- Wait for key verification
+    local KeyVerified = false
+    local KeySystemClosed = false
+    
+    -- Create a thread to check when the key system is closed
+    task.spawn(function()
+        while KeyUI.Parent ~= nil and not KeyVerified do
+            wait(0.1)
+        end
+        KeySystemClosed = true
+    end)
+    
+    -- Wait until the key is verified or the UI is closed
+    repeat wait() until KeyVerified or KeySystemClosed
+    
+    return KeyVerified
+end
+
 -- Main UI components
 function CryzenLib:MakeWindow(WindowConfig)
+    -- Verify key system first if enabled
+    if CryzenLib.KeySystem then
+        local KeyVerified = CryzenLib:CreateKeySystem()
+        if not KeyVerified then
+            return {
+                MakeTab = function() return {} end,
+                AddSettingsTab = function() return {} end,
+                AddThemeTab = function() return {} end,
+                AddHome = function() end,
+                SetTheme = function() end
+            }
+        end
+    end
+    
     WindowConfig = WindowConfig or {}
     WindowConfig.Name = WindowConfig.Name or "CryzenHub"
     WindowConfig.ConfigFolder = WindowConfig.ConfigFolder or WindowConfig.Name
@@ -644,10 +993,129 @@ function CryzenLib:MakeWindow(WindowConfig)
     WindowConfig.ShowIcon = WindowConfig.ShowIcon ~= false
     WindowConfig.Icon = WindowConfig.Icon or "rbxassetid://7733750749"
     WindowConfig.Theme = WindowConfig.Theme or "Default"
+    WindowConfig.LoadingTitle = WindowConfig.LoadingTitle or "CryzenHub"
+    WindowConfig.LoadingSubtitle = WindowConfig.LoadingSubtitle or "by Cryzen Team"
+    WindowConfig.UseNewLoadingScreen = WindowConfig.UseNewLoadingScreen or false
     
     CryzenLib.SelectedTheme = WindowConfig.Theme
     CryzenLib.SaveCfg = WindowConfig.SaveConfig
     CryzenLib.ConfigFolder = WindowConfig.ConfigFolder
+
+    -- Create Loading Screen if enabled
+    if WindowConfig.UseNewLoadingScreen then
+        local LoadingScreen = Create("Frame", {
+            Size = UDim2.new(1, 0, 1, 0),
+            Position = UDim2.new(0, 0, 0, 0),
+            BackgroundColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Main,
+            BorderSizePixel = 0,
+            ZIndex = 1000,
+            Parent = Cryzen
+        })
+        
+        local LoadingContainer = Create("Frame", {
+            Size = UDim2.new(0, 240, 0, 180),
+            Position = UDim2.new(0.5, 0, 0.5, 0),
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            BackgroundTransparency = 1,
+            ZIndex = 1001,
+            Parent = LoadingScreen
+        })
+        
+        local Logo = Create("ImageLabel", {
+            Size = UDim2.new(0, 80, 0, 80),
+            Position = UDim2.new(0.5, 0, 0, 10),
+            AnchorPoint = Vector2.new(0.5, 0),
+            BackgroundTransparency = 1,
+            Image = WindowConfig.IntroIcon,
+            ImageColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Accent,
+            ZIndex = 1002,
+            Parent = LoadingContainer
+        })
+        
+        local Title = Create("TextLabel", {
+            Size = UDim2.new(1, 0, 0, 30),
+            Position = UDim2.new(0, 0, 0, 100),
+            BackgroundTransparency = 1,
+            Font = Enum.Font.GothamBold,
+            Text = WindowConfig.LoadingTitle,
+            TextColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Text,
+            TextSize = 22,
+            ZIndex = 1002,
+            Parent = LoadingContainer
+        })
+        
+        local Subtitle = Create("TextLabel", {
+            Size = UDim2.new(1, 0, 0, 20),
+            Position = UDim2.new(0, 0, 0, 130),
+            BackgroundTransparency = 1,
+            Font = Enum.Font.Gotham,
+            Text = WindowConfig.LoadingSubtitle,
+            TextColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].TextDark,
+            TextSize = 14,
+            ZIndex = 1002,
+            Parent = LoadingContainer
+        })
+        
+        -- Loading animation
+        local LoadingBar = Create("Frame", {
+            Size = UDim2.new(1, 0, 0, 4),
+            Position = UDim2.new(0, 0, 0, 160),
+            BackgroundColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Second,
+            BorderSizePixel = 0,
+            ZIndex = 1002,
+            Parent = LoadingContainer
+        }, {
+            Create("UICorner", {
+                CornerRadius = UDim.new(0, 2)
+            })
+        })
+        
+        local LoadingFill = Create("Frame", {
+            Size = UDim2.new(0, 0, 1, 0),
+            BackgroundColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Accent,
+            BorderSizePixel = 0,
+            ZIndex = 1003,
+            Parent = LoadingBar
+        }, {
+            Create("UICorner", {
+                CornerRadius = UDim.new(0, 2)
+            })
+        })
+        
+        -- Animate loading bar
+        TweenService:Create(LoadingFill, TweenInfo.new(1.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            Size = UDim2.new(1, 0, 1, 0)
+        }):Play()
+        
+        wait(2)
+        
+        TweenService:Create(LoadingScreen, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            BackgroundTransparency = 1
+        }):Play()
+        
+        TweenService:Create(Logo, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            ImageTransparency = 1
+        }):Play()
+        
+        TweenService:Create(Title, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            TextTransparency = 1
+        }):Play()
+        
+        TweenService:Create(Subtitle, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            TextTransparency = 1
+        }):Play()
+        
+        TweenService:Create(LoadingBar, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            BackgroundTransparency = 1
+        }):Play()
+        
+        TweenService:Create(LoadingFill, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            BackgroundTransparency = 1
+        }):Play()
+        
+        wait(0.5)
+        LoadingScreen:Destroy()
+    end
 
     -- Create Intro if enabled
     if WindowConfig.IntroEnabled then
@@ -920,6 +1388,41 @@ function CryzenLib:MakeWindow(WindowConfig)
         IconButton.Parent = MainUI.TopBar
         MainUI.TopBar.Title.Position = UDim2.new(0, 36, 0, 0)
         MainUI.TopBar.Title.Size = UDim2.new(1, -70, 1, 0)
+    end
+    
+    -- Add mobile menu toggle if on mobile
+    if CryzenLib.IsMobile then
+        local MenuToggleBtn = SetChildren(SetProps(MakeElement("RoundFrame", CryzenLib.Themes[CryzenLib.SelectedTheme].Main, 0, 5), {
+            Size = UDim2.new(0, 40, 0, 40),
+            Position = UDim2.new(0, 20, 0, 20),
+            AnchorPoint = Vector2.new(0, 0),
+            Parent = Cryzen,
+            ZIndex = 10
+        }), {
+            SetProps(MakeElement("Image", "rbxassetid://7733717447"), {
+                Size = UDim2.new(0, 20, 0, 20),
+                Position = UDim2.new(0.5, 0, 0.5, 0),
+                AnchorPoint = Vector2.new(0.5, 0.5),
+                ImageColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Accent,
+                ZIndex = 11
+            }),
+            AddThemeObject(MakeElement("Stroke", Color3.fromRGB(255, 255, 255), 1), "Stroke")
+        })
+        
+        local MenuButton = Create("TextButton", {
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundTransparency = 1,
+            Text = "",
+            ZIndex = 12,
+            Parent = MenuToggleBtn
+        })
+        
+        AddConnection(MenuButton.MouseButton1Click, function()
+            MainUI.Visible = not MainUI.Visible
+        })
+        
+        -- Add dragging for mobile menu button
+        AddDraggingFunctionality(MenuToggleBtn, MenuToggleBtn)
     end
     
     AddDraggingFunctionality(MainUI.TopBar, MainUI)
@@ -1332,26 +1835,34 @@ function CryzenLib:MakeWindow(WindowConfig)
                 end
                 
                 local function UpdateSlider(Input)
-                    local MousePos = UserInputService:GetMouseLocation().X
+                    local InputPositionX
+                    if Input.UserInputType == Enum.UserInputType.Touch then
+                        InputPositionX = Input.Position.X
+                    else
+                        InputPositionX = UserInputService:GetMouseLocation().X
+                    end
+                    
                     local BtnPos = SliderBar.SliderButton.AbsolutePosition.X
-                    local Percent = math.clamp((MousePos - BtnPos) / SliderBar.SliderButton.AbsoluteSize.X, 0, 1)
+                    local Percent = math.clamp((InputPositionX - BtnPos) / SliderBar.SliderButton.AbsoluteSize.X, 0, 1)
                     local Value = SliderConfig.Min + ((SliderConfig.Max - SliderConfig.Min) * Percent)
                     Slider:Set(Value)
                 end
                 
-                AddConnection(SliderBar.SliderButton.MouseButton1Down, function(Input)
-                    Dragging = true
-                    UpdateSlider(Input)
+                AddConnection(SliderBar.SliderButton.InputBegan, function(Input)
+                    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+                        Dragging = true
+                        UpdateSlider(Input)
+                    end
                 end)
                 
                 AddConnection(UserInputService.InputEnded, function(Input)
-                    if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    if (Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch) and Dragging then
                         Dragging = false
                     end
                 end)
                 
                 AddConnection(UserInputService.InputChanged, function(Input)
-                    if Input.UserInputType == Enum.UserInputType.MouseMovement and Dragging then
+                    if (Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch) and Dragging then
                         UpdateSlider(Input)
                     end
                 end)
@@ -1613,7 +2124,7 @@ function CryzenLib:MakeWindow(WindowConfig)
                 end)
                 
                 AddConnection(Click.InputEnded, function(Input)
-                    if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
                         if Bind.Binding then return end
                         Bind.Binding = true
                         BindBox.Value.Text = "..."
@@ -1919,13 +2430,20 @@ function CryzenLib:MakeWindow(WindowConfig)
                 
                 local ColorInputConnection = nil
                 AddConnection(Color.InputBegan, function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                         if ColorInputConnection then
                             ColorInputConnection:Disconnect()
                         end
                         ColorInputConnection = AddConnection(RunService.RenderStepped, function()
-                            local ColorX = (math.clamp(Mouse.X - Color.AbsolutePosition.X, 0, Color.AbsoluteSize.X) / Color.AbsoluteSize.X)
-                            local ColorY = (math.clamp(Mouse.Y - Color.AbsolutePosition.Y, 0, Color.AbsoluteSize.Y) / Color.AbsoluteSize.Y)
+                            local ColorX, ColorY
+                            if input.UserInputType == Enum.UserInputType.Touch then
+                                ColorX = (math.clamp(input.Position.X - Color.AbsolutePosition.X, 0, Color.AbsoluteSize.X) / Color.AbsoluteSize.X)
+                                ColorY = (math.clamp(input.Position.Y - Color.AbsolutePosition.Y, 0, Color.AbsoluteSize.Y) / Color.AbsoluteSize.Y)
+                            else
+                                ColorX = (math.clamp(Mouse.X - Color.AbsolutePosition.X, 0, Color.AbsoluteSize.X) / Color.AbsoluteSize.X)
+                                ColorY = (math.clamp(Mouse.Y - Color.AbsolutePosition.Y, 0, Color.AbsoluteSize.Y) / Color.AbsoluteSize.Y)
+                            end
+                            
                             ColorSelection.Position = UDim2.new(ColorX, 0, ColorY, 0)
                             ColorS = ColorX
                             ColorV = 1 - ColorY
@@ -1935,7 +2453,7 @@ function CryzenLib:MakeWindow(WindowConfig)
                 end)
                 
                 AddConnection(Color.InputEnded, function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                         if ColorInputConnection then
                             ColorInputConnection:Disconnect()
                             ColorInputConnection = nil
@@ -1945,13 +2463,18 @@ function CryzenLib:MakeWindow(WindowConfig)
                 
                 local HueInputConnection = nil
                 AddConnection(Hue.InputBegan, function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                         if HueInputConnection then
                             HueInputConnection:Disconnect()
                         end
                 
                         HueInputConnection = AddConnection(RunService.RenderStepped, function()
-                            local HueY = (math.clamp(Mouse.Y - Hue.AbsolutePosition.Y, 0, Hue.AbsoluteSize.Y) / Hue.AbsoluteSize.Y)
+                            local HueY
+                            if input.UserInputType == Enum.UserInputType.Touch then
+                                HueY = (math.clamp(input.Position.Y - Hue.AbsolutePosition.Y, 0, Hue.AbsoluteSize.Y) / Hue.AbsoluteSize.Y)
+                            else
+                                HueY = (math.clamp(Mouse.Y - Hue.AbsolutePosition.Y, 0, Hue.AbsoluteSize.Y) / Hue.AbsoluteSize.Y)
+                            end
                 
                             HueSelection.Position = UDim2.new(0.5, 0, HueY, 0)
                             ColorH = 1 - HueY
@@ -1962,7 +2485,7 @@ function CryzenLib:MakeWindow(WindowConfig)
                 end)
                 
                 AddConnection(Hue.InputEnded, function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                         if HueInputConnection then
                             HueInputConnection:Disconnect()
                             HueInputConnection = nil
