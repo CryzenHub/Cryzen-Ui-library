@@ -19,7 +19,7 @@
 })``
 
 -- Create a section
-``lualocal MainSection = MainTab:AddSection({
+``local MainSection = MainTab:AddSection({
     Title = "Features"
 })``
 
