@@ -1,261 +1,269 @@
-## How to Use CryzenHub UI Library
+CryzenHub UI Library v2.3 - Usage Guide
 
-1. Basic Setup
+Getting Started
 
--- Load the library
-``local CryzenLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/CryzenHub/Cryzen-Ui-library/refs/heads/main/source.lua"))()``
+First, load the library:
 
--- Create a window
-``local Window = CryzenLib:CreateWindow({
-    Title = "CryzenHub - Game Name",
-    Size = UDim2.new(0, 550, 0, 400), -- Optional, default is 550x400
-    Theme = CryzenLib.Theme -- Optional, uses default theme if not specified
-})``
+local CryzenLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/CryzenHub/Cryzen-Ui-library/refs/heads/main/source.lua"))()
+
+Creating a Window
+
+local Window = CryzenLib:MakeWindow({
+    Name = "CryzenHub Example",
+    IntroText = "CryzenHub v2.3",
+    IntroIcon = "rbxassetid://10618644218",
+    Icon = "rbxassetid://10618644218",
+    IntroEnabled = true,
+    CloseCallback = function()
+        print("Window closed")
+    end,
+    Theme = "Default", -- Default, Dark, Light, Midnight, Oceanic
+    SaveConfig = true,
+    ConfigFolder = "CryzenHubConfig",
+    UseNewLoadingScreen = true,
+    LoadingTitle = "CryzenHub",
+    LoadingSubtitle = "Loading awesome features..."
+})
+
+Setting Up Key System (Optional)
+
+CryzenLib.KeySystem = true
+CryzenLib.KeySettings = {
+    Title = "CryzenHub Key System",
+    Subtitle = "Key Verification",
+    Note = "Get your key from our Discord server",
+    Key = "EXAMPLE-KEY-12345",
+    SaveKey = true,
+    GrabKeyFromSite = false,
+    KeyLink = "https://discord.gg/yourserver",
+    FileName = "CryzenKey",
+    MaxAttempts = 5,
+    RejectMessage = "Invalid key, please try again."
+}
+
+Creating Tabs and Sections
 
 -- Create a tab
-``local MainTab = Window:AddTab({
-    Title = "Main",
-    Icon = "rbxassetid://7734053495" -- Optional
-})``
+local MainTab = Window:MakeTab({
+    Name = "Main Features",
+    Icon = "rbxassetid://7733960981",
+    PremiumOnly = false
+})
 
--- Create a section
-``local MainSection = MainTab:AddSection({
-    Title = "Features"
-})``
+-- Add a section to the tab
+local Section = MainTab:AddSection({
+    Name = "Basic Controls"
+})
 
-2. Adding UI Elements
+Adding Elements
 
 Button
-``MainSection:AddButton({
-    Title = "Click Me",
+
+local MyButton = Section:AddButton({
+    Name = "Click Me",
     Callback = function()
         print("Button clicked!")
-    end
-})``
+    end,
+    Icon = "rbxassetid://7733964370" -- Optional icon
+})
+
+-- You can update the button text later
+MyButton:Set("New Button Text")
 
 Toggle
-``local Toggle = MainSection:AddToggle({
-    Title = "Toggle Feature",
-    Default = false, -- Optional, default is false
+
+local MyToggle = Section:AddToggle({
+    Name = "Toggle Feature",
+    Default = false,
+    Save = true,
+    Flag = "myToggleFeature",
     Callback = function(Value)
         print("Toggle is now:", Value)
-    end,
-    Flag = "myToggle" -- Optional, for saving/loading configs
-})``
+    end
+})
 
--- You can change the toggle state programmatically
-``Toggle:Set(true)``
+-- You can set the value programmatically
+MyToggle:Set(true)
 
 Slider
-``local Slider = MainSection:AddSlider({
-    Title = "Walkspeed",
+
+local MySlider = Section:AddSlider({
+    Name = "Walkspeed",
     Min = 16,
     Max = 500,
     Default = 16,
-    Increment = 1, -- Optional, default is 1
-    ValueSuffix = " studs/s", -- Optional, adds a suffix to the displayed value
+    Increment = 1,
+    ValueName = "studs/s",
+    Save = true,
+    Flag = "walkspeedValue",
     Callback = function(Value)
         game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
-    end,
-    Flag = "walkspeedSlider" -- Optional
-})``
+    end
+})
 
--- You can change the slider value programmatically
-``Slider:Set(100)``
+-- Set the slider value
+MySlider:Set(100)
 
 Dropdown
-``local Dropdown = MainSection:AddDropdown({
-    Title = "Select Option",
-    Items = {"Option 1", "Option 2", "Option 3"},
-    Default = "", -- Optional
-    Multi = false, -- Optional, enables multi-selection
-    Callback = function(Selected)
-        print("Selected:", Selected)
-    end,
-    Flag = "myDropdown" -- Optional
-})``
+
+local MyDropdown = Section:AddDropdown({
+    Name = "Select Option",
+    Default = "Option 1",
+    Options = {"Option 1", "Option 2", "Option 3"},
+    Save = true,
+    Flag = "selectedOption",
+    Callback = function(Value)
+        print("Selected:", Value)
+    end
+})
 
 -- Update dropdown options
-``Dropdown:Refresh({"New Option 1", "New Option 2"}, true) -- true to clear old options``
+MyDropdown:Refresh({"New Option 1", "New Option 2", "New Option 3"}, true) -- true to clear old options
 
--- Set selection programmatically
-``Dropdown:Set("New Option 1")``
-
--- For multi-select dropdowns
-``local MultiDropdown = MainSection:AddDropdown({
-    Title = "Multi-Select",
-    Items = {"Option 1", "Option 2", "Option 3"},
-    Multi = true,
-    Callback = function(Selected)
-        for Item, _ in pairs(Selected) do
-            print("Selected:", Item)
-        end
-    end
-})``
-
--- Set multiple selections
-``MultiDropdown:Set({["Option 1"] = true, ["Option 3"] = true})``
-
-Textbox
-``local Textbox = MainSection:AddTextbox({
-    Title = "Enter Text",
-    Default = "", -- Optional
-    Placeholder = "Type here...", -- Optional
-    ClearOnFocus = false, -- Optional
-    Callback = function(Text, EnterPressed)
-        print("Text entered:", Text)
-        print("Enter pressed:", EnterPressed)
-    end,
-    Flag = "myTextbox" -- Optional
-})``
-
--- Set text programmatically
-``Textbox:Set("New text")``
-
-Keybind
-``local Keybind = MainSection:AddKeybind({
-    Title = "Keybind",
-    Default = Enum.KeyCode.E, -- Optional
-    Callback = function()
-        print("Keybind pressed!")
-    end,
-    ChangedCallback = function(NewKey)
-        print("Keybind changed to:", NewKey.Name)
-    end,
-    Flag = "myKeybind" -- Optional
-})``
-
--- Change keybind programmatically
-``Keybind:Set(Enum.KeyCode.F)``
+-- Set a specific value
+MyDropdown:Set("New Option 2")
 
 Colorpicker
-``local Colorpicker = MainSection:AddColorpicker({
-    Title = "Select Color",
-    Default = Color3.fromRGB(255, 0, 0), -- Optional
-    Callback = function(Color, Alpha)
-        print("Color selected:", Color, "Alpha:", Alpha)
-    end,
-    Flag = "myColor" -- Optional
-})``
 
--- Set color programmatically
-``Colorpicker:Set(Color3.fromRGB(0, 255, 0), 0.5) -- Color and optional alpha``
+local MyColorpicker = Section:AddColorpicker({
+    Name = "UI Color",
+    Default = Color3.fromRGB(255, 0, 0),
+    Save = true,
+    Flag = "uiColor",
+    Callback = function(Value)
+        print("Color selected:", Value)
+    end
+})
+
+-- Set a specific color
+MyColorpicker:Set(Color3.fromRGB(0, 255, 0))
+
+Textbox
+
+local MyTextbox = Section:AddTextbox({
+    Name = "Enter Text",
+    Default = "Default text",
+    TextDisappear = false,
+    Callback = function(Value)
+        print("Text entered:", Value)
+    end
+})
+
+Keybind
+
+local MyKeybind = Section:AddBind({
+    Name = "Keybind",
+    Default = Enum.KeyCode.E,
+    Hold = false,
+    Save = true,
+    Flag = "actionKey",
+    Callback = function()
+        print("Keybind pressed!")
+    end
+})
+
+-- Set a specific key
+MyKeybind:Set(Enum.KeyCode.F)
 
 Label
-``local Label = MainSection:AddLabel({
-    Text = "This is a label",
-    Color = Color3.fromRGB(255, 255, 255) -- Optional
-})``
+
+local MyLabel = Section:AddLabel({
+    Text = "This is a label"
+})
 
 -- Update label text
-``Label:SetText("Updated label")``
+MyLabel:Set("Updated label text")
 
 -- Change label color
-``Label:SetColor(Color3.fromRGB(255, 0, 0))``
+MyLabel:SetColor(Color3.fromRGB(255, 0, 0))
 
 Paragraph
-``local Paragraph = MainSection:AddParagraph({
-    Title = "Information",
-    Content = "This is a longer text that provides detailed information about something important."
-})``
 
--- Update paragraph
-``Paragraph:SetTitle("New Title")
-Paragraph:SetContent("Updated content with new information.")``
+local MyParagraph = Section:AddParagraph({
+    Title = "Important Information",
+    Content = "This is a longer text that provides detailed information about a feature or functionality. It will automatically wrap to fit the available space."
+})
 
-3. Creating Multiple Tabs
+-- Update paragraph content
+MyParagraph:SetTitle("New Title")
+MyParagraph:SetContent("New content text goes here...")
 
-``local CombatTab = Window:AddTab({
-    Title = "Combat",
-    Icon = "rbxassetid://7733774602"
-})``
+Adding Home Tab Content
 
-``local SettingsTab = Window:AddTab({
-    Title = "Settings",
-    Icon = "rbxassetid://7734053495"
-})``
+Window:AddHome({
+    Welcome = {
+        Title = "Welcome to CryzenHub",
+        Content = "Thanks for using our UI library!"
+    },
+    Buttons = {
+        {
+            Title = "Join Discord",
+            Icon = "rbxassetid://7733964370",
+            Callback = function()
+                setclipboard("https://discord.gg/yourserver")
+                CryzenLib:MakeNotification({
+                    Title = "Discord Link Copied",
+                    Content = "Discord invite link copied to clipboard!",
+                    Time = 3,
+                    Type = "Info"
+                })
+            end
+        },
+        {
+            Title = "Copy Script",
+            Callback = function()
+                setclipboard("loadstring(game:HttpGet('https://raw.githubusercontent.com/Cryzen-Hub/CryzenHub/main/loader.lua'))()")
+            end
+        }
+    },
+    ShowCredits = true -- Show credits section
+})
 
--- Add sections to each tab
-``local CombatSection = CombatTab:AddSection({
-    Title = "Combat Options"
-})``
+Adding Theme and Settings Tabs
 
-``local SettingsSection = SettingsTab:AddSection({
-    Title = "General Settings"
-})``
+-- Add built-in theme customization tab
+local ThemeTab = Window:AddThemeTab()
 
-4. Using Notifications
+-- Add built-in settings tab
+local SettingsTab = Window:AddSettingsTab()
 
-``CryzenLib:Notify({
-    Title = "Success",
-    Content = "Operation completed successfully!",
-    Duration = 5, -- Seconds
+Creating Notifications
+
+CryzenLib:MakeNotification({
+    Title = "Script Loaded",
+    Content = "CryzenHub has been successfully loaded!",
+    Time = 5,
     Type = "Success" -- Info, Success, Error, Warning
-})``
+})
 
--- Different notification types
-``CryzenLib:Notify({
-    Title = "Error",
-    Content = "Something went wrong!",
-    Type = "Error"
-})``
+Other Useful Functions
 
-``CryzenLib:Notify({
-    Title = "Warning",
-    Content = "This action may cause issues!",
-    Type = "Warning"
-})``
+-- Change theme
+Window:SetTheme("Dark")
 
-``CryzenLib:Notify({
-    Title = "Information",
-    Content = "This is some useful information.",
-    Type = "Info"
-})``
+-- Destroy the UI
+CryzenLib:Destroy()
 
-5. Using Key System
+Key Features in v2.3
 
-``-- Set up key system before creating the window
-CryzenLib:SetKey({
-    Key = "SecretKey123",
-    SaveKey = true -- Optional, saves the key for future use
-})``
+Enhanced Mobile Support: Better touch controls and responsive design for mobile devices
+Improved Performance: Optimized animations and rendering
+New Loading Screen: Optional animated loading screen with progress bar
+Advanced Key System: Multiple verification methods and persistent key storage
+Enhanced Notifications: Better looking notifications with progress bars and icons
+Improved Theme Customization: More theme options and custom color support
+Better Config Saving: More reliable configuration saving and loading
+UI Animations: Smoother transitions and animations throughout the UI
+Premium Features: Support for premium-only features
+Improved Element Design: Cleaner, more modern look for all UI elements
 
-``-- Then create your window
-local Window = CryzenLib:CreateWindow({
-    Title = "CryzenHub - Game Name"
-})``
+Tips for Best Usage
 
-6. Using Configuration Saving
-
-``-- Enable configuration saving
-CryzenLib.SaveConfig = true
-CryzenLib.ConfigFolder = "MyCryzenConfig" -- Optional, default is "CryzenHub"``
-
-``-- Create window with flags for saving
-local Window = CryzenLib:CreateWindow({
-    Title = "CryzenHub - Game Name"
-})``
-
-``-- Use flags when creating elements to save their values
-local Toggle = MainSection:AddToggle({
-    Title = "Save This Setting",
-    Default = false,
-    Flag = "savedToggle"
-})``
-
-``-- Save configuration manually
-CryzenLib:SaveConfiguration(game.GameId)``
-
-``-- Load configuration manually (automatically attempted on startup)
-CryzenLib:LoadConfiguration(game.GameId)``
-
-7. Controlling Window Visibility
-
-lua`-- Show/hide window
-Window:Show()
-Window:Hide()
-Window:Toggle()`
-
-lua`-- Default toggle key is RightControl
--- You can also destroy the window completely
-Window:Destroy()`
+Use Flags for Important Values: Flags allow you to access values from anywhere in your script
+Enable Config Saving: This will remember user settings between sessions
+Use Icons: Icons make your UI more intuitive and visually appealing
+Organize with Tabs and Sections: Keep your UI organized by grouping related features
+Add Home Tab Content: Provide a welcome screen with useful information and quick access buttons
+Use Appropriate Notification Types: Different notification types (Success, Error, etc.) help users understand the context
+Test on Both PC and Mobile: Ensure your UI works well on all platforms
+Add Key Verification: If you want to restrict access to your script
