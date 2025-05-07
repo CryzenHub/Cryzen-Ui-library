@@ -16,7 +16,7 @@ A modern, easy-to-use UI library for Roblox Luau scripts with a clean design and
 ### Installation
 
 ```lua
-local CryzenHub = loadstring(game:HttpGet('https://raw.githubusercontent.com/YourUsername/CryzenHub/main/Source.lua'))()
+local CryzenHub = loadstring(game:HttpGet('https://raw.githubusercontent.com/CryzenHub/Cryzen-Ui-library/refs/heads/main/source'))()
 ```
 
 ### Basic Usage
@@ -179,7 +179,7 @@ tab:CreateDivider()  -- Creates a horizontal line divider
 ## Example Script
 
 ```lua
-local CryzenHub = loadstring(game:HttpGet('https://raw.githubusercontent.com/YourUsername/CryzenHub/main/Source.lua'))()
+local CryzenHub = loadstring(game:HttpGet('https://raw.githubusercontent.com/CryzenHub/Cryzen-Ui-library/refs/heads/main/source'))()
 
 local window = CryzenHub:CreateWindow({
     Title = "CryzenHub Example",
