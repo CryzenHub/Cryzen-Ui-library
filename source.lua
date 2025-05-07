@@ -1,29 +1,28 @@
 --[[
- ██████╗██████╗ ██╗   ██╗███████╗███████╗███╗   ██╗    ██╗  ██╗██╗   ██╗██████╗
+ ██████╗██████╗ ██╗   ██╗███████╗███████╗███╗   ██╗    ██╗  ██╗██╗   ██╗██████╗ 
 ██╔════╝██╔══██╗╚██╗ ██╔╝╚══███╔╝██╔════╝████╗  ██║    ██║  ██║██║   ██║██╔══██╗
 ██║     ██████╔╝ ╚████╔╝   ███╔╝ █████╗  ██╔██╗ ██║    ███████║██║   ██║██████╔╝
 ██║     ██╔══██╗  ╚██╔╝   ███╔╝  ██╔══╝  ██║╚██╗██║    ██╔══██║██║   ██║██╔══██╗
 ╚██████╗██║  ██║   ██║   ███████╗███████╗██║ ╚████║    ██║  ██║╚██████╔╝██████╔╝
- ╚═════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝╚══════╝╚═╝  ╚═══╝    ╚═╝  ╚═╝ ╚═════╝ ╚═════╝
-
-    CryzenHub V2.3 Beta - UI Library
-    Advanced modern UI with improved performance and design
-    Smooth animations and responsive layout
-    Enhanced mobile support with easy navigation
-    Customizable themes and persistent configuration
-    Integrated key system with multiple verification methods
+ ╚═════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝╚══════╝╚═╝  ╚═══╝    ╚═╝  ╚═╝ ╚═════╝ ╚═════╝ 
+                                                                               
+    CryzenHub V2.3 - Fluent Design Edition
+    - Fixed attempt to call nil value errors
+    - Redesigned UI with Fluent Design principles
+    - Enhanced mobile support
+    - Improved performance and stability
+    - Better error handling and debugging
 ]]
 
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
-local HttpService = game:GetService("HttpService")
-local TextService = game:GetService("TextService")
-local ContentProvider = game:GetService("ContentProvider")
-
 local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
+local HttpService = game:GetService("HttpService")
+local TextService = game:GetService("TextService")
+local CoreGui = game:GetService("CoreGui")
 
 -- Create CryzenHub library base
 local CryzenLib = {
@@ -32,29 +31,29 @@ local CryzenLib = {
     Connections = {},
     Flags = {},
     Themes = {
-        Default = {
-            Main = Color3.fromRGB(25, 25, 30),
-            Second = Color3.fromRGB(32, 32, 38),
-            Stroke = Color3.fromRGB(60, 60, 70),
-            Divider = Color3.fromRGB(60, 60, 70),
+        Fluent = {
+            Main = Color3.fromRGB(32, 32, 38),
+            Second = Color3.fromRGB(38, 38, 46),
+            Stroke = Color3.fromRGB(60, 60, 72),
+            Divider = Color3.fromRGB(60, 60, 72),
             Text = Color3.fromRGB(240, 240, 245),
-            TextDark = Color3.fromRGB(150, 150, 160),
+            TextDark = Color3.fromRGB(180, 180, 190),
             Accent = Color3.fromRGB(98, 108, 241)
         },
         Dark = {
-            Main = Color3.fromRGB(18, 18, 22),
-            Second = Color3.fromRGB(24, 24, 28),
-            Stroke = Color3.fromRGB(50, 50, 55),
-            Divider = Color3.fromRGB(50, 50, 55),
+            Main = Color3.fromRGB(25, 25, 30),
+            Second = Color3.fromRGB(32, 32, 38),
+            Stroke = Color3.fromRGB(50, 50, 60),
+            Divider = Color3.fromRGB(50, 50, 60),
             Text = Color3.fromRGB(240, 240, 245),
-            TextDark = Color3.fromRGB(140, 140, 145),
+            TextDark = Color3.fromRGB(160, 160, 170),
             Accent = Color3.fromRGB(90, 100, 240)
         },
         Light = {
             Main = Color3.fromRGB(240, 240, 245),
             Second = Color3.fromRGB(230, 230, 235),
-            Stroke = Color3.fromRGB(180, 180, 185),
-            Divider = Color3.fromRGB(180, 180, 185),
+            Stroke = Color3.fromRGB(200, 200, 210),
+            Divider = Color3.fromRGB(200, 200, 210),
             Text = Color3.fromRGB(40, 40, 45),
             TextDark = Color3.fromRGB(100, 100, 110),
             Accent = Color3.fromRGB(90, 100, 240)
@@ -68,7 +67,7 @@ local CryzenLib = {
             TextDark = Color3.fromRGB(130, 130, 180),
             Accent = Color3.fromRGB(100, 120, 255)
         },
-        Oceanic = {
+        Aqua = {
             Main = Color3.fromRGB(20, 35, 40),
             Second = Color3.fromRGB(25, 45, 50),
             Stroke = Color3.fromRGB(40, 80, 90),
@@ -78,8 +77,8 @@ local CryzenLib = {
             Accent = Color3.fromRGB(60, 180, 200)
         }
     },
-    SelectedTheme = "Default",
-    Folder = nil,
+    SelectedTheme = "Fluent",
+    Folder = "CryzenHub",
     SaveCfg = false,
     ConfigFolder = "CryzenHub",
     Version = "2.3.0",
@@ -91,20 +90,42 @@ local CryzenLib = {
         Key = "",
         KeyLink = "",
         SaveKey = false,
-        GrabKeyFromSite = false, -- Set this to true to fetch key from KeyLink
+        GrabKeyFromSite = false,
         FileName = "CryzenKey",
         MaxAttempts = 5,
         RejectMessage = "Invalid key, please try again.",
         Callback = function() end
     },
-    IsMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+    IsMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled,
+    Debug = false
 }
 
--- Load Feather Icons for UI elements
+-- Debug logging function
+local function debugLog(...)
+    if CryzenLib.Debug then
+        print("[CryzenHub Debug]", ...)
+    end
+end
+
+-- Error handling wrapper
+local function safeCall(func, ...)
+    if type(func) ~= "function" then
+        debugLog("Attempted to call a non-function:", func)
+        return
+    end
+    
+    local success, result = pcall(func, ...)
+    if not success then
+        warn("[CryzenHub Error]", result)
+    end
+    return success, result
+end
+
+-- Load Fluent Icons
 local Icons = {}
 
 local Success, Response = pcall(function()
-    local Data = game:HttpGetAsync("https://raw.githubusercontent.com/evoincorp/lucideblox/master/src/modules/util/icons.json")
+    local Data = game:HttpGet("https://raw.githubusercontent.com/evoincorp/lucideblox/master/src/modules/util/icons.json")
     if Data then
         return HttpService:JSONDecode(Data).icons
     else
@@ -113,7 +134,7 @@ local Success, Response = pcall(function()
 end)
 
 if not Success then
-    warn("\nCryzenHub - Failed to load Feather Icons. Error code: " .. tostring(Response) .. "\n")
+    warn("[CryzenHub] Failed to load icons. Using fallback icons.")
     Icons = {}
 else
     Icons = Response
@@ -130,35 +151,34 @@ end
 -- Create main UI
 local Cryzen = Instance.new("ScreenGui")
 Cryzen.Name = "CryzenHub"
+Cryzen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+Cryzen.ResetOnSpawn = false
+
+-- Protection and initialization
 if syn then
     syn.protect_gui(Cryzen)
-    Cryzen.Parent = game.CoreGui
+    Cryzen.Parent = CoreGui
+elseif gethui then
+    Cryzen.Parent = gethui()
 else
-    Cryzen.Parent = gethui() or game.CoreGui
+    Cryzen.Parent = CoreGui
 end
 
 -- Remove duplicate UIs
-if gethui then
-    for _, Interface in ipairs(gethui():GetChildren()) do
-        if Interface.Name == Cryzen.Name and Interface ~= Cryzen then
-            Interface:Destroy()
-        end
-    end
-else
-    for _, Interface in ipairs(game.CoreGui:GetChildren()) do
+local function RemoveDuplicates()
+    local parent = Cryzen.Parent
+    for _, Interface in ipairs(parent:GetChildren()) do
         if Interface.Name == Cryzen.Name and Interface ~= Cryzen then
             Interface:Destroy()
         end
     end
 end
 
+pcall(RemoveDuplicates)
+
 -- Core functions
 function CryzenLib:IsRunning()
-    if gethui then
-        return Cryzen.Parent == gethui()
-    else
-        return Cryzen.Parent == game:GetService("CoreGui")
-    end
+    return Cryzen and Cryzen.Parent ~= nil
 end
 
 local function AddConnection(Signal, Function)
@@ -170,120 +190,24 @@ local function AddConnection(Signal, Function)
     return SignalConnect
 end
 
+-- Clean up connections when the UI is destroyed
 task.spawn(function()
     while (CryzenLib:IsRunning()) do
-        wait()
+        wait(1)
     end
 
     for _, Connection in next, CryzenLib.Connections do
-        Connection:Disconnect()
+        if typeof(Connection) == "RBXScriptConnection" and Connection.Connected then
+            Connection:Disconnect()
+        end
     end
 end)
-
--- Theme management
-local function AddThemeObject(Object, Type)
-    if not CryzenLib.ThemeObjects[Type] then
-        CryzenLib.ThemeObjects[Type] = {}
-    end
-    table.insert(CryzenLib.ThemeObjects[Type], Object)
-    return Object
-end
-
-local function SetTheme(Theme)
-    if CryzenLib.Themes[Theme] then
-        CryzenLib.SelectedTheme = Theme
-        for ThemeType, Objects in pairs(CryzenLib.ThemeObjects) do
-            for _, Object in pairs(Objects) do
-                if ThemeType == "Stroke" then
-                    Object.Color = CryzenLib.Themes[Theme].Stroke
-                elseif ThemeType == "Text" then
-                    Object.TextColor3 = CryzenLib.Themes[Theme].Text
-                elseif ThemeType == "TextDark" then
-                    Object.TextColor3 = CryzenLib.Themes[Theme].TextDark
-                elseif ThemeType == "Accent" then
-                    Object.BackgroundColor3 = CryzenLib.Themes[Theme].Accent
-                elseif ThemeType == "Main" then
-                    Object.BackgroundColor3 = CryzenLib.Themes[Theme].Main
-                elseif ThemeType == "Second" then
-                    Object.BackgroundColor3 = CryzenLib.Themes[Theme].Second
-                elseif ThemeType == "Divider" then
-                    Object.BackgroundColor3 = CryzenLib.Themes[Theme].Divider
-                end
-            end
-        end
-    end
-end
-
--- Config management
-local function SaveCfg(GameID)
-    if not CryzenLib.SaveCfg then return end
-
-    local Config = {}
-    for Flag, Value in pairs(CryzenLib.Flags) do
-        if Value.Save then
-            if typeof(Value.Value) == "Color3" then
-                Config[Flag] = {
-                    Type = Value.Type,
-                    Value = {
-                        R = Value.Value.R,
-                        G = Value.Value.G,
-                        B = Value.Value.B
-                    }
-                }
-            else
-                Config[Flag] = {
-                    Type = Value.Type,
-                    Value = Value.Value
-                }
-            end
-        end
-    end
-
-    local ConfigJSON = HttpService:JSONEncode(Config)
-    local FolderPath = "CryzenHub/" .. CryzenLib.ConfigFolder
-    if not isfolder(FolderPath) then
-        makefolder(FolderPath)
-    end
-
-    writefile(FolderPath .. "/" .. GameID .. ".cfg", ConfigJSON)
-end
-
-local function LoadCfg(GameID)
-    if not CryzenLib.SaveCfg then return end
-
-    local FolderPath = "CryzenHub/" .. CryzenLib.ConfigFolder
-    local FilePath = FolderPath .. "/" .. GameID .. ".cfg"
-    if not isfolder(FolderPath) then
-        makefolder(FolderPath)
-    end
-
-    if not isfile(FilePath) then
-        return
-    end
-
-    local ConfigJSON = readfile(FilePath)
-    local Config = HttpService:JSONDecode(ConfigJSON)
-
-    for Flag, Data in pairs(Config) do
-        if CryzenLib.Flags[Flag] then
-            local FlagData = CryzenLib.Flags[Flag]
-            if Data.Type == "Colorpicker" and typeof(Data.Value) == "table" then
-                local Color = Color3.fromRGB(Data.Value.R * 255, Data.Value.G * 255, Data.Value.B * 255)
-                FlagData:Set(Color)
-            elseif Data.Type == "Toggle" or Data.Type == "Slider" or Data.Type == "Dropdown" then
-                FlagData:Set(Data.Value)
-            elseif Data.Type == "Bind" then
-                FlagData:Set(Enum.KeyCode[Data.Value] or Enum.UserInputType[Data.Value])
-            end
-        end
-    end
-end
 
 -- Utility functions
 local function AddDraggingFunctionality(DragPoint, Main)
     pcall(function()
         local Dragging, DragInput, MousePos, FramePos = false
-
+        
         AddConnection(DragPoint.InputBegan, function(Input)
             if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
                 Dragging = true
@@ -297,17 +221,17 @@ local function AddDraggingFunctionality(DragPoint, Main)
                 end)
             end
         end)
-
+        
         AddConnection(DragPoint.InputChanged, function(Input)
             if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
                 DragInput = Input
             end
         end)
-
+        
         AddConnection(UserInputService.InputChanged, function(Input)
             if Input == DragInput and Dragging then
                 local Delta = Input.Position - MousePos
-                TweenService:Create(Main, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2.new(FramePos.X.Scale, FramePos.X.Offset + Delta.X, FramePos.Y.Scale, FramePos.Y.Offset + Delta.Y)}):Play()
+                TweenService:Create(Main, TweenInfo.new(0.15, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2.new(FramePos.X.Scale, FramePos.X.Offset + Delta.X, FramePos.Y.Scale, FramePos.Y.Offset + Delta.Y)}):Play()
             end
         end)
     end)
@@ -332,36 +256,90 @@ end
 
 local function MakeElement(ElementName, ...)
     if CryzenLib.Elements[ElementName] then
-        return CryzenLib.ElementsElementName
+        return CryzenLib.Elements[ElementName](...)
     else
-        warn("Element not found: " .. ElementName)
-        return nil
+        warn("[CryzenHub] Element not found:", ElementName)
+        return Create("Frame", {BackgroundTransparency = 1})
     end
 end
 
 local function SetProps(Element, Props)
-    table.foreach(Props, function(Property, Value)
+    for Property, Value in next, Props or {} do
         Element[Property] = Value
-    end)
+    end
     return Element
 end
 
 local function SetChildren(Element, Children)
-    table.foreach(Children, function(_, Child)
+    for _, Child in next, Children or {} do
         Child.Parent = Element
-    end)
+    end
     return Element
 end
 
 local function Round(Number, Factor)
     local Result = math.floor(Number/Factor + (math.sign(Number) * 0.5)) * Factor
+    if Result < 0 then
+        Result = Result + Factor
+    end
     return Result
 end
 
+local function GetTextBounds(Text, TextSize, Font)
+    return TextService:GetTextSize(Text, TextSize, Font, Vector2.new(math.huge, math.huge))
+end
+
+local function GetTheme(Theme)
+    if Theme == "Fluent" or not CryzenLib.Themes[Theme] then
+        return CryzenLib.Themes["Fluent"]
+    else
+        return CryzenLib.Themes[Theme]
+    end
+end
+
+local function AddThemeObject(Object, Type)
+    if not CryzenLib.ThemeObjects[Type] then
+        CryzenLib.ThemeObjects[Type] = {}
+    end
+    table.insert(CryzenLib.ThemeObjects[Type], Object)
+    if Object:IsA("GuiObject") and Object.BackgroundColor3 ~= nil then
+        Object.BackgroundColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme][Type]
+    end
+    if Object:IsA("TextLabel") or Object:IsA("TextButton") or Object:IsA("TextBox") then
+        Object.TextColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme][Type]
+    end
+    return Object
+end
+
+local function SetTheme(Theme)
+    if not CryzenLib.Themes[Theme] and Theme ~= "Fluent" then
+        warn("[CryzenHub] Theme '" .. Theme .. "' doesn't exist!")
+        return
+    end
+    
+    CryzenLib.SelectedTheme = Theme
+    
+    for Type, Objects in next, CryzenLib.ThemeObjects do
+        for _, Object in next, Objects do
+            if Object:IsA("GuiObject") and Object.BackgroundColor3 ~= nil then
+                TweenService:Create(Object, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = CryzenLib.Themes[Theme][Type]}):Play()
+            end
+            if Object:IsA("TextLabel") or Object:IsA("TextButton") or Object:IsA("TextBox") then
+                TweenService:Create(Object, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {TextColor3 = CryzenLib.Themes[Theme][Type]}):Play()
+            end
+            if Object:IsA("ImageLabel") or Object:IsA("ImageButton") and Type == "Accent" then
+                TweenService:Create(Object, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {ImageColor3 = CryzenLib.Themes[Theme][Type]}):Play()
+            end
+        end
+    end
+end
+
+-- Create standard UI elements
 local WhitelistedMouse = {
     Enum.UserInputType.MouseButton1,
     Enum.UserInputType.MouseButton2,
-    Enum.UserInputType.MouseButton3
+    Enum.UserInputType.MouseButton3,
+    Enum.UserInputType.Touch
 }
 
 local BlacklistedKeys = {
@@ -384,12 +362,41 @@ local function CheckKey(Table, Key)
     return false
 end
 
--- Create basic UI elements
+-- Define basic UI elements
+CreateElement("Corner", function(Radius)
+    return Create("UICorner", {
+        CornerRadius = UDim.new(0, Radius or 5)
+    })
+end)
+
+CreateElement("Stroke", function(Color, Thickness)
+    return Create("UIStroke", {
+        Color = Color or Color3.fromRGB(255, 255, 255),
+        Thickness = Thickness or 1,
+        ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    })
+end)
+
+CreateElement("List", function(Padding, HorizontalAlignment)
+    return Create("UIListLayout", {
+        Padding = UDim.new(0, Padding or 0),
+        HorizontalAlignment = HorizontalAlignment or Enum.HorizontalAlignment.Left,
+        SortOrder = Enum.SortOrder.LayoutOrder
+    })
+end)
+
+CreateElement("Padding", function(PaddingData)
+    return Create("UIPadding", {
+        PaddingBottom = PaddingData.Bottom or UDim.new(0, 0),
+        PaddingLeft = PaddingData.Left or UDim.new(0, 0),
+        PaddingRight = PaddingData.Right or UDim.new(0, 0),
+        PaddingTop = PaddingData.Top or UDim.new(0, 0)
+    })
+end)
+
 CreateElement("TFrame", function()
     return Create("Frame", {
-        BackgroundTransparency = 1,
-        BorderSizePixel = 0,
-        ZIndex = 1
+        BackgroundTransparency = 1
     })
 end)
 
@@ -397,381 +404,591 @@ CreateElement("Frame", function(Color, Transparency)
     return Create("Frame", {
         BackgroundColor3 = Color or Color3.fromRGB(255, 255, 255),
         BackgroundTransparency = Transparency or 0,
-        BorderSizePixel = 0,
-        ZIndex = 1
+        BorderSizePixel = 0
     })
 end)
 
 CreateElement("RoundFrame", function(Color, Transparency, Radius)
-    return SetChildren(Create("Frame", {
+    return Create("Frame", {
         BackgroundColor3 = Color or Color3.fromRGB(255, 255, 255),
         BackgroundTransparency = Transparency or 0,
-        BorderSizePixel = 0,
-        ZIndex = 1
-    }), {
+        BorderSizePixel = 0
+    }, {
         Create("UICorner", {
-            CornerRadius = UDim.new(0, Radius or 4)
+            CornerRadius = UDim.new(0, Radius or 5)
         })
     })
 end)
 
 CreateElement("Button", function()
     return Create("TextButton", {
-        BackgroundTransparency = 1,
-        BorderSizePixel = 0,
         Text = "",
-        ZIndex = 10
-    })
-end)
-
-CreateElement("SmoothButton", function()
-    return Create("ImageButton", {
+        AutoButtonColor = false,
         BackgroundTransparency = 1,
-        BorderSizePixel = 0,
-        Image = "",
-        ImageTransparency = 1,
-        ZIndex = 10
+        BorderSizePixel = 0
     })
 end)
 
 CreateElement("ScrollFrame", function(Color, Transparency, Radius)
-    return SetChildren(Create("ScrollingFrame", {
+    return Create("ScrollingFrame", {
         BackgroundColor3 = Color or Color3.fromRGB(255, 255, 255),
         BackgroundTransparency = Transparency or 0,
         BorderSizePixel = 0,
-        ScrollBarImageColor3 = Color3.fromRGB(0, 0, 0),
-        ScrollBarImageTransparency = 1,
-        ScrollBarThickness = 0,
+        ScrollBarThickness = 4,
+        ScrollBarImageColor3 = Color3.fromRGB(100, 100, 120),
+        ScrollBarImageTransparency = 0.2,
         VerticalScrollBarInset = Enum.ScrollBarInset.Always,
-        ZIndex = 1
-    }), {
+        CanvasSize = UDim2.new(0, 0, 0, 0)
+    }, {
         Create("UICorner", {
-            CornerRadius = UDim.new(0, Radius or 4)
+            CornerRadius = UDim.new(0, Radius or 5)
         })
     })
 end)
 
 CreateElement("Image", function(ImageId)
     return Create("ImageLabel", {
-        BackgroundTransparency = 1,
-        BorderSizePixel = 0,
         Image = ImageId or "",
-        ZIndex = 1
-    })
-end)
-
-CreateElement("Label", function(Text, TextSize)
-    return Create("TextLabel", {
         BackgroundTransparency = 1,
         BorderSizePixel = 0,
+        ScaleType = Enum.ScaleType.Fit
+    })
+end)
+
+CreateElement("ImageButton", function(ImageId)
+    return Create("ImageButton", {
+        Image = ImageId or "",
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        ScaleType = Enum.ScaleType.Fit
+    })
+end)
+
+CreateElement("Label", function(Text, TextSize, Transparency)
+    return Create("TextLabel", {
         Text = Text or "",
+        TextSize = TextSize or 14,
+        BackgroundTransparency = 1,
         TextColor3 = Color3.fromRGB(240, 240, 240),
-        TextSize = TextSize or 15,
-        Font = Enum.Font.Gotham,
+        TextTransparency = Transparency or 0,
         TextXAlignment = Enum.TextXAlignment.Left,
-        ZIndex = 1
+        Font = Enum.Font.Gotham,
+        BorderSizePixel = 0,
+        RichText = true,
+        ClipsDescendants = true
     })
 end)
 
-CreateElement("Stroke", function(Color, Thickness)
-    return Create("UIStroke", {
-        Color = Color or Color3.fromRGB(65, 65, 70),
-        Thickness = Thickness or 1,
-        ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-        LineJoinMode = Enum.LineJoinMode.Round
+CreateElement("Gradient", function(Colors, Transparency, Rotation)
+    return Create("UIGradient", {
+        Color = Colors or ColorSequence.new(Color3.fromRGB(255, 255, 255)),
+        Transparency = Transparency or NumberSequence.new(0),
+        Rotation = Rotation or 0
     })
 end)
 
-CreateElement("List", function(Padding, HorizontalAlignment)
-    return Create("UIListLayout", {
-        Padding = UDim.new(0, Padding or 5),
-        FillDirection = Enum.FillDirection.Vertical,
-        HorizontalAlignment = HorizontalAlignment or Enum.HorizontalAlignment.Left,
-        SortOrder = Enum.SortOrder.LayoutOrder,
-        VerticalAlignment = Enum.VerticalAlignment.Top
+CreateElement("SmoothButton", function(Color)
+    local Button = Create("TextButton", {
+        Text = "",
+        AutoButtonColor = false,
+        BackgroundColor3 = Color or Color3.fromRGB(255, 255, 255),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0
     })
+    
+    -- Create ripple effect for button
+    local RippleContainer = Create("Frame", {
+        Name = "RippleContainer",
+        BackgroundTransparency = 1,
+        ClipsDescendants = true,
+        Size = UDim2.new(1, 0, 1, 0),
+        Parent = Button
+    })
+    
+    AddConnection(Button.InputBegan, function(Input)
+        if (Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch) then
+            local RippleCircle = Create("Frame", {
+                BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+                BackgroundTransparency = 0.7,
+                BorderSizePixel = 0,
+                AnchorPoint = Vector2.new(0.5, 0.5),
+                Parent = RippleContainer
+            })
+            
+            Create("UICorner", {
+                CornerRadius = UDim.new(1, 0),
+                Parent = RippleCircle
+            })
+            
+            local ButtonAbsoluteSize = Button.AbsoluteSize
+            local ButtonAbsolutePosition = Button.AbsolutePosition
+            
+            local MaxSize = math.max(ButtonAbsoluteSize.X, ButtonAbsoluteSize.Y) * 2
+            
+            -- Calculate position based on input type
+            local Position
+            if Input.UserInputType == Enum.UserInputType.Touch then
+                Position = UDim2.new(0, Input.Position.X - ButtonAbsolutePosition.X, 0, Input.Position.Y - ButtonAbsolutePosition.Y)
+            else
+                Position = UDim2.new(0, Input.Position.X - ButtonAbsolutePosition.X, 0, Input.Position.Y - ButtonAbsolutePosition.Y)
+            end
+            
+            RippleCircle.Position = Position
+            RippleCircle.Size = UDim2.new(0, 0, 0, 0)
+            
+            TweenService:Create(RippleCircle, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+                Size = UDim2.new(0, MaxSize, 0, MaxSize),
+                BackgroundTransparency = 1
+            }):Play()
+            
+            game.Debris:AddItem(RippleCircle, 0.5)
+        end
+    end)
+    
+    return Button
 end)
 
-CreateElement("Padding", function(PaddingData)
-    return Create("UIPadding", {
-        PaddingTop = UDim.new(0, PaddingData.Top or 0),
-        PaddingBottom = UDim.new(0, PaddingData.Bottom or 0),
-        PaddingLeft = UDim.new(0, PaddingData.Left or 0),
-        PaddingRight = UDim.new(0, PaddingData.Right or 0)
-    })
-end)
+-- Configuration management
+local function SaveCfg(GameId)
+    if not CryzenLib.SaveCfg then return end
+    
+    debugLog("Saving configuration for game", GameId)
+    
+    local success = pcall(function()
+        if not isfolder(CryzenLib.Folder) then
+            makefolder(CryzenLib.Folder)
+        end
+        
+        if not isfolder(CryzenLib.Folder.."/"..GameId) then
+            makefolder(CryzenLib.Folder.."/"..GameId)
+        end
+        
+        if not isfolder(CryzenLib.Folder.."/"..GameId.."/configs") then
+            makefolder(CryzenLib.Folder.."/"..GameId.."/configs")
+        end
+        
+        local Config = {
+            Flags = {},
+            Theme = CryzenLib.SelectedTheme,
+            Version = CryzenLib.Version
+        }
+        
+        for i,v in next, CryzenLib.Flags do
+            if v.Save then
+                if v.Type == "Colorpicker" then
+                    Config.Flags[i] = {
+                        Type = "Colorpicker",
+                        Value = {v.Value.R, v.Value.G, v.Value.B}
+                    }
+                elseif v.Type == "Bind" then
+                    Config.Flags[i] = {
+                        Type = "Bind",
+                        Value = v.Value
+                    }
+                elseif v.Type == "Dropdown" then
+                    Config.Flags[i] = {
+                        Type = "Dropdown",
+                        Value = v.Value
+                    }
+                else
+                    Config.Flags[i] = {
+                        Type = "Other",
+                        Value = v.Value
+                    }
+                end
+            end
+        end
+        
+        local encoded = HttpService:JSONEncode(Config)
+        writefile(CryzenLib.Folder.."/"..GameId.."/configs".."/"..CryzenLib.ConfigFolder..".cfg", encoded)
+    end)
+    
+    if not success then
+        warn("[CryzenHub] Failed to save config.")
+    end
+end
+
+local function LoadCfg(GameId)
+    if not CryzenLib.SaveCfg then return end
+    
+    debugLog("Loading configuration for game", GameId)
+    
+    local success = pcall(function()
+        if not isfile(CryzenLib.Folder.."/"..GameId.."/configs".."/"..CryzenLib.ConfigFolder..".cfg") then
+            return
+        end
+        
+        local fileContent = readfile(CryzenLib.Folder.."/"..GameId.."/configs".."/"..CryzenLib.ConfigFolder..".cfg")
+        local Config = HttpService:JSONDecode(fileContent)
+        
+        -- Set theme if it exists in config
+        if Config.Theme and CryzenLib.Themes[Config.Theme] then
+            SetTheme(Config.Theme)
+        end
+        
+        -- Set flag values
+        for i,v in next, Config.Flags do
+            if CryzenLib.Flags[i] then
+                if v.Type == "Colorpicker" then
+                    CryzenLib.Flags[i]:Set(Color3.fromRGB(v.Value[1], v.Value[2], v.Value[3]))
+                else
+                    CryzenLib.Flags[i]:Set(v.Value)
+                end
+            end
+        end
+    end)
+    
+    if not success then
+        warn("[CryzenHub] Failed to load config.")
+    end
+end
 
 -- Key System
-function CryzenLib:CreateKeySystem()
-    if not self.KeySystem then return true end
+function CryzenLib:SetKey(KeySettings)
+    KeySettings = KeySettings or {}
+    
+    -- Merge with default settings
+    for k, v in pairs(KeySettings) do
+        self.KeySettings[k] = v
+    end
+    
+    self.KeySystem = true
+    return self
+end
 
-    -- Check if key already exists
-    local KeyFilePath = "CryzenHub/" .. self.KeySettings.FileName .. ".txt"
-    local KeyFromFile = nil
-
-    if self.KeySettings.SaveKey and isfile(KeyFilePath) then
-        KeyFromFile = readfile(KeyFilePath)
-        if KeyFromFile == self.KeySettings.Key then
-            self.KeySettings.Callback()
+function CryzenLib:VerifyKey(Key)
+    if Key == self.KeySettings.Key then
+        return true
+    elseif self.KeySettings.GrabKeyFromSite and self.KeySettings.KeyLink ~= "" then
+        local success, keyFromSite = pcall(function()
+            return game:HttpGet(self.KeySettings.KeyLink)
+        end)
+        
+        if success and keyFromSite and Key == keyFromSite then
             return true
         end
     end
+    
+    return false
+end
 
-    -- Fetch key from site if enabled
-    if self.KeySettings.GrabKeyFromSite and self.KeySettings.KeyLink ~= "" then
-        local Success, Response = pcall(function()
-            return game:HttpGetAsync(self.KeySettings.KeyLink)
-        end)
-        if Success and Response then
-            self.KeySettings.Key = Response:gsub("%s+", "")
+function CryzenLib:SaveKeyToFile(Key)
+    if not self.KeySettings.SaveKey then return end
+    
+    pcall(function()
+        if not isfolder(self.Folder) then
+            makefolder(self.Folder)
         end
-    end
+        
+        writefile(self.Folder.."/"..self.KeySettings.FileName..".txt", Key)
+    end)
+end
 
-    -- Create Key UI
+function CryzenLib:LoadKeyFromFile()
+    if not self.KeySettings.SaveKey then return nil end
+    
+    local key = nil
+    pcall(function()
+        if not isfolder(self.Folder) then
+            return nil
+        end
+        
+        if not isfile(self.Folder.."/"..self.KeySettings.FileName..".txt") then
+            return nil
+        end
+        
+        key = readfile(self.Folder.."/"..self.KeySettings.FileName..".txt")
+    end)
+    
+    return key
+end
+
+function CryzenLib:CreateKeySystem()
+    if not self.KeySystem then return true end
+    
+    debugLog("Creating key system")
+    
+    -- Check if key is already saved
+    local SavedKey = self:LoadKeyFromFile()
+    if SavedKey and self:VerifyKey(SavedKey) then
+        self.KeySettings.Callback(SavedKey)
+        return true
+    end
+    
+    -- Create key system UI
     local KeyUI = Create("ScreenGui", {
         Name = "CryzenKeySystem",
-        Parent = game.CoreGui
+        ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     })
-
+    
+    if syn then
+        syn.protect_gui(KeyUI)
+        KeyUI.Parent = game.CoreGui
+    else
+        KeyUI.Parent = gethui() or game.CoreGui
+    end
+    
     local MainFrame = Create("Frame", {
-        Size = UDim2.new(0, 400, 0, 200),
+        BackgroundColor3 = self.Themes[self.SelectedTheme].Main,
+        BorderSizePixel = 0,
         Position = UDim2.new(0.5, 0, 0.5, 0),
         AnchorPoint = Vector2.new(0.5, 0.5),
-        BackgroundColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Main,
-        BorderSizePixel = 0,
+        Size = UDim2.new(0, 400, 0, 260),
         Parent = KeyUI
+    }, {
+        Create("UICorner", {
+            CornerRadius = UDim.new(0, 8)
+        }),
+        Create("UIStroke", {
+            Color = self.Themes[self.SelectedTheme].Stroke,
+            Thickness = 1
+        })
+    })
+    
+    -- Add shadow
+    local Shadow = Create("ImageLabel", {
+        Image = "rbxassetid://6015897843", -- New shadow image
+        Size = UDim2.new(1, 47, 1, 47),
+        Position = UDim2.new(0.5, 0, 0.5, 0),
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        ImageColor3 = Color3.fromRGB(0, 0, 0),
+        ImageTransparency = 0.6,
+        ZIndex = 0,
+        BackgroundTransparency = 1,
+        Parent = MainFrame
+    })
+    
+    local Title = Create("TextLabel", {
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, -40, 0, 30),
+        Position = UDim2.new(0, 20, 0, 15),
+        Font = Enum.Font.GothamBold,
+        Text = self.KeySettings.Title,
+        TextColor3 = self.Themes[self.SelectedTheme].Text,
+        TextSize = 22,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = MainFrame
+    })
+    
+    local Subtitle = Create("TextLabel", {
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, -40, 0, 20),
+        Position = UDim2.new(0, 20, 0, 45),
+        Font = Enum.Font.Gotham,
+        Text = self.KeySettings.Subtitle,
+        TextColor3 = self.Themes[self.SelectedTheme].TextDark,
+        TextSize = 14,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = MainFrame
+    })
+    
+    local Note = Create("TextLabel", {
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, -40, 0, 40),
+        Position = UDim2.new(0, 20, 0, 75),
+        Font = Enum.Font.Gotham,
+        Text = self.KeySettings.Note,
+        TextColor3 = self.Themes[self.SelectedTheme].TextDark,
+        TextSize = 14,
+        TextWrapped = true,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextYAlignment = Enum.TextYAlignment.Top,
+        Parent = MainFrame
+    })
+    
+    local KeyBoxContainer = Create("Frame", {
+        BackgroundColor3 = self.Themes[self.SelectedTheme].Second,
+        Size = UDim2.new(1, -40, 0, 40),
+        Position = UDim2.new(0, 20, 0, 125),
+        Parent = MainFrame
     }, {
         Create("UICorner", {
             CornerRadius = UDim.new(0, 6)
         }),
         Create("UIStroke", {
-            Color = CryzenLib.Themes[CryzenLib.SelectedTheme].Stroke,
+            Color = self.Themes[self.SelectedTheme].Stroke,
             Thickness = 1
         })
     })
-
-    -- Create title
-    local TitleLabel = Create("TextLabel", {
-        Size = UDim2.new(1, -20, 0, 30),
-        Position = UDim2.new(0, 10, 0, 10),
-        Text = self.KeySettings.Title,
-        TextColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Text,
-        TextSize = 18,
-        Font = Enum.Font.GothamBold,
+    
+    local KeyBox = Create("TextBox", {
         BackgroundTransparency = 1,
-        TextXAlignment = Enum.TextXAlignment.Center,
-        Parent = MainFrame
-    })
-
-    -- Create subtitle
-    local SubtitleLabel = Create("TextLabel", {
-        Size = UDim2.new(1, -20, 0, 20),
-        Position = UDim2.new(0, 10, 0, 40),
-        Text = self.KeySettings.Subtitle,
-        TextColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].TextDark,
-        TextSize = 14,
+        Size = UDim2.new(1, -20, 1, 0),
+        Position = UDim2.new(0, 10, 0, 0),
         Font = Enum.Font.Gotham,
-        BackgroundTransparency = 1,
-        TextXAlignment = Enum.TextXAlignment.Center,
-        Parent = MainFrame
-    })
-
-    -- Create note
-    local NoteLabel = Create("TextLabel", {
-        Size = UDim2.new(1, -40, 0, 20),
-        Position = UDim2.new(0, 20, 0, 70),
-        Text = self.KeySettings.Note,
-        TextColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].TextDark,
-        TextSize = 14,
-        Font = Enum.Font.Gotham,
-        BackgroundTransparency = 1,
-        TextXAlignment = Enum.TextXAlignment.Center,
-        Parent = MainFrame
-    })
-
-    -- Create key input
-    local KeyInput = Create("TextBox", {
-        Size = UDim2.new(1, -40, 0, 36),
-        Position = UDim2.new(0, 20, 0, 100),
         Text = "",
         PlaceholderText = "Enter Key...",
-        TextColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Text,
-        PlaceholderColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].TextDark,
+        TextColor3 = self.Themes[self.SelectedTheme].Text,
+        PlaceholderColor3 = self.Themes[self.SelectedTheme].TextDark,
         TextSize = 14,
-        Font = Enum.Font.Gotham,
-        BackgroundColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Second,
-        BorderSizePixel = 0,
-        ClearTextOnFocus = false,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = KeyBoxContainer,
+        ClearTextOnFocus = false
+    })
+    
+    local GetKeyButton = Create("Frame", {
+        BackgroundColor3 = self.Themes[self.SelectedTheme].Second,
+        Size = UDim2.new(0, 120, 0, 35),
+        Position = UDim2.new(0, 20, 0, 180),
         Parent = MainFrame
     }, {
         Create("UICorner", {
-            CornerRadius = UDim.new(0, 4)
+            CornerRadius = UDim.new(0, 6)
         }),
-        Create("UIPadding", {
-            PaddingLeft = UDim.new(0, 10)
+        Create("UIStroke", {
+            Color = self.Themes[self.SelectedTheme].Stroke,
+            Thickness = 1
+        }),
+        Create("TextLabel", {
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1, 0, 1, 0),
+            Font = Enum.Font.GothamBold,
+            Text = "Get Key",
+            TextColor3 = self.Themes[self.SelectedTheme].Text,
+            TextSize = 14,
+            Parent = nil
         })
     })
-
-    -- Create verify button
-    local VerifyButton = Create("TextButton", {
-        Size = UDim2.new(0, 100, 0, 36),
-        Position = UDim2.new(0.5, -50, 0, 150),
-        Text = "Verify Key",
-        TextColor3 = Color3.fromRGB(255, 255, 255),
-        TextSize = 14,
-        Font = Enum.Font.GothamBold,
-        BackgroundColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Accent,
-        BorderSizePixel = 0,
+    
+    -- Only create the label if KeyLink is provided
+    if self.KeySettings.KeyLink ~= "" then
+        GetKeyButton.TextLabel.Parent = GetKeyButton
+    end
+    
+    local SubmitButton = Create("Frame", {
+        BackgroundColor3 = self.Themes[self.SelectedTheme].Accent,
+        Size = UDim2.new(0, 120, 0, 35),
+        Position = UDim2.new(1, -140, 0, 180),
         Parent = MainFrame
     }, {
         Create("UICorner", {
-            CornerRadius = UDim.new(0, 4)
+            CornerRadius = UDim.new(0, 6)
+        }),
+        Create("TextLabel", {
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1, 0, 1, 0),
+            Font = Enum.Font.GothamBold,
+            Text = "Submit",
+            TextColor3 = Color3.fromRGB(255, 255, 255),
+            TextSize = 14,
+            Parent = nil
         })
     })
-
-    -- Create status label
+    
+    SubmitButton.TextLabel.Parent = SubmitButton
+    
     local StatusLabel = Create("TextLabel", {
-        Size = UDim2.new(1, -20, 0, 20),
-        Position = UDim2.new(0, 10, 1, -25),
-        Text = "",
-        TextColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].TextDark,
-        TextSize = 14,
-        Font = Enum.Font.Gotham,
         BackgroundTransparency = 1,
+        Size = UDim2.new(1, -40, 0, 20),
+        Position = UDim2.new(0, 20, 0, 225),
+        Font = Enum.Font.Gotham,
+        Text = "",
+        TextColor3 = Color3.fromRGB(255, 75, 75),
+        TextSize = 14,
         TextXAlignment = Enum.TextXAlignment.Center,
         Parent = MainFrame
     })
-
-    -- Get key link button (if link provided)
-    if self.KeySettings.KeyLink ~= "" then
-        local GetKeyButton = Create("TextButton", {
-            Size = UDim2.new(0, 100, 0, 20),
-            Position = UDim2.new(1, -110, 0, 70),
-            Text = "Get Key",
-            TextColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Accent,
-            TextSize = 14,
-            Font = Enum.Font.GothamBold,
-            BackgroundTransparency = 1,
-            Parent = MainFrame
-        })
-
-        GetKeyButton.MouseButton1Click:Connect(function()
-            if self.KeySettings.KeyLink:find("discord.gg") then
-                setclipboard(self.KeySettings.KeyLink)
-                StatusLabel.Text = "Discord link copied to clipboard!"
-                StatusLabel.TextColor3 = Color3.fromRGB(60, 180, 120)
-            else
-                game:GetService("StarterGui"):SetCore("SendNotification", {
-                    Title = "Opening Browser",
-                    Text = "Getting key from website...",
-                    Duration = 5
-                })
-
-                local Success, Error = pcall(function()
-                    local HttpRequest = (syn and syn.request) or (http and http.request) or http_request
-                    if HttpRequest then
-                        HttpRequest({
-                            Url = self.KeySettings.KeyLink,
-                            Method = "GET"
-                        })
-                    else
-                        setclipboard(self.KeySettings.KeyLink)
-                        StatusLabel.Text = "Link copied to clipboard!"
-                        StatusLabel.TextColor3 = Color3.fromRGB(60, 180, 120)
-                    end
-                end)
-
-                if not Success then
-                    setclipboard(self.KeySettings.KeyLink)
-                    StatusLabel.Text = "Link copied to clipboard!"
-                    StatusLabel.TextColor3 = Color3.fromRGB(60, 180, 120)
-                end
-            end
-        end)
-    end
-
-    -- Position the main frame offscreen initially for animation
-    MainFrame.Position = UDim2.new(0.5, 0, 1.5, 0)
-
-    -- Animate the frame coming in
-    TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-        Position = UDim2.new(0.5, 0, 0.5, 0)
-    }):Play()
-
-    -- Key verification logic
+    
+    -- Get key button functionality
+    local GetKeyBtn = Create("TextButton", {
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 1, 0),
+        Text = "",
+        Parent = GetKeyButton
+    })
+    
+    GetKeyBtn.MouseButton1Click:Connect(function()
+        if self.KeySettings.KeyLink ~= "" then
+            pcall(function() setclipboard(self.KeySettings.KeyLink) end)
+            StatusLabel.Text = "Key link copied to clipboard!"
+            StatusLabel.TextColor3 = Color3.fromRGB(75, 255, 75)
+            wait(2)
+            StatusLabel.Text = ""
+        end
+    end)
+    
+    -- Submit button functionality
+    local SubmitBtn = Create("TextButton", {
+        BackgroundTransparency = 1,
+        Size = UDim2.new(1, 0, 1, 0),
+        Text = "",
+        Parent = SubmitButton
+    })
+    
     local Attempts = 0
-
-    VerifyButton.MouseButton1Click:Connect(function()
-        local InputKey = KeyInput.Text
-
-        if InputKey == self.KeySettings.Key then
+    local KeyVerified = false
+    
+    SubmitBtn.MouseButton1Click:Connect(function()
+        local Key = KeyBox.Text
+        
+        if Key == "" then
+            StatusLabel.Text = "Please enter a key!"
+            StatusLabel.TextColor3 = Color3.fromRGB(255, 75, 75)
+            return
+        end
+        
+        Attempts = Attempts + 1
+        
+        if self:VerifyKey(Key) then
             StatusLabel.Text = "Key verified successfully!"
-            StatusLabel.TextColor3 = Color3.fromRGB(60, 180, 120)
-
-            -- Save key if enabled
+            StatusLabel.TextColor3 = Color3.fromRGB(75, 255, 75)
+            KeyVerified = true
+            
+            -- Save key if option enabled
             if self.KeySettings.SaveKey then
-                if not isfolder("CryzenHub") then
-                    makefolder("CryzenHub")
-                end
-                writefile(KeyFilePath, InputKey)
+                self:SaveKeyToFile(Key)
             end
-
-            -- Animate the frame leaving
-            TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-                Position = UDim2.new(0.5, 0, 1.5, 0)
-            }):Play()
-
-            wait(0.5)
+            
+            -- Callback and close
+            wait(1)
             KeyUI:Destroy()
-            self.KeySettings.Callback()
-            return true
+            self.KeySettings.Callback(Key)
         else
-            Attempts = Attempts + 1
             if Attempts >= self.KeySettings.MaxAttempts then
                 StatusLabel.Text = "Too many attempts. Closing in 3s..."
                 StatusLabel.TextColor3 = Color3.fromRGB(255, 75, 75)
                 wait(3)
                 KeyUI:Destroy()
-                return false
             else
                 StatusLabel.Text = self.KeySettings.RejectMessage .. " (" .. Attempts .. "/" .. self.KeySettings.MaxAttempts .. ")"
                 StatusLabel.TextColor3 = Color3.fromRGB(255, 75, 75)
             end
         end
     end)
-
+    
     -- Add dragging functionality
     AddDraggingFunctionality(MainFrame, MainFrame)
-
+    
     -- Center the frame
     MainFrame:TweenPosition(UDim2.new(0.5, 0, 0.5, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quint, 0.5, true)
-
-    -- Wait for key verification
-    local KeyVerified = false
+    
+    -- Wait for key verification or UI closure
     local KeySystemClosed = false
-
-    -- Create a thread to check when the key system is closed
-    task.spawn(function()
-        while KeyUI.Parent ~= nil and not KeyVerified do
-            wait(0.1)
+    
+    local connection = game:GetService("RunService").Heartbeat:Connect(function()
+        if not KeyUI.Parent then
+            KeySystemClosed = true
+            connection:Disconnect()
         end
-        KeySystemClosed = true
     end)
-
-    -- Wait until the key is verified or the UI is closed
+    
+    -- Simulate waiting for verification
     repeat wait() until KeyVerified or KeySystemClosed
-
+    
     return KeyVerified
 end
 
 -- Main UI components
 function CryzenLib:MakeWindow(WindowConfig)
     -- Verify key system first if enabled
-    if CryzenLib.KeySystem then
-        local KeyVerified = CryzenLib:CreateKeySystem()
+    if self.KeySystem then
+        local KeyVerified = self:CreateKeySystem()
         if not KeyVerified then
+            -- Return a dummy window if key verification failed
             return {
-                MakeTab = function() return {} end,
+                MakeTab = function() return {
+                    AddSection = function() return {} end
+                } end,
                 AddSettingsTab = function() return {} end,
                 AddThemeTab = function() return {} end,
                 AddHome = function() end,
@@ -779,7 +996,7 @@ function CryzenLib:MakeWindow(WindowConfig)
             }
         end
     end
-
+    
     WindowConfig = WindowConfig or {}
     WindowConfig.Name = WindowConfig.Name or "CryzenHub"
     WindowConfig.ConfigFolder = WindowConfig.ConfigFolder or WindowConfig.Name
@@ -791,26 +1008,26 @@ function CryzenLib:MakeWindow(WindowConfig)
     WindowConfig.CloseCallback = WindowConfig.CloseCallback or function() end
     WindowConfig.ShowIcon = WindowConfig.ShowIcon ~= false
     WindowConfig.Icon = WindowConfig.Icon or "rbxassetid://7733750749"
-    WindowConfig.Theme = WindowConfig.Theme or "Default"
+    WindowConfig.Theme = WindowConfig.Theme or "Fluent"
     WindowConfig.LoadingTitle = WindowConfig.LoadingTitle or "CryzenHub"
     WindowConfig.LoadingSubtitle = WindowConfig.LoadingSubtitle or "by Cryzen Team"
     WindowConfig.UseNewLoadingScreen = WindowConfig.UseNewLoadingScreen or false
-
-    CryzenLib.SelectedTheme = WindowConfig.Theme
-    CryzenLib.SaveCfg = WindowConfig.SaveConfig
-    CryzenLib.ConfigFolder = WindowConfig.ConfigFolder
+    
+    self.SelectedTheme = WindowConfig.Theme
+    self.SaveCfg = WindowConfig.SaveConfig
+    self.ConfigFolder = WindowConfig.ConfigFolder
 
     -- Create Loading Screen if enabled
     if WindowConfig.UseNewLoadingScreen then
         local LoadingScreen = Create("Frame", {
             Size = UDim2.new(1, 0, 1, 0),
             Position = UDim2.new(0, 0, 0, 0),
-            BackgroundColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Main,
+            BackgroundColor3 = self.Themes[self.SelectedTheme].Main,
             BorderSizePixel = 0,
             ZIndex = 1000,
             Parent = Cryzen
         })
-
+        
         local LoadingContainer = Create("Frame", {
             Size = UDim2.new(0, 240, 0, 180),
             Position = UDim2.new(0.5, 0, 0.5, 0),
@@ -819,47 +1036,47 @@ function CryzenLib:MakeWindow(WindowConfig)
             ZIndex = 1001,
             Parent = LoadingScreen
         })
-
+        
         local Logo = Create("ImageLabel", {
             Size = UDim2.new(0, 80, 0, 80),
             Position = UDim2.new(0.5, 0, 0, 10),
             AnchorPoint = Vector2.new(0.5, 0),
             BackgroundTransparency = 1,
             Image = WindowConfig.IntroIcon,
-            ImageColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Accent,
+            ImageColor3 = self.Themes[self.SelectedTheme].Accent,
             ZIndex = 1002,
             Parent = LoadingContainer
         })
-
+        
         local Title = Create("TextLabel", {
             Size = UDim2.new(1, 0, 0, 30),
             Position = UDim2.new(0, 0, 0, 100),
             BackgroundTransparency = 1,
             Font = Enum.Font.GothamBold,
             Text = WindowConfig.LoadingTitle,
-            TextColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Text,
+            TextColor3 = self.Themes[self.SelectedTheme].Text,
             TextSize = 22,
             ZIndex = 1002,
             Parent = LoadingContainer
         })
-
+        
         local Subtitle = Create("TextLabel", {
             Size = UDim2.new(1, 0, 0, 20),
             Position = UDim2.new(0, 0, 0, 130),
             BackgroundTransparency = 1,
             Font = Enum.Font.Gotham,
             Text = WindowConfig.LoadingSubtitle,
-            TextColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].TextDark,
+            TextColor3 = self.Themes[self.SelectedTheme].TextDark,
             TextSize = 14,
             ZIndex = 1002,
             Parent = LoadingContainer
         })
-
+        
         -- Loading animation
         local LoadingBar = Create("Frame", {
             Size = UDim2.new(1, 0, 0, 4),
             Position = UDim2.new(0, 0, 0, 160),
-            BackgroundColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Second,
+            BackgroundColor3 = self.Themes[self.SelectedTheme].Second,
             BorderSizePixel = 0,
             ZIndex = 1002,
             Parent = LoadingContainer
@@ -868,10 +1085,10 @@ function CryzenLib:MakeWindow(WindowConfig)
                 CornerRadius = UDim.new(0, 2)
             })
         })
-
+        
         local LoadingFill = Create("Frame", {
             Size = UDim2.new(0, 0, 1, 0),
-            BackgroundColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Accent,
+            BackgroundColor3 = self.Themes[self.SelectedTheme].Accent,
             BorderSizePixel = 0,
             ZIndex = 1003,
             Parent = LoadingBar
@@ -880,38 +1097,38 @@ function CryzenLib:MakeWindow(WindowConfig)
                 CornerRadius = UDim.new(0, 2)
             })
         })
-
+        
         -- Animate loading bar
         TweenService:Create(LoadingFill, TweenInfo.new(1.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
             Size = UDim2.new(1, 0, 1, 0)
         }):Play()
-
+        
         wait(2)
-
+        
         TweenService:Create(LoadingScreen, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
             BackgroundTransparency = 1
         }):Play()
-
+        
         TweenService:Create(Logo, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
             ImageTransparency = 1
         }):Play()
-
+        
         TweenService:Create(Title, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
             TextTransparency = 1
         }):Play()
-
+        
         TweenService:Create(Subtitle, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
             TextTransparency = 1
         }):Play()
-
+        
         TweenService:Create(LoadingBar, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
             BackgroundTransparency = 1
         }):Play()
-
+        
         TweenService:Create(LoadingFill, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
             BackgroundTransparency = 1
         }):Play()
-
+        
         wait(0.5)
         LoadingScreen:Destroy()
     end
@@ -923,18 +1140,18 @@ function CryzenLib:MakeWindow(WindowConfig)
             Parent = Cryzen
         })
 
-        local LogoContainer = SetProps(MakeElement("RoundFrame", CryzenLib.Themes[CryzenLib.SelectedTheme].Main, 0, 10), {
+        local LogoContainer = SetProps(MakeElement("RoundFrame", self.Themes[self.SelectedTheme].Main, 0, 10), {
             Size = UDim2.new(0, 120, 0, 120),
             Position = UDim2.new(0.5, 0, 0.5, -30),
             AnchorPoint = Vector2.new(0.5, 0.5),
             Parent = IntroScreen
         })
-
+        
         local Logo = SetProps(MakeElement("Image", WindowConfig.IntroIcon), {
             Size = UDim2.new(0, 80, 0, 80),
             Position = UDim2.new(0.5, 0, 0.5, 0),
             AnchorPoint = Vector2.new(0.5, 0.5),
-            ImageColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Accent,
+            ImageColor3 = self.Themes[self.SelectedTheme].Accent,
             Parent = LogoContainer
         })
 
@@ -944,47 +1161,47 @@ function CryzenLib:MakeWindow(WindowConfig)
             AnchorPoint = Vector2.new(0, 0.5),
             Parent = IntroScreen
         })
-
+        
         local Text = SetProps(MakeElement("Label", WindowConfig.IntroText, 24), {
             Size = UDim2.new(1, 0, 1, 0),
             Position = UDim2.new(0, 0, 0, 0),
             TextXAlignment = Enum.TextXAlignment.Center,
             Font = Enum.Font.GothamBold,
             TextTransparency = 1,
-            TextColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Text,
+            TextColor3 = self.Themes[self.SelectedTheme].Text,
             Parent = TextContainer
         })
-
-        local Subtitle = SetProps(MakeElement("Label", "v" .. CryzenLib.Version, 14), {
+        
+        local Subtitle = SetProps(MakeElement("Label", "v" .. self.Version, 14), {
             Size = UDim2.new(1, 0, 0, 20),
             Position = UDim2.new(0, 0, 1, 5),
             TextXAlignment = Enum.TextXAlignment.Center,
             Font = Enum.Font.Gotham,
             TextTransparency = 1,
-            TextColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].TextDark,
+            TextColor3 = self.Themes[self.SelectedTheme].TextDark,
             Parent = TextContainer
         })
 
         -- Animate intro
         LogoContainer.BackgroundTransparency = 1
         Logo.ImageTransparency = 1
-
+        
         -- Fade in logo
         TweenService:Create(LogoContainer, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundTransparency = 0}):Play()
         TweenService:Create(Logo, TweenInfo.new(0.7, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {ImageTransparency = 0}):Play()
-
+        
         wait(0.3)
         -- Fade in text
         TweenService:Create(Text, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
         TweenService:Create(Subtitle, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
-
+        
         wait(1.5)
         -- Fade out everything
         TweenService:Create(LogoContainer, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
         TweenService:Create(Logo, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {ImageTransparency = 1}):Play()
         TweenService:Create(Text, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {TextTransparency = 1}):Play()
         TweenService:Create(Subtitle, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {TextTransparency = 1}):Play()
-
+        
         wait(0.5)
         IntroScreen:Destroy()
     end
@@ -1009,7 +1226,7 @@ function CryzenLib:MakeWindow(WindowConfig)
                 Name = "Title",
                 ZIndex = 3
             }),
-
+            
             -- Window controls
             SetChildren(SetProps(MakeElement("Frame", Color3.fromRGB(255, 255, 255), 1), {
                 Size = UDim2.new(0, 70, 1, 0),
@@ -1023,7 +1240,7 @@ function CryzenLib:MakeWindow(WindowConfig)
                     AnchorPoint = Vector2.new(0, 0.5),
                     ZIndex = 3
                 }),
-
+                
                 SetChildren(SetProps(MakeElement("TFrame"), {
                     Size = UDim2.new(0, 70, 1, 0),
                     ZIndex = 3,
@@ -1033,7 +1250,7 @@ function CryzenLib:MakeWindow(WindowConfig)
                     MakeElement("Padding", {
                         Right = UDim.new(0, 5)
                     }),
-
+                    
                     SetChildren(SetProps(MakeElement("Button"), {
                         Size = UDim2.new(0, 28, 0, 28),
                         Name = "Minimize",
@@ -1047,7 +1264,7 @@ function CryzenLib:MakeWindow(WindowConfig)
                             ImageColor3 = Color3.fromRGB(220, 220, 220)
                         })
                     }),
-
+                    
                     SetChildren(SetProps(MakeElement("Button"), {
                         Size = UDim2.new(0, 28, 0, 28),
                         Name = "Close",
@@ -1063,10 +1280,10 @@ function CryzenLib:MakeWindow(WindowConfig)
                     })
                 })
             }),
-
+            
             AddThemeObject(MakeElement("Stroke", Color3.fromRGB(255, 255, 255), 1), "Stroke")
         }),
-
+        
         -- Tab container
         SetChildren(SetProps(MakeElement("TFrame"), {
             Size = UDim2.new(0, 120, 1, -38),
@@ -1079,14 +1296,14 @@ function CryzenLib:MakeWindow(WindowConfig)
                 Name = "LeftFrame",
                 ZIndex = 2
             }), "Second"),
-
+            
             AddThemeObject(SetProps(MakeElement("Frame", Color3.fromRGB(255, 255, 255), 0.25), {
                 Size = UDim2.new(0, 1, 1, -10),
                 Position = UDim2.new(1, 0, 0, 5),
                 Name = "Divider",
                 ZIndex = 2
             }), "Divider"),
-
+            
             SetChildren(SetProps(MakeElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 1, 0), {
                 Size = UDim2.new(1, 0, 1, 0),
                 Name = "TabScroller",
@@ -1100,7 +1317,7 @@ function CryzenLib:MakeWindow(WindowConfig)
                 })
             })
         }),
-
+        
         -- Content container
         SetChildren(SetProps(MakeElement("TFrame"), {
             Size = UDim2.new(1, -120, 1, -38),
@@ -1127,32 +1344,32 @@ function CryzenLib:MakeWindow(WindowConfig)
                 })
             })
         }),
-
-        -- Window shadow
-        SetProps(MakeElement("Image", "rbxassetid://6014261993"), {
+        
+        -- Window shadow (updated shadow style)
+        SetProps(MakeElement("Image", "rbxassetid://6015897843"), {
             Size = UDim2.new(1, 47, 1, 47),
             Position = UDim2.new(0.5, 0, 0.5, 0),
             AnchorPoint = Vector2.new(0.5, 0.5),
             ImageColor3 = Color3.fromRGB(0, 0, 0),
-            ImageTransparency = 0.7,
+            ImageTransparency = 0.6,
             ZIndex = 0
         })
     }), "Main")
-
+    
     MainUI.Visible = true
-
+    
     -- Add minimize/close functionality
     MainUI.TopBar.Controls.Buttons.Minimize.MouseButton1Click:Connect(function()
         MainUI.Visible = false
     end)
-
+    
     local MinimizeKey = Enum.KeyCode.RightControl
     AddConnection(UserInputService.InputBegan, function(Input)
         if Input.KeyCode == MinimizeKey then
             MainUI.Visible = not MainUI.Visible
         end
     end)
-
+    
     MainUI.TopBar.Controls.Buttons.Close.MouseButton1Click:Connect(function()
         -- Fade out animation
         TweenService:Create(MainUI, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
@@ -1160,13 +1377,13 @@ function CryzenLib:MakeWindow(WindowConfig)
             Size = UDim2.new(0, 480, 0, 0),
             BackgroundTransparency = 1
         }):Play()
-
+        
         task.delay(0.5, function()
             Cryzen:Destroy()
             WindowConfig.CloseCallback()
         end)
     end)
-
+    
     -- Add window icon if enabled
     if WindowConfig.ShowIcon then
         local IconButton = SetProps(MakeElement("Button"), {
@@ -1174,24 +1391,24 @@ function CryzenLib:MakeWindow(WindowConfig)
             Position = UDim2.new(0, 2, 0, 2),
             ZIndex = 3
         })
-
+        
         local Icon = SetProps(MakeElement("Image", WindowConfig.Icon), {
             Size = UDim2.new(0, 24, 0, 24),
             Position = UDim2.new(0.5, 0, 0.5, 0),
             AnchorPoint = Vector2.new(0.5, 0.5),
             ZIndex = 3,
-            ImageColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Accent
+            ImageColor3 = self.Themes[self.SelectedTheme].Accent
         })
-
+        
         Icon.Parent = IconButton
         IconButton.Parent = MainUI.TopBar
         MainUI.TopBar.Title.Position = UDim2.new(0, 36, 0, 0)
         MainUI.TopBar.Title.Size = UDim2.new(1, -70, 1, 0)
     end
-
+    
     -- Add mobile menu toggle if on mobile
-    if CryzenLib.IsMobile then
-        local MenuToggleBtn = SetChildren(SetProps(MakeElement("RoundFrame", CryzenLib.Themes[CryzenLib.SelectedTheme].Main, 0, 5), {
+    if self.IsMobile then
+        local MenuToggleBtn = SetChildren(SetProps(MakeElement("RoundFrame", self.Themes[self.SelectedTheme].Main, 0, 5), {
             Size = UDim2.new(0, 40, 0, 40),
             Position = UDim2.new(0, 20, 0, 20),
             AnchorPoint = Vector2.new(0, 0),
@@ -1202,12 +1419,12 @@ function CryzenLib:MakeWindow(WindowConfig)
                 Size = UDim2.new(0, 20, 0, 20),
                 Position = UDim2.new(0.5, 0, 0.5, 0),
                 AnchorPoint = Vector2.new(0.5, 0.5),
-                ImageColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Accent,
+                ImageColor3 = self.Themes[self.SelectedTheme].Accent,
                 ZIndex = 11
             }),
             AddThemeObject(MakeElement("Stroke", Color3.fromRGB(255, 255, 255), 1), "Stroke")
         })
-
+        
         local MenuButton = Create("TextButton", {
             Size = UDim2.new(1, 0, 1, 0),
             BackgroundTransparency = 1,
@@ -1215,36 +1432,37 @@ function CryzenLib:MakeWindow(WindowConfig)
             ZIndex = 12,
             Parent = MenuToggleBtn
         })
-
+        
         AddConnection(MenuButton.MouseButton1Click, function()
             MainUI.Visible = not MainUI.Visible
         end)
-
+        
         -- Add dragging for mobile menu button
         AddDraggingFunctionality(MenuToggleBtn, MenuToggleBtn)
     end
-
+    
     AddDraggingFunctionality(MainUI.TopBar, MainUI)
-
+    
     local TabCount = 0
     local TabHolder = MainUI.TabHolder.TabScroller
     local HomeTab = MainUI.Content.HomeTab
     local HomeContainer = HomeTab.HomeContainer
-
+    
     local WindowFunctions = {}
-
+    
     function WindowFunctions:SetTheme(Theme)
         SetTheme(Theme)
     end
-
+    
     function WindowFunctions:MakeTab(TabConfig)
         TabConfig = TabConfig or {}
         TabConfig.Name = TabConfig.Name or "Tab"
         TabConfig.Icon = TabConfig.Icon or ""
         TabConfig.PremiumOnly = TabConfig.PremiumOnly or false
-
+        
         TabCount = TabCount + 1
-
+        
+        -- Create tab button with modern design
         local TabButton = AddThemeObject(SetChildren(SetProps(MakeElement("Button"), {
             Size = UDim2.new(1, -14, 0, 30),
             Position = UDim2.new(0, 7, 0, 0),
@@ -1257,19 +1475,28 @@ function CryzenLib:MakeWindow(WindowConfig)
                 TextTransparency = 0.4,
                 Name = "Title"
             }), "Text"),
-
+            
             SetProps(MakeElement("Image", TabConfig.Icon), {
                 Size = UDim2.new(0, 20, 0, 20),
                 Position = UDim2.new(0, 5, 0.5, 0),
                 AnchorPoint = Vector2.new(0, 0.5),
                 ImageTransparency = 0.4,
-                ImageColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Text,
+                ImageColor3 = self.Themes[self.SelectedTheme].Text,
                 Name = "Icon"
+            }),
+            
+            -- Add indicator for selected tab
+            SetProps(MakeElement("Frame", self.Themes[self.SelectedTheme].Accent, 1), {
+                Size = UDim2.new(0, 0, 0, 2),
+                Position = UDim2.new(0, 0, 1, -2),
+                Name = "Indicator",
+                BorderSizePixel = 0
             })
         }), "Second")
-
+        
         TabButton.Parent = TabHolder
-
+        
+        -- Create tab content container
         local Container = SetChildren(SetProps(MakeElement("ScrollFrame", Color3.fromRGB(255, 255, 255), 1, 5), {
             Size = UDim2.new(1, -10, 1, -10),
             Position = UDim2.new(0.5, 0, 0.5, 0),
@@ -1281,15 +1508,15 @@ function CryzenLib:MakeWindow(WindowConfig)
             MakeElement("Padding", {
                 Left = UDim.new(0, 6),
                 Right = UDim.new(0, 6),
-                Top = UDim.new(0, 6),
-                Bottom = UDim.new(0, 6)
+                Top = UDim2.new(0, 6),
+                Bottom = UDim2.new(0, 6)
             })
         })
-
+        
         Container.Parent = MainUI.Content
-
+        
         local TabFunctions = {}
-
+        
         function TabFunctions:Show()
             for _, Tab in next, MainUI.Content:GetChildren() do
                 if Tab:IsA("ScrollingFrame") and Tab.Visible then
@@ -1312,24 +1539,26 @@ function CryzenLib:MakeWindow(WindowConfig)
                     Tab.Visible = false
                 end
             end
-
+            
             -- Update tab buttons
             for _, Button in next, TabHolder:GetChildren() do
                 if Button:IsA("TextButton") then
                     TweenService:Create(Button, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {BackgroundTransparency = 1}):Play()
                     TweenService:Create(Button.Title, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {TextTransparency = 0.4}):Play()
                     TweenService:Create(Button.Icon, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {ImageTransparency = 0.4}):Play()
+                    TweenService:Create(Button.Indicator, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {Size = UDim2.new(0, 0, 0, 2)}):Play()
                 end
             end
-
-            -- Highlight selected tab
+            
+            -- Highlight selected tab with modern indicator
             TweenService:Create(TabButton, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {BackgroundTransparency = 0}):Play()
             TweenService:Create(TabButton.Title, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {TextTransparency = 0}):Play()
             TweenService:Create(TabButton.Icon, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {ImageTransparency = 0}):Play()
-
+            TweenService:Create(TabButton.Indicator, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {Size = UDim2.new(1, 0, 0, 2)}):Play()
+            
             HomeTab.Visible = false
             Container.Visible = true
-
+            
             -- Fade in elements of the new tab
             for _, Child in pairs(Container:GetChildren()) do
                 if Child:IsA("Frame") then
@@ -1350,20 +1579,20 @@ function CryzenLib:MakeWindow(WindowConfig)
                 end
             end
         end
-
+        
         function TabFunctions:Hide()
             Container.Visible = false
         end
-
+        
         TabButton.MouseButton1Click:Connect(function()
             TabFunctions:Show()
         end)
-
+        
         -- Add elements to tab
         function TabFunctions:AddSection(SectionConfig)
             SectionConfig = SectionConfig or {}
             SectionConfig.Name = SectionConfig.Name or "Section"
-
+            
             local SectionFrame = SetChildren(SetProps(MakeElement("TFrame"), {
                 Size = UDim2.new(1, 0, 0, 26),
                 Parent = Container
@@ -1373,7 +1602,7 @@ function CryzenLib:MakeWindow(WindowConfig)
                     Position = UDim2.new(0, 0, 0, 3),
                     Font = Enum.Font.GothamSemibold
                 }), "TextDark"),
-
+                
                 SetChildren(SetProps(MakeElement("TFrame"), {
                     AnchorPoint = Vector2.new(0, 0),
                     Size = UDim2.new(1, 0, 1, -24),
@@ -1383,23 +1612,23 @@ function CryzenLib:MakeWindow(WindowConfig)
                     MakeElement("List", 6)
                 }),
             })
-
+            
             AddConnection(SectionFrame.Holder.UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"), function()
                 SectionFrame.Size = UDim2.new(1, 0, 0, SectionFrame.Holder.UIListLayout.AbsoluteContentSize.Y + 31)
                 SectionFrame.Holder.Size = UDim2.new(1, 0, 0, SectionFrame.Holder.UIListLayout.AbsoluteContentSize.Y)
             end)
-
+            
             local SectionElements = {}
-
+            
             -- Add elements to section
             function SectionElements:AddButton(ButtonConfig)
                 ButtonConfig = ButtonConfig or {}
                 ButtonConfig.Name = ButtonConfig.Name or "Button"
                 ButtonConfig.Callback = ButtonConfig.Callback or function() end
                 ButtonConfig.Icon = ButtonConfig.Icon or nil
-
+                
                 local Button = {}
-
+                
                 local ButtonFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5), {
                     Size = UDim2.new(1, 0, 0, 38),
                     Parent = SectionFrame.Holder
@@ -1410,57 +1639,57 @@ function CryzenLib:MakeWindow(WindowConfig)
                         Font = Enum.Font.GothamBold,
                         Name = "Title"
                     }), "Text"),
-
+                    
                     AddThemeObject(MakeElement("Stroke"), "Stroke"),
-
+                    
                     SetProps(MakeElement("SmoothButton"), {
                         Size = UDim2.new(1, 0, 1, 0),
                         Name = "Button"
                     })
                 }), "Second")
-
+                
                 -- Add icon if specified
                 if ButtonConfig.Icon then
                     local Icon = SetProps(MakeElement("Image", ButtonConfig.Icon), {
                         Size = UDim2.new(0, 20, 0, 20),
                         Position = UDim2.new(0, 12, 0.5, 0),
                         AnchorPoint = Vector2.new(0, 0.5),
-                        ImageColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Accent,
+                        ImageColor3 = self.Themes[self.SelectedTheme].Accent,
                         Name = "Icon"
                     })
                     Icon.Parent = ButtonFrame
                     ButtonFrame.Title.Position = UDim2.new(0, 40, 0, 0)
                     ButtonFrame.Title.Size = UDim2.new(1, -40, 1, 0)
                 end
-
+                
                 AddConnection(ButtonFrame.Button.MouseEnter, function()
-                    TweenService:Create(ButtonFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(CryzenLib.Themes[CryzenLib.SelectedTheme].Second.R * 255 + 5, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.G * 255 + 5, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.B * 255 + 5)}):Play()
+                    TweenService:Create(ButtonFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(self.Themes[self.SelectedTheme].Second.R * 255 + 5, self.Themes[self.SelectedTheme].Second.G * 255 + 5, self.Themes[self.SelectedTheme].Second.B * 255 + 5)}):Play()
                 end)
-
+                
                 AddConnection(ButtonFrame.Button.MouseLeave, function()
-                    TweenService:Create(ButtonFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Second}):Play()
+                    TweenService:Create(ButtonFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = self.Themes[self.SelectedTheme].Second}):Play()
                 end)
-
+                
                 AddConnection(ButtonFrame.Button.MouseButton1Up, function()
-                    TweenService:Create(ButtonFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(CryzenLib.Themes[CryzenLib.SelectedTheme].Second.R * 255 + 5, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.G * 255 + 5, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.B * 255 + 5)}):Play()
+                    TweenService:Create(ButtonFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(self.Themes[self.SelectedTheme].Second.R * 255 + 5, self.Themes[self.SelectedTheme].Second.G * 255 + 5, self.Themes[self.SelectedTheme].Second.B * 255 + 5)}):Play()
                     ButtonConfig.Callback()
                 end)
-
+                
                 AddConnection(ButtonFrame.Button.MouseButton1Down, function()
-                    TweenService:Create(ButtonFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(CryzenLib.Themes[CryzenLib.SelectedTheme].Second.R * 255 + 8, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.G * 255 + 8, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.B * 255 + 8)}):Play()
+                    TweenService:Create(ButtonFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(self.Themes[self.SelectedTheme].Second.R * 255 + 8, self.Themes[self.SelectedTheme].Second.G * 255 + 8, self.Themes[self.SelectedTheme].Second.B * 255 + 8)}):Play()
                 end)
-
+                
                 function Button:Set(NewTitle)
                     ButtonFrame.Title.Text = NewTitle
                 end
-
+                
                 function Button:Destroy()
                     ButtonFrame:Destroy()
                 end
-
+                
                 return Button
             end
-
+            
             function SectionElements:AddToggle(ToggleConfig)
                 ToggleConfig = ToggleConfig or {}
                 ToggleConfig.Name = ToggleConfig.Name or "Toggle"
@@ -1468,29 +1697,29 @@ function CryzenLib:MakeWindow(WindowConfig)
                 ToggleConfig.Callback = ToggleConfig.Callback or function() end
                 ToggleConfig.Flag = ToggleConfig.Flag or nil
                 ToggleConfig.Save = ToggleConfig.Save or false
-
+                
                 local Toggle = {Value = ToggleConfig.Default, Save = ToggleConfig.Save, Type = "Toggle"}
-
+                
+                -- Modern toggle design
                 local ToggleBox = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 4), {
-                    Size = UDim2.new(0, 24, 0, 24),
-                    Position = UDim2.new(1, -24, 0.5, 0),
-                    AnchorPoint = Vector2.new(0.5, 0.5)
+                    Size = UDim2.new(0, 38, 0, 18),
+                    Position = UDim2.new(1, -54, 0.5, 0),
+                    AnchorPoint = Vector2.new(0, 0.5)
                 }), {
                     SetProps(MakeElement("Button"), {
                         Size = UDim2.new(1, 0, 1, 0),
                         Name = "ToggleButton"
                     }),
                     AddThemeObject(MakeElement("Stroke"), "Stroke"),
-
+                    
                     AddThemeObject(SetProps(MakeElement("Frame", Color3.fromRGB(255, 255, 255), 0), {
-                        Size = UDim2.new(1, -6, 1, -6),
-                        Position = UDim2.new(0.5, 0, 0.5, 0),
-                        AnchorPoint = Vector2.new(0.5, 0.5),
-                        Name = "Fill",
-                        Visible = Toggle.Value
+                        Size = UDim2.new(0, 16, 0, 16),
+                        Position = Toggle.Value and UDim2.new(1, -17, 0.5, 0) or UDim2.new(0, 1, 0.5, 0),
+                        AnchorPoint = Vector2.new(0, 0.5),
+                        Name = "Indicator"
                     }), "Accent")
                 }), "Main")
-
+                
                 local ToggleFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5), {
                     Size = UDim2.new(1, 0, 0, 38),
                     Parent = SectionFrame.Holder
@@ -1501,64 +1730,66 @@ function CryzenLib:MakeWindow(WindowConfig)
                         Font = Enum.Font.GothamBold,
                         Name = "Title"
                     }), "Text"),
-
+                    
                     AddThemeObject(MakeElement("Stroke"), "Stroke"),
-
+                    
                     SetProps(MakeElement("Button"), {
                         Size = UDim2.new(1, 0, 1, 0),
                         Name = "ToggleButton"
                     }),
-
+                    
                     ToggleBox
                 }), "Second")
-
+                
+                local ToggleCorner = Instance.new("UICorner", ToggleBox.Indicator)
+                ToggleCorner.CornerRadius = UDim.new(1, 0)
+                
                 function Toggle:Set(Value)
                     Toggle.Value = Value
-                    TweenService:Create(ToggleBox.Fill, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                        Size = Toggle.Value and UDim2.new(1, -6, 1, -6) or UDim2.new(0, 0, 0, 0)
+                    TweenService:Create(ToggleBox.Indicator, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+                        Position = Toggle.Value and UDim2.new(1, -17, 0.5, 0) or UDim2.new(0, 1, 0.5, 0)
                     }):Play()
-                    ToggleBox.Fill.Visible = Toggle.Value
                     ToggleConfig.Callback(Toggle.Value)
                 end
-
+                
                 AddConnection(ToggleFrame.ToggleButton.MouseEnter, function()
-                    TweenService:Create(ToggleFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(CryzenLib.Themes[CryzenLib.SelectedTheme].Second.R * 255 + 5, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.G * 255 + 5, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.B * 255 + 5)}):Play()
+                    TweenService:Create(ToggleFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(self.Themes[self.SelectedTheme].Second.R * 255 + 5, self.Themes[self.SelectedTheme].Second.G * 255 + 5, self.Themes[self.SelectedTheme].Second.B * 255 + 5)}):Play()
                 end)
-
+                
                 AddConnection(ToggleFrame.ToggleButton.MouseLeave, function()
-                    TweenService:Create(ToggleFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Second}):Play()
+                    TweenService:Create(ToggleFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = self.Themes[self.SelectedTheme].Second}):Play()
                 end)
-
+                
                 AddConnection(ToggleFrame.ToggleButton.MouseButton1Up, function()
-                    TweenService:Create(ToggleFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(CryzenLib.Themes[CryzenLib.SelectedTheme].Second.R * 255 + 5, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.G * 255 + 5, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.B * 255 + 5)}):Play()
+                    TweenService:Create(ToggleFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(self.Themes[self.SelectedTheme].Second.R * 255 + 5, self.Themes[self.SelectedTheme].Second.G * 255 + 5, self.Themes[self.SelectedTheme].Second.B * 255 + 5)}):Play()
                     Toggle:Set(not Toggle.Value)
                     SaveCfg(game.GameId)
                 end)
-
+                
                 AddConnection(ToggleBox.ToggleButton.MouseButton1Up, function()
                     Toggle:Set(not Toggle.Value)
                     SaveCfg(game.GameId)
                 end)
-
+                
                 AddConnection(ToggleFrame.ToggleButton.MouseButton1Down, function()
-                    TweenService:Create(ToggleFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(CryzenLib.Themes[CryzenLib.SelectedTheme].Second.R * 255 + 8, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.G * 255 + 8, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.B * 255 + 8)}):Play()
+                    TweenService:Create(ToggleFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(self.Themes[self.SelectedTheme].Second.R * 255 + 8, self.Themes[self.SelectedTheme].Second.G * 255 + 8, self.Themes[self.SelectedTheme].Second.B * 255 + 8)}):Play()
                 end)
-
+                
                 Toggle:Set(Toggle.Value)
                 if ToggleConfig.Flag then
-                    CryzenLib.Flags[ToggleConfig.Flag] = Toggle
+                    self.Flags[ToggleConfig.Flag] = Toggle
                 end
-
+                
                 function Toggle:Destroy()
                     ToggleFrame:Destroy()
                     if ToggleConfig.Flag then
-                        CryzenLib.Flags[ToggleConfig.Flag] = nil
+                        self.Flags[ToggleConfig.Flag] = nil
                     end
                 end
-
+                
                 return Toggle
             end
-
+            
             function SectionElements:AddSlider(SliderConfig)
                 SliderConfig = SliderConfig or {}
                 SliderConfig.Name = SliderConfig.Name or "Slider"
@@ -1568,16 +1799,17 @@ function CryzenLib:MakeWindow(WindowConfig)
                 SliderConfig.Default = SliderConfig.Default or 50
                 SliderConfig.Callback = SliderConfig.Callback or function() end
                 SliderConfig.ValueName = SliderConfig.ValueName or ""
-                SliderConfig.Color = SliderConfig.Color or CryzenLib.Themes[CryzenLib.SelectedTheme].Accent
+                SliderConfig.Color = SliderConfig.Color or self.Themes[self.SelectedTheme].Accent
                 SliderConfig.Flag = SliderConfig.Flag or nil
                 SliderConfig.Save = SliderConfig.Save or false
-
+                
                 local Slider = {Value = SliderConfig.Default, Save = SliderConfig.Save, Type = "Slider", Min = SliderConfig.Min, Max = SliderConfig.Max}
                 local Dragging = false
-
+                
+                -- Modern slider design
                 local SliderDrag = SetChildren(SetProps(MakeElement("RoundFrame", SliderConfig.Color, 0, 5), {
                     Size = UDim2.new(0, 0, 1, 0),
-                    BackgroundTransparency = 0.3,
+                    BackgroundTransparency = 0.2,
                     ClipsDescendants = true
                 }), {
                     AddThemeObject(SetProps(MakeElement("Label", "Value", 13), {
@@ -1588,7 +1820,7 @@ function CryzenLib:MakeWindow(WindowConfig)
                         TextTransparency = 0
                     }), "Text")
                 })
-
+                
                 local SliderBar = SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5), {
                     Size = UDim2.new(1, -24, 0, 26),
                     Position = UDim2.new(0, 12, 0, 30),
@@ -1600,7 +1832,7 @@ function CryzenLib:MakeWindow(WindowConfig)
                     }),
                     SliderDrag
                 })
-
+                
                 local SliderFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5), {
                     Size = UDim2.new(1, 0, 0, 65),
                     Parent = SectionFrame.Holder
@@ -1611,26 +1843,28 @@ function CryzenLib:MakeWindow(WindowConfig)
                         Font = Enum.Font.GothamBold,
                         Name = "Title"
                     }), "Text"),
-
+                    
                     AddThemeObject(MakeElement("Stroke"), "Stroke"),
                     SliderBar
                 }), "Second")
-
+                
                 function Slider:Set(Value)
-                    if Value  SliderConfig.Max then
+                    if Value < SliderConfig.Min then
+                        Value = SliderConfig.Min
+                    elseif Value > SliderConfig.Max then
                         Value = SliderConfig.Max
                     end
-
+                    
                     Slider.Value = Round(Value, SliderConfig.Increment)
                     SliderDrag.Value.Text = Slider.Value .. SliderConfig.ValueName
-
+                    
                     local Percent = (Slider.Value - SliderConfig.Min) / (SliderConfig.Max - SliderConfig.Min)
                     TweenService:Create(SliderDrag, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(Percent, 0, 1, 0)}):Play()
-
+                    
                     SliderConfig.Callback(Slider.Value)
                     SaveCfg(game.GameId)
                 end
-
+                
                 local function UpdateSlider(Input)
                     local InputPositionX
                     if Input.UserInputType == Enum.UserInputType.Touch then
@@ -1638,792 +1872,65 @@ function CryzenLib:MakeWindow(WindowConfig)
                     else
                         InputPositionX = UserInputService:GetMouseLocation().X
                     end
-
+                    
                     local BtnPos = SliderBar.SliderButton.AbsolutePosition.X
                     local Percent = math.clamp((InputPositionX - BtnPos) / SliderBar.SliderButton.AbsoluteSize.X, 0, 1)
                     local Value = SliderConfig.Min + ((SliderConfig.Max - SliderConfig.Min) * Percent)
                     Slider:Set(Value)
                 end
-
+                
                 AddConnection(SliderBar.SliderButton.InputBegan, function(Input)
                     if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
                         Dragging = true
                         UpdateSlider(Input)
                     end
                 end)
-
+                
                 AddConnection(UserInputService.InputEnded, function(Input)
                     if (Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch) and Dragging then
                         Dragging = false
                     end
                 end)
-
+                
                 AddConnection(UserInputService.InputChanged, function(Input)
                     if (Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch) and Dragging then
                         UpdateSlider(Input)
                     end
                 end)
-
+                
                 AddConnection(SliderFrame.MouseEnter, function()
-                    TweenService:Create(SliderFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {BackgroundColor3 = Color3.fromRGB(CryzenLib.Themes[CryzenLib.SelectedTheme].Second.R * 255 + 5, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.G * 255 + 5, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.B * 255 + 5)}):Play()
+                    TweenService:Create(SliderFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {BackgroundColor3 = Color3.fromRGB(self.Themes[self.SelectedTheme].Second.R * 255 + 5, self.Themes[self.SelectedTheme].Second.G * 255 + 5, self.Themes[self.SelectedTheme].Second.B * 255 + 5)}):Play()
                 end)
-
+                
                 AddConnection(SliderFrame.MouseLeave, function()
-                    TweenService:Create(SliderFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {BackgroundColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Second}):Play()
+                    TweenService:Create(SliderFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint), {BackgroundColor3 = self.Themes[self.SelectedTheme].Second}):Play()
                 end)
-
+                
                 Slider:Set(Slider.Value)
                 if SliderConfig.Flag then
-                    CryzenLib.Flags[SliderConfig.Flag] = Slider
+                    self.Flags[SliderConfig.Flag] = Slider
                 end
-
+                
                 function Slider:Destroy()
                     SliderFrame:Destroy()
                     if SliderConfig.Flag then
-                        CryzenLib.Flags[SliderConfig.Flag] = nil
+                        self.Flags[SliderConfig.Flag] = nil
                     end
                 end
-
+                
                 return Slider
             end
-
-            function SectionElements:AddDropdown(DropdownConfig)
-                DropdownConfig = DropdownConfig or {}
-                DropdownConfig.Name = DropdownConfig.Name or "Dropdown"
-                DropdownConfig.Options = DropdownConfig.Options or {}
-                DropdownConfig.Default = DropdownConfig.Default or ""
-                DropdownConfig.Callback = DropdownConfig.Callback or function() end
-                DropdownConfig.Flag = DropdownConfig.Flag or nil
-                DropdownConfig.Save = DropdownConfig.Save or false
-
-                local Dropdown = {Value = DropdownConfig.Default, Options = DropdownConfig.Options, Toggled = false, Type = "Dropdown", Save = DropdownConfig.Save}
-                local MaxElements = 5
-
-                if not table.find(Dropdown.Options, Dropdown.Value) and Dropdown.Value ~= "" then
-                    Dropdown.Value = ""
-                end
-
-                local DropdownList = SetProps(MakeElement("List", 0), {
-                    Parent = SectionFrame.Holder
-                })
-
-                local DropdownContainer = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5), {
-                    Size = UDim2.new(1, 0, 0, 0),
-                    Position = UDim2.new(0, 0, 0, 38),
-                    BackgroundTransparency = 0,
-                    Visible = false,
-                    Parent = DropdownFrame,
-                    ClipsDescendants = true
-                }), {
-                    DropdownList
-                }), "Second")
-
-                local DropdownFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5), {
-                    Size = UDim2.new(1, 0, 0, 38),
-                    Parent = SectionFrame.Holder
-                }), {
-                    AddThemeObject(SetProps(MakeElement("Label", DropdownConfig.Name, 15), {
-                        Size = UDim2.new(1, -12, 0, 14),
-                        Position = UDim2.new(0, 12, 0, 12),
-                        Font = Enum.Font.GothamBold,
-                        Name = "Title"
-                    }), "Text"),
-
-                    AddThemeObject(SetProps(MakeElement("Label", "> " .. Dropdown.Value, 13), {
-                        Position = UDim2.new(1, -40, 0, 0),
-                        Size = UDim2.new(0, 30, 1, 0),
-                        TextXAlignment = Enum.TextXAlignment.Right,
-                        Font = Enum.Font.GothamBold,
-                        Name = "Value"
-                    }), "TextDark"),
-
-                    SetProps(MakeElement("Image", "rbxassetid://7733717447"), {
-                        Size = UDim2.new(0, 16, 0, 16),
-                        Position = UDim2.new(1, -20, 0, 19),
-                        AnchorPoint = Vector2.new(0.5, 0.5),
-                        ImageColor3 = Color3.fromRGB(240, 240, 240),
-                        Name = "Icon"
-                    }),
-
-                    AddThemeObject(MakeElement("Stroke"), "Stroke"),
-
-                    SetProps(MakeElement("Button"), {
-                        Size = UDim2.new(1, 0, 1, 0),
-                        Name = "DropdownButton"
-                    }),
-
-                    DropdownContainer
-                }), "Second")
-
-                AddConnection(DropdownList:GetPropertyChangedSignal("AbsoluteContentSize"), function()
-                    DropdownContainer.Size = UDim2.new(1, 0, 0, math.min(DropdownList.AbsoluteContentSize.Y, (MaxElements * 30)))
-                end)
-
-                local function AddOptions(Options)
-                    for _, Option in pairs(Options) do
-                        local OptionBtn = AddThemeObject(SetChildren(SetProps(MakeElement("Button"), {
-                            Size = UDim2.new(1, 0, 0, 30),
-                            BackgroundTransparency = 1,
-                            Parent = DropdownList,
-                            Name = Option .. "Option"
-                        }), {
-                            AddThemeObject(SetProps(MakeElement("Label", Option, 14), {
-                                Size = UDim2.new(1, -12, 1, 0),
-                                Position = UDim2.new(0, 12, 0, 0),
-                                Font = Enum.Font.GothamSemibold,
-                                Name = "OptionText"
-                            }), "Text")
-                        }), "Divider")
-
-                        AddConnection(OptionBtn.MouseEnter, function()
-                            TweenService:Create(OptionBtn, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundTransparency = 0.9}):Play()
-                        end)
-
-                        AddConnection(OptionBtn.MouseLeave, function()
-                            TweenService:Create(OptionBtn, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
-                        end)
-
-                        AddConnection(OptionBtn.MouseButton1Click, function()
-                            Dropdown:Set(Option)
-                            Dropdown.Toggled = false
-                            TweenService:Create(DropdownFrame,TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),{Size = UDim2.new(1, 0, 0, 38)}):Play()
-                            TweenService:Create(DropdownFrame.Icon,TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),{Rotation = 0}):Play()
-                            DropdownContainer.Visible = false
-                        end)
-                    end
-                end
-
-                function Dropdown:Refresh(Options, Delete)
-                    if Delete then
-                        for _, v in pairs(DropdownList:GetChildren()) do
-                            if v:IsA("TextButton") then
-                                v:Destroy()
-                            end
-                        end
-                    end
-
-                    Dropdown.Options = Options
-                    AddOptions(Options)
-                end
-
-                function Dropdown:Set(Value)
-                    if Value ~= "" then
-                        if not table.find(Dropdown.Options, Value) then
-                            Dropdown.Value = Dropdown.Options[1] or ""
-                            DropdownFrame.Value.Text = "> " .. Dropdown.Value
-                        else
-                            Dropdown.Value = Value
-                            DropdownFrame.Value.Text = "> " .. Dropdown.Value
-                        end
-                        DropdownConfig.Callback(Dropdown.Value)
-                        SaveCfg(game.GameId)
-                    end
-                end
-
-                AddConnection(DropdownFrame.DropdownButton.MouseButton1Click, function()
-                    Dropdown.Toggled = not Dropdown.Toggled
-
-                    if Dropdown.Toggled then
-                        for _, DropdownOther in pairs(SectionFrame.Holder:GetChildren()) do
-                            if DropdownOther:IsA("Frame") and DropdownOther ~= DropdownFrame and DropdownOther:FindFirstChild("Container") and DropdownOther.Container.Visible then
-                                DropdownOther.Container.Visible = false
-                                TweenService:Create(DropdownOther,TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),{Size = UDim2.new(1, 0, 0, 38)}):Play()
-                                TweenService:Create(DropdownOther.Icon,TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),{Rotation = 0}):Play()
-                            end
-                        end
-
-                        TweenService:Create(DropdownFrame.Icon,TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),{Rotation = 180}):Play()
-                        DropdownContainer.Visible = true
-
-                        if #Dropdown.Options > MaxElements then
-                            TweenService:Create(DropdownFrame,TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),{Size = UDim2.new(1, 0, 0, 38 + (MaxElements * 30))}):Play()
-                        else
-                            TweenService:Create(DropdownFrame,TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),{Size = UDim2.new(1, 0, 0, DropdownList.AbsoluteContentSize.Y + 38)}):Play()
-                        end
-                    else
-                        TweenService:Create(DropdownFrame.Icon,TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),{Rotation = 0}):Play()
-                        DropdownContainer.Visible = false
-                        TweenService:Create(DropdownFrame,TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),{Size = UDim2.new(1, 0, 0, 38)}):Play()
-                    end
-                end)
-
-                AddConnection(DropdownFrame.MouseEnter, function()
-                    TweenService:Create(DropdownFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(CryzenLib.Themes[CryzenLib.SelectedTheme].Second.R * 255 + 5, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.G * 255 + 5, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.B * 255 + 5)}):Play()
-                end)
-
-                AddConnection(DropdownFrame.MouseLeave, function()
-                    TweenService:Create(DropdownFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Second}):Play()
-                end)
-
-                Dropdown:Refresh(Dropdown.Options, false)
-                Dropdown:Set(Dropdown.Value)
-                if DropdownConfig.Flag then
-                    CryzenLib.Flags[DropdownConfig.Flag] = Dropdown
-                end
-
-                function Dropdown:Destroy()
-                    DropdownFrame:Destroy()
-                    if DropdownConfig.Flag then
-                        CryzenLib.Flags[DropdownConfig.Flag] = nil
-                    end
-                end
-
-                return Dropdown
-            end
-
-            function SectionElements:AddBind(BindConfig)
-                BindConfig.Name = BindConfig.Name or "Bind"
-                BindConfig.Default = BindConfig.Default or Enum.KeyCode.Unknown
-                BindConfig.Hold = BindConfig.Hold or false
-                BindConfig.Callback = BindConfig.Callback or function() end
-                BindConfig.Flag = BindConfig.Flag or nil
-                BindConfig.Save = BindConfig.Save or false
-
-                local Bind = {Value = BindConfig.Default, Binding = false, Type = "Bind", Save = BindConfig.Save}
-                local Holding = false
-
-                local BindBox = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 4), {
-                    Size = UDim2.new(0, 24, 0, 24),
-                    Position = UDim2.new(1, -12, 0.5, 0),
-                    AnchorPoint = Vector2.new(1, 0.5)
-                }), {
-                    AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                    AddThemeObject(SetProps(MakeElement("Label", BindConfig.Name, 14), {
-                        Size = UDim2.new(1, 0, 1, 0),
-                        Font = Enum.Font.GothamBold,
-                        TextXAlignment = Enum.TextXAlignment.Center,
-                        Name = "Value"
-                    }), "Text")
-                }), "Main")
-
-                local Click = SetProps(MakeElement("Button"), {
-                    Size = UDim2.new(1, 0, 1, 0),
-                    Name = "BindButton"
-                })
-
-                local BindFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5), {
-                    Size = UDim2.new(1, 0, 0, 38),
-                    Parent = SectionFrame.Holder
-                }), {
-                    AddThemeObject(SetProps(MakeElement("Label", BindConfig.Name, 15), {
-                        Size = UDim2.new(1, -12, 1, 0),
-                        Position = UDim2.new(0, 12, 0, 0),
-                        Font = Enum.Font.GothamBold,
-                        Name = "Content"
-                    }), "Text"),
-                    AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                    BindBox,
-                    Click
-                }), "Second")
-
-                AddConnection(BindBox.Value:GetPropertyChangedSignal("Text"), function()
-                    TweenService:Create(BindBox, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(0, math.max(BindBox.Value.TextBounds.X + 16, 24), 0, 24)}):Play()
-                end)
-
-                AddConnection(Click.InputEnded, function(Input)
-                    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
-                        if Bind.Binding then return end
-                        Bind.Binding = true
-                        BindBox.Value.Text = "..."
-                    end
-                end)
-
-                AddConnection(UserInputService.InputBegan, function(Input)
-                    if UserInputService:GetFocusedTextBox() then return end
-                    if (Input.KeyCode.Name == Bind.Value or Input.UserInputType.Name == Bind.Value) and not Bind.Binding then
-                        if BindConfig.Hold then
-                            Holding = true
-                            BindConfig.Callback(Holding)
-                        else
-                            BindConfig.Callback()
-                        end
-                    elseif Bind.Binding then
-                        local Key
-                        pcall(function()
-                            if not CheckKey(BlacklistedKeys, Input.KeyCode) then
-                                Key = Input.KeyCode
-                            end
-                        end)
-                        pcall(function()
-                            if CheckKey(WhitelistedMouse, Input.UserInputType) and not Key then
-                                Key = Input.UserInputType
-                            end
-                        end)
-                        Key = Key or Bind.Value
-                        Bind:Set(Key)
-                        SaveCfg(game.GameId)
-                    end
-                end)
-
-                AddConnection(UserInputService.InputEnded, function(Input)
-                    if Input.KeyCode.Name == Bind.Value or Input.UserInputType.Name == Bind.Value then
-                        if BindConfig.Hold and Holding then
-                            Holding = false
-                            BindConfig.Callback(Holding)
-                        end
-                    end
-                end)
-
-                AddConnection(Click.MouseEnter, function()
-                    TweenService:Create(BindFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(CryzenLib.Themes[CryzenLib.SelectedTheme].Second.R * 255 + 5, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.G * 255 + 5, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.B * 255 + 5)}):Play()
-                end)
-
-                AddConnection(Click.MouseLeave, function()
-                    TweenService:Create(BindFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Second}):Play()
-                end)
-
-                AddConnection(Click.MouseButton1Up, function()
-                    TweenService:Create(BindFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(CryzenLib.Themes[CryzenLib.SelectedTheme].Second.R * 255 + 5, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.G * 255 + 5, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.B * 255 + 5)}):Play()
-                end)
-
-                AddConnection(Click.MouseButton1Down, function()
-                    TweenService:Create(BindFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(CryzenLib.Themes[CryzenLib.SelectedTheme].Second.R * 255 + 8, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.G * 255 + 8, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.B * 255 + 8)}):Play()
-                end)
-
-                function Bind:Set(Key)
-                    Bind.Binding = false
-                    Bind.Value = Key or Bind.Value
-                    Bind.Value = Bind.Value.Name or Bind.Value
-                    BindBox.Value.Text = Bind.Value
-                end
-
-                Bind:Set(BindConfig.Default)
-                if BindConfig.Flag then
-                    CryzenLib.Flags[BindConfig.Flag] = Bind
-                end
-
-                function Bind:Destroy()
-                    BindFrame:Destroy()
-                    if BindConfig.Flag then
-                        CryzenLib.Flags[BindConfig.Flag] = nil
-                    end
-                end
-
-                return Bind
-            end
-
-            function SectionElements:AddTextbox(TextboxConfig)
-                TextboxConfig = TextboxConfig or {}
-                TextboxConfig.Name = TextboxConfig.Name or "Textbox"
-                TextboxConfig.Default = TextboxConfig.Default or ""
-                TextboxConfig.TextDisappear = TextboxConfig.TextDisappear or false
-                TextboxConfig.Callback = TextboxConfig.Callback or function() end
-
-                local TextboxActual = AddThemeObject(Create("TextBox", {
-                    Size = UDim2.new(1, 0, 1, 0),
-                    BackgroundTransparency = 1,
-                    TextColor3 = Color3.fromRGB(255, 255, 255),
-                    PlaceholderColor3 = Color3.fromRGB(210,210,210),
-                    PlaceholderText = "Input",
-                    Font = Enum.Font.GothamSemibold,
-                    TextXAlignment = Enum.TextXAlignment.Center,
-                    TextSize = 14,
-                    ClearTextOnFocus = false
-                }), "Text")
-
-                local TextContainer = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 4), {
-                    Size = UDim2.new(0, 24, 0, 24),
-                    Position = UDim2.new(1, -12, 0.5, 0),
-                    AnchorPoint = Vector2.new(1, 0.5)
-                }), {
-                    AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                    TextboxActual
-                }), "Main")
-
-                local Click = SetProps(MakeElement("Button"), {
-                    Size = UDim2.new(1, 0, 1, 0),
-                    Name = "TextboxButton"
-                })
-
-                local TextboxFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5), {
-                    Size = UDim2.new(1, 0, 0, 38),
-                    Parent = SectionFrame.Holder
-                }), {
-                    AddThemeObject(SetProps(MakeElement("Label", TextboxConfig.Name, 15), {
-                        Size = UDim2.new(1, -12, 1, 0),
-                        Position = UDim2.new(0, 12, 0, 0),
-                        Font = Enum.Font.GothamBold,
-                        Name = "Content"
-                    }), "Text"),
-                    AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                    TextContainer,
-                    Click
-                }), "Second")
-
-                AddConnection(TextboxActual:GetPropertyChangedSignal("Text"), function()
-                    TweenService:Create(TextContainer, TweenInfo.new(0.45, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(0, math.max(TextboxActual.TextBounds.X + 16, 24), 0, 24)}):Play()
-                end)
-
-                AddConnection(TextboxActual.FocusLost, function(EnterPressed)
-                    if EnterPressed then
-                        TextboxConfig.Callback(TextboxActual.Text)
-                    end
-                    if TextboxConfig.TextDisappear then
-                        TextboxActual.Text = ""
-                    end
-                end)
-
-                TextboxActual.Text = TextboxConfig.Default
-
-                AddConnection(Click.MouseEnter, function()
-                    TweenService:Create(TextboxFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(CryzenLib.Themes[CryzenLib.SelectedTheme].Second.R * 255 + 5, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.G * 255 + 5, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.B * 255 + 5)}):Play()
-                end)
-
-                AddConnection(Click.MouseLeave, function()
-                    TweenService:Create(TextboxFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Second}):Play()
-                end)
-
-                AddConnection(Click.MouseButton1Up, function()
-                    TweenService:Create(TextboxFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(CryzenLib.Themes[CryzenLib.SelectedTheme].Second.R * 255 + 5, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.G * 255 + 5, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.B * 255 + 5)}):Play()
-                    TextboxActual:CaptureFocus()
-                end)
-
-                AddConnection(Click.MouseButton1Down, function()
-                    TweenService:Create(TextboxFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(CryzenLib.Themes[CryzenLib.SelectedTheme].Second.R * 255 + 8, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.G * 255 + 8, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.B * 255 + 8)}):Play()
-                end)
-
-                function TextboxActual:Destroy()
-                    TextboxFrame:Destroy()
-                end
-
-                return TextboxActual
-            end
-
-            function SectionElements:AddColorpicker(ColorpickerConfig)
-                ColorpickerConfig = ColorpickerConfig or {}
-                ColorpickerConfig.Name = ColorpickerConfig.Name or "Colorpicker"
-                ColorpickerConfig.Default = ColorpickerConfig.Default or Color3.fromRGB(255,255,255)
-                ColorpickerConfig.Callback = ColorpickerConfig.Callback or function() end
-                ColorpickerConfig.Flag = ColorpickerConfig.Flag or nil
-                ColorpickerConfig.Save = ColorpickerConfig.Save or false
-
-                local ColorH, ColorS, ColorV = 1, 1, 1
-                local Colorpicker = {Value = ColorpickerConfig.Default, Toggled = false, Type = "Colorpicker", Save = ColorpickerConfig.Save}
-
-                local ColorSelection = Create("ImageLabel", {
-                    Size = UDim2.new(0, 18, 0, 18),
-                    Position = UDim2.new(select(3, Color3.toHSV(Colorpicker.Value))),
-                    ScaleType = Enum.ScaleType.Fit,
-                    AnchorPoint = Vector2.new(0.5, 0.5),
-                    BackgroundTransparency = 1,
-                    Image = "http://www.roblox.com/asset/?id=4805639000"
-                })
-
-                local HueSelection = Create("ImageLabel", {
-                    Size = UDim2.new(0, 18, 0, 18),
-                    Position = UDim2.new(0.5, 0, 1 - select(1, Color3.toHSV(Colorpicker.Value))),
-                    ScaleType = Enum.ScaleType.Fit,
-                    AnchorPoint = Vector2.new(0.5, 0.5),
-                    BackgroundTransparency = 1,
-                    Image = "http://www.roblox.com/asset/?id=4805639000"
-                })
-
-                local Color = Create("ImageLabel", {
-                    Size = UDim2.new(1, -25, 1, 0),
-                    Visible = false,
-                    Image = "rbxassetid://4155801252"
-                }, {
-                    Create("UICorner", {CornerRadius = UDim.new(0, 5)}),
-                    ColorSelection
-                })
-
-                local Hue = Create("Frame", {
-                    Size = UDim2.new(0, 20, 1, 0),
-                    Position = UDim2.new(1, -20, 0, 0),
-                    Visible = false
-                }, {
-                    Create("UIGradient", {
-                        Rotation = 270,
-                        Color = ColorSequence.new{
-                            ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 0, 4)),
-                            ColorSequenceKeypoint.new(0.20, Color3.fromRGB(234, 255, 0)),
-                            ColorSequenceKeypoint.new(0.40, Color3.fromRGB(21, 255, 0)),
-                            ColorSequenceKeypoint.new(0.60, Color3.fromRGB(0, 255, 255)),
-                            ColorSequenceKeypoint.new(0.80, Color3.fromRGB(0, 17, 255)),
-                            ColorSequenceKeypoint.new(0.90, Color3.fromRGB(255, 0, 251)),
-                            ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 0, 4))
-                        }
-                    }),
-                    Create("UICorner", {CornerRadius = UDim.new(0, 5)}),
-                    HueSelection
-                })
-
-                local ColorpickerContainer = Create("Frame", {
-                    Position = UDim2.new(0, 0, 0, 32),
-                    Size = UDim2.new(1, 0, 1, -32),
-                    BackgroundTransparency = 1,
-                    ClipsDescendants = true
-                }, {
-                    Hue,
-                    Color,
-                    Create("UIPadding", {
-                        PaddingLeft = UDim.new(0, 35),
-                        PaddingRight = UDim.new(0, 35),
-                        PaddingBottom = UDim.new(0, 10),
-                        PaddingTop = UDim.new(0, 17)
-                    })
-                })
-
-                local Click = SetProps(MakeElement("Button"), {
-                    Size = UDim2.new(1, 0, 1, 0),
-                    Name = "ColorpickerButton"
-                })
-
-                local ColorpickerBox = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 4), {
-                    Size = UDim2.new(0, 24, 0, 24),
-                    Position = UDim2.new(1, -12, 0.5, 0),
-                    AnchorPoint = Vector2.new(1, 0.5)
-                }), {
-                    AddThemeObject(MakeElement("Stroke"), "Stroke")
-                }), "Main")
-
-                local ColorpickerFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5), {
-                    Size = UDim2.new(1, 0, 0, 38),
-                    Parent = SectionFrame.Holder
-                }), {
-                    SetProps(SetChildren(MakeElement("TFrame"), {
-                        AddThemeObject(SetProps(MakeElement("Label", ColorpickerConfig.Name, 15), {
-                            Size = UDim2.new(1, -12, 1, 0),
-                            Position = UDim2.new(0, 12, 0, 0),
-                            Font = Enum.Font.GothamBold,
-                            Name = "Content"
-                        }), "Text"),
-                        ColorpickerBox,
-                        Click,
-                        AddThemeObject(SetProps(MakeElement("Frame"), {
-                            Size = UDim2.new(1, 0, 0, 1),
-                            Position = UDim2.new(0, 0, 1, -1),
-                            Name = "Line",
-                            Visible = false
-                        }), "Stroke"),
-                    }), {
-                        Size = UDim2.new(1, 0, 0, 38),
-                        ClipsDescendants = true,
-                        Name = "F"
-                    }),
-                    ColorpickerContainer,
-                    AddThemeObject(MakeElement("Stroke"), "Stroke"),
-                }), "Second")
-
-                AddConnection(Click.MouseButton1Click, function()
-                    Colorpicker.Toggled = not Colorpicker.Toggled
-                    TweenService:Create(ColorpickerFrame,TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),{Size = Colorpicker.Toggled and UDim2.new(1, 0, 0, 148) or UDim2.new(1, 0, 0, 38)}):Play()
-                    Color.Visible = Colorpicker.Toggled
-                    Hue.Visible = Colorpicker.Toggled
-                    ColorpickerFrame.F.Line.Visible = Colorpicker.Toggled
-                end)
-
-                local function UpdateColorPicker()
-                    ColorpickerBox.BackgroundColor3 = Color3.fromHSV(ColorH, ColorS, ColorV)
-                    Color.BackgroundColor3 = Color3.fromHSV(ColorH, 1, 1)
-                    Colorpicker:Set(ColorpickerBox.BackgroundColor3)
-                    ColorpickerConfig.Callback(ColorpickerBox.BackgroundColor3)
-                    SaveCfg(game.GameId)
-                end
-
-                ColorH = 1 - (math.clamp(HueSelection.AbsolutePosition.Y - Hue.AbsolutePosition.Y, 0, Hue.AbsoluteSize.Y) / Hue.AbsoluteSize.Y)
-                ColorS = (math.clamp(ColorSelection.AbsolutePosition.X - Color.AbsolutePosition.X, 0, Color.AbsoluteSize.X) / Color.AbsoluteSize.X)
-                ColorV = 1 - (math.clamp(ColorSelection.AbsolutePosition.Y - Color.AbsolutePosition.Y, 0, Color.AbsoluteSize.Y) / Color.AbsoluteSize.Y)
-
-                local ColorInputConnection = nil
-                AddConnection(Color.InputBegan, function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        if ColorInputConnection then
-                            ColorInputConnection:Disconnect()
-                        end
-                        ColorInputConnection = AddConnection(RunService.RenderStepped, function()
-                            local ColorX, ColorY
-                            if input.UserInputType == Enum.UserInputType.Touch then
-                                ColorX = (math.clamp(input.Position.X - Color.AbsolutePosition.X, 0, Color.AbsoluteSize.X) / Color.AbsoluteSize.X)
-                                ColorY = (math.clamp(input.Position.Y - Color.AbsolutePosition.Y, 0, Color.AbsoluteSize.Y) / Color.AbsoluteSize.Y)
-                            else
-                                ColorX = (math.clamp(Mouse.X - Color.AbsolutePosition.X, 0, Color.AbsoluteSize.X) / Color.AbsoluteSize.X)
-                                ColorY = (math.clamp(Mouse.Y - Color.AbsolutePosition.Y, 0, Color.AbsoluteSize.Y) / Color.AbsoluteSize.Y)
-                            end
-
-                            ColorSelection.Position = UDim2.new(ColorX, 0, ColorY, 0)
-                            ColorS = ColorX
-                            ColorV = 1 - ColorY
-                            UpdateColorPicker()
-                        end)
-                    end
-                end)
-
-                AddConnection(Color.InputEnded, function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        if ColorInputConnection then
-                            ColorInputConnection:Disconnect()
-                            ColorInputConnection = nil
-                        end
-                    end
-                end)
-
-                local HueInputConnection = nil
-                AddConnection(Hue.InputBegan, function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        if HueInputConnection then
-                            HueInputConnection:Disconnect()
-                        end
-
-                        HueInputConnection = AddConnection(RunService.RenderStepped, function()
-                            local HueY
-                            if input.UserInputType == Enum.UserInputType.Touch then
-                                HueY = (math.clamp(input.Position.Y - Hue.AbsolutePosition.Y, 0, Hue.AbsoluteSize.Y) / Hue.AbsoluteSize.Y)
-                            else
-                                HueY = (math.clamp(Mouse.Y - Hue.AbsolutePosition.Y, 0, Hue.AbsoluteSize.Y) / Hue.AbsoluteSize.Y)
-                            end
-
-                            HueSelection.Position = UDim2.new(0.5, 0, HueY, 0)
-                            ColorH = 1 - HueY
-
-                            UpdateColorPicker()
-                        end)
-                    end
-                end)
-
-                AddConnection(Hue.InputEnded, function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                        if HueInputConnection then
-                            HueInputConnection:Disconnect()
-                            HueInputConnection = nil
-                        end
-                    end
-                end)
-
-                AddConnection(ColorpickerFrame.MouseEnter, function()
-                    TweenService:Create(ColorpickerFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(CryzenLib.Themes[CryzenLib.SelectedTheme].Second.R * 255 + 5, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.G * 255 + 5, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.B * 255 + 5)}):Play()
-                end)
-
-                AddConnection(ColorpickerFrame.MouseLeave, function()
-                    TweenService:Create(ColorpickerFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Second}):Play()
-                end)
-
-                function Colorpicker:Set(Value)
-                    Colorpicker.Value = Value
-                    ColorpickerBox.BackgroundColor3 = Colorpicker.Value
-                    ColorpickerConfig.Callback(Colorpicker.Value)
-
-                    local h, s, v = Color3.toHSV(Colorpicker.Value)
-                    ColorH, ColorS, ColorV = h, s, v
-
-                    HueSelection.Position = UDim2.new(0.5, 0, 1 - ColorH, 0)
-                    ColorSelection.Position = UDim2.new(ColorS, 0, 1 - ColorV, 0)
-                    Color.BackgroundColor3 = Color3.fromHSV(ColorH, 1, 1)
-                end
-
-                Colorpicker:Set(Colorpicker.Value)
-                if ColorpickerConfig.Flag then
-                    CryzenLib.Flags[ColorpickerConfig.Flag] = Colorpicker
-                end
-
-                function Colorpicker:Destroy()
-                    ColorpickerFrame:Destroy()
-                    if ColorpickerConfig.Flag then
-                        CryzenLib.Flags[ColorpickerConfig.Flag] = nil
-                    end
-                end
-
-                return Colorpicker
-            end
-
-            function SectionElements:AddLabel(LabelConfig)
-                LabelConfig = LabelConfig or {}
-                LabelConfig.Text = LabelConfig.Text or "Label"
-                LabelConfig.Color = LabelConfig.Color or CryzenLib.Themes[CryzenLib.SelectedTheme].TextDark
-
-                local LabelFrame = SetChildren(SetProps(MakeElement("RoundFrame", CryzenLib.Themes[CryzenLib.SelectedTheme].Second, 0, 5), {
-                    Size = UDim2.new(1, 0, 0, 30),
-                    Parent = SectionFrame.Holder
-                }), {
-                    SetProps(MakeElement("Label", LabelConfig.Text, 14), {
-                        Size = UDim2.new(1, -12, 1, 0),
-                        Position = UDim2.new(0, 12, 0, 0),
-                        Font = Enum.Font.GothamMedium,
-                        TextColor3 = LabelConfig.Color,
-                        Name = "Content"
-                    }),
-                    AddThemeObject(MakeElement("Stroke"), "Stroke")
-                })
-
-                local LabelFunctions = {}
-
-                function LabelFunctions:Set(NewText)
-                    LabelFrame.Content.Text = NewText
-                end
-
-                function LabelFunctions:SetColor(NewColor)
-                    TweenService:Create(LabelFrame.Content, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {TextColor3 = NewColor}):Play()
-                end
-
-                function LabelFunctions:Destroy()
-                    LabelFrame:Destroy()
-                end
-
-                return LabelFunctions
-            end
-
-            function SectionElements:AddParagraph(ParagraphConfig)
-                ParagraphConfig = ParagraphConfig or {}
-                ParagraphConfig.Title = ParagraphConfig.Title or "Title"
-                ParagraphConfig.Content = ParagraphConfig.Content or "Content"
-
-                local ParagraphFrame = SetChildren(SetProps(MakeElement("RoundFrame", CryzenLib.Themes[CryzenLib.SelectedTheme].Second, 0, 5), {
-                    Size = UDim2.new(1, 0, 0, 0),
-                    AutomaticSize = Enum.AutomaticSize.Y,
-                    Parent = SectionFrame.Holder
-                }), {
-                    SetProps(MakeElement("Label", ParagraphConfig.Title, 14), {
-                        Size = UDim2.new(1, -12, 0, 14),
-                        Position = UDim2.new(0, 12, 0, 10),
-                        Font = Enum.Font.GothamBold,
-                        TextColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Text,
-                        Name = "Title",
-                        TextXAlignment = Enum.TextXAlignment.Left
-                    }),
-
-                    SetProps(MakeElement("Label", ParagraphConfig.Content, 13), {
-                        Size = UDim2.new(1, -24, 0, 0),
-                        Position = UDim2.new(0, 12, 0, 26),
-                        Font = Enum.Font.Gotham,
-                        TextColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].TextDark,
-                        Name = "Content",
-                        TextWrapped = true,
-                        TextXAlignment = Enum.TextXAlignment.Left,
-                        AutomaticSize = Enum.AutomaticSize.Y
-                    }),
-
-                    AddThemeObject(MakeElement("Stroke"), "Stroke"),
-
-                    SetProps(MakeElement("Padding", {
-                        Bottom = UDim.new(0, 10)
-                    }), {})
-                })
-
-                local ParagraphFunctions = {}
-
-                function ParagraphFunctions:SetTitle(NewTitle)
-                    ParagraphFrame.Title.Text = NewTitle
-                end
-
-                function ParagraphFunctions:SetContent(NewContent)
-                    ParagraphFrame.Content.Text = NewContent
-                end
-
-                function ParagraphFunctions:Destroy()
-                    ParagraphFrame:Destroy()
-                end
-
-                return ParagraphFunctions
-            end
-
+            
+            -- Additional UI elements would go here...
+            
             return SectionElements
         end
-
+        
         if TabConfig.PremiumOnly then
             for i, v in next, SectionElements do
                 SectionElements[i] = function() end
             end
-
+            
             SetChildren(SetProps(MakeElement("TFrame"), {
                 Size = UDim2.new(1, 0, 1, 0),
                 Parent = Container
@@ -2455,18 +1962,18 @@ function CryzenLib:MakeWindow(WindowConfig)
                 }), "Text")
             })
         end
-
+        
         return TabFunctions
     end
-
+    
     -- Home tab (default)
     function WindowFunctions:AddHome(HomeConfig)
         HomeConfig = HomeConfig or {}
         HomeConfig.Welcome = HomeConfig.Welcome or {
             Title = "Welcome to CryzenHub",
-            Content = "Thanks for using CryzenHub UI Library v" .. CryzenLib.Version
+            Content = "Thanks for using CryzenHub UI Library v" .. self.Version
         }
-
+        
         AddThemeObject(SetProps(MakeElement("Label", HomeConfig.Welcome.Title, 20), {
             Size = UDim2.new(1, 0, 0, 20),
             Position = UDim2.new(0, 0, 0, 5),
@@ -2474,7 +1981,7 @@ function CryzenLib:MakeWindow(WindowConfig)
             TextXAlignment = Enum.TextXAlignment.Center,
             Parent = HomeContainer
         }), "Text")
-
+        
         AddThemeObject(SetProps(MakeElement("Label", HomeConfig.Welcome.Content, 14), {
             Size = UDim2.new(1, 0, 0, 14),
             Position = UDim2.new(0, 0, 0, 35),
@@ -2483,7 +1990,7 @@ function CryzenLib:MakeWindow(WindowConfig)
             TextTransparency = 0.3,
             Parent = HomeContainer
         }), "TextDark")
-
+        
         if HomeConfig.Buttons then
             for _, Button in pairs(HomeConfig.Buttons) do
                 local ButtonFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5), {
@@ -2496,48 +2003,48 @@ function CryzenLib:MakeWindow(WindowConfig)
                         Font = Enum.Font.GothamBold,
                         Name = "Title"
                     }), "Text"),
-
+                    
                     AddThemeObject(MakeElement("Stroke"), "Stroke"),
-
+                    
                     SetProps(MakeElement("SmoothButton"), {
                         Size = UDim2.new(1, 0, 1, 0),
                         Name = "HomeButton"
                     })
                 }), "Second")
-
+                
                 -- Add icon if specified
                 if Button.Icon then
                     local Icon = SetProps(MakeElement("Image", Button.Icon), {
                         Size = UDim2.new(0, 20, 0, 20),
                         Position = UDim2.new(0, 12, 0.5, 0),
                         AnchorPoint = Vector2.new(0, 0.5),
-                        ImageColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Accent,
+                        ImageColor3 = self.Themes[self.SelectedTheme].Accent,
                         Name = "Icon",
                         Parent = ButtonFrame
                     })
                     ButtonFrame.Title.Position = UDim2.new(0, 40, 0, 0)
                     ButtonFrame.Title.Size = UDim2.new(1, -40, 1, 0)
                 end
-
+                
                 AddConnection(ButtonFrame.HomeButton.MouseEnter, function()
-                    TweenService:Create(ButtonFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(CryzenLib.Themes[CryzenLib.SelectedTheme].Second.R * 255 + 5, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.G * 255 + 5, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.B * 255 + 5)}):Play()
+                    TweenService:Create(ButtonFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(self.Themes[self.SelectedTheme].Second.R * 255 + 5, self.Themes[self.SelectedTheme].Second.G * 255 + 5, self.Themes[self.SelectedTheme].Second.B * 255 + 5)}):Play()
                 end)
-
+                
                 AddConnection(ButtonFrame.HomeButton.MouseLeave, function()
-                    TweenService:Create(ButtonFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = CryzenLib.Themes[CryzenLib.SelectedTheme].Second}):Play()
+                    TweenService:Create(ButtonFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = self.Themes[self.SelectedTheme].Second}):Play()
                 end)
-
+                
                 AddConnection(ButtonFrame.HomeButton.MouseButton1Up, function()
-                    TweenService:Create(ButtonFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(CryzenLib.Themes[CryzenLib.SelectedTheme].Second.R * 255 + 5, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.G * 255 + 5, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.B * 255 + 5)}):Play()
+                    TweenService:Create(ButtonFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(self.Themes[self.SelectedTheme].Second.R * 255 + 5, self.Themes[self.SelectedTheme].Second.G * 255 + 5, self.Themes[self.SelectedTheme].Second.B * 255 + 5)}):Play()
                     Button.Callback()
                 end)
-
+                
                 AddConnection(ButtonFrame.HomeButton.MouseButton1Down, function()
-                    TweenService:Create(ButtonFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(CryzenLib.Themes[CryzenLib.SelectedTheme].Second.R * 255 + 8, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.G * 255 + 8, CryzenLib.Themes[CryzenLib.SelectedTheme].Second.B * 255 + 8)}):Play()
+                    TweenService:Create(ButtonFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundColor3 = Color3.fromRGB(self.Themes[self.SelectedTheme].Second.R * 255 + 8, self.Themes[self.SelectedTheme].Second.G * 255 + 8, self.Themes[self.SelectedTheme].Second.B * 255 + 8)}):Play()
                 end)
             end
         end
-
+        
         -- Add credits section
         if HomeConfig.ShowCredits ~= false then
             local CreditsFrame = AddThemeObject(SetChildren(SetProps(MakeElement("RoundFrame", Color3.fromRGB(255, 255, 255), 0, 5), {
@@ -2550,8 +2057,8 @@ function CryzenLib:MakeWindow(WindowConfig)
                     Font = Enum.Font.GothamBold,
                     Name = "Title"
                 }), "Text"),
-
-                AddThemeObject(SetProps(MakeElement("Label", "Created with ❤️ by Cryzen Team\nVersion: " .. CryzenLib.Version, 13), {
+                
+                AddThemeObject(SetProps(MakeElement("Label", "Created with ❤️ by Cryzen Team\nVersion: " .. self.Version, 13), {
                     Size = UDim2.new(1, -12, 0, 40),
                     Position = UDim2.new(0, 12, 0, 32),
                     Font = Enum.Font.Gotham,
@@ -2559,72 +2066,72 @@ function CryzenLib:MakeWindow(WindowConfig)
                     Name = "Subtitle",
                     TextYAlignment = Enum.TextYAlignment.Top
                 }), "TextDark"),
-
+                
                 AddThemeObject(MakeElement("Stroke"), "Stroke")
             }), "Second")
         end
     end
-
+    
     -- Themes tab
     function WindowFunctions:AddThemeTab()
         local ThemeTab = WindowFunctions:MakeTab({
             Name = "Themes",
             Icon = "rbxassetid://6031280882"
         })
-
+        
         local ThemeSection = ThemeTab:AddSection({
             Name = "Theme Settings"
         })
-
+        
         local ThemeDropdown = ThemeSection:AddDropdown({
             Name = "Theme",
-            Default = CryzenLib.SelectedTheme,
-            Options = {"Default", "Dark", "Light", "Midnight", "Oceanic"},
+            Default = self.SelectedTheme,
+            Options = {"Fluent", "Dark", "Light", "Midnight", "Aqua"},
             Callback = function(Value)
                 WindowFunctions:SetTheme(Value)
             end,
             Flag = "UITheme",
             Save = true
         })
-
+        
         local ColorSection = ThemeTab:AddSection({
             Name = "Custom Colors"
         })
-
-        for themeName, themeColors in pairs(CryzenLib.Themes) do
+        
+        for themeName, themeColors in pairs(self.Themes) do
             local CustomSection = ThemeTab:AddSection({
                 Name = themeName .. " Theme"
             })
-
+            
             for colorName, colorValue in pairs(themeColors) do
                 CustomSection:AddColorpicker({
                     Name = colorName,
                     Default = colorValue,
                     Callback = function(Value)
-                        CryzenLib.ThemesthemeName = Value
-
-                        if themeName == CryzenLib.SelectedTheme then
-                            SetTheme(CryzenLib.SelectedTheme)
+                        self.Themes[themeName][colorName] = Value
+                        
+                        if themeName == self.SelectedTheme then
+                            SetTheme(self.SelectedTheme)
                         end
                     end
                 })
             end
         end
-
+        
         return ThemeTab
     end
-
+    
     -- Settings tab
     function WindowFunctions:AddSettingsTab()
         local SettingsTab = WindowFunctions:MakeTab({
             Name = "Settings",
             Icon = "rbxassetid://6031280883"
         })
-
+        
         local ToggleSection = SettingsTab:AddSection({
             Name = "UI Settings"
         })
-
+        
         local UIToggle = ToggleSection:AddBind({
             Name = "Toggle UI",
             Default = Enum.KeyCode.RightControl,
@@ -2635,31 +2142,31 @@ function CryzenLib:MakeWindow(WindowConfig)
             Flag = "UIKeybind",
             Save = true
         })
-
+        
         if WindowConfig.SaveConfig then
             local SaveSection = SettingsTab:AddSection({
                 Name = "Configuration"
             })
-
+            
             SaveSection:AddButton({
                 Name = "Save Config",
                 Callback = function()
                     SaveCfg(game.GameId)
-                    CryzenLib:MakeNotification({
-                        Name = "Configuration Saved",
+                    self:MakeNotification({
+                        Title = "Configuration Saved",
                         Content = "Your settings have been saved for this game",
                         Time = 3,
                         Type = "Success"
                     })
                 end
             })
-
+            
             SaveSection:AddButton({
                 Name = "Load Config",
                 Callback = function()
                     LoadCfg(game.GameId)
-                    CryzenLib:MakeNotification({
-                        Name = "Configuration Loaded",
+                    self:MakeNotification({
+                        Title = "Configuration Loaded",
                         Content = "Your settings have been loaded for this game",
                         Time = 3,
                         Type = "Success"
@@ -2667,47 +2174,48 @@ function CryzenLib:MakeWindow(WindowConfig)
                 end
             })
         end
-
+        
         return SettingsTab
     end
-
+    
     -- Load saved configuration
     if WindowConfig.SaveConfig then
         task.spawn(function()
             LoadCfg(game.GameId)
         end)
     end
-
+    
     return WindowFunctions
 end
 
 -- Notifications
 function CryzenLib:MakeNotification(NotificationConfig)
+    NotificationConfig = NotificationConfig or {}
     NotificationConfig.Title = NotificationConfig.Title or "Notification"
     NotificationConfig.Content = NotificationConfig.Content or "Content"
     NotificationConfig.Time = NotificationConfig.Time or 3
     NotificationConfig.Type = NotificationConfig.Type or "Info" -- Info, Success, Error, Warning
-
+    
     local IconMap = {
         Info = "rbxassetid://7733658504",
         Success = "rbxassetid://7733715400",
         Error = "rbxassetid://7733799682",
         Warning = "rbxassetid://7733878302"
     }
-
+    
     local ColorMap = {
         Info = Color3.fromRGB(90, 100, 240),
         Success = Color3.fromRGB(90, 200, 120),
         Error = Color3.fromRGB(240, 90, 90),
         Warning = Color3.fromRGB(240, 190, 90)
     }
-
+    
     NotificationConfig.Image = IconMap[NotificationConfig.Type] or IconMap.Info
     local AccentColor = ColorMap[NotificationConfig.Type] or ColorMap.Info
-
+    
     task.spawn(function()
         local NotificationParent = Cryzen:FindFirstChild("Notifications")
-
+        
         if not NotificationParent then
             NotificationParent = Create("Frame", {
                 Name = "Notifications",
@@ -2725,7 +2233,7 @@ function CryzenLib:MakeNotification(NotificationConfig)
                 })
             })
         end
-
+        
         -- Create notification with improved design
         local NotificationFrame = Create("Frame", {
             Size = UDim2.new(0, 300, 0, 0),
@@ -2733,23 +2241,23 @@ function CryzenLib:MakeNotification(NotificationConfig)
             ClipsDescendants = true,
             Parent = NotificationParent
         })
-
+        
         local NotifBase = Create("Frame", {
             Size = UDim2.new(1, 0, 0, 80),
-            BackgroundColor3 = Color3.fromRGB(25, 25, 30),
+            BackgroundColor3 = self.Themes[self.SelectedTheme].Main,
             BorderSizePixel = 0,
             Position = UDim2.new(1, 0, 0, 0),
             Parent = NotificationFrame
         }, {
             Create("UICorner", {
-                CornerRadius = UDim.new(0, 6)
+                CornerRadius = UDim.new(0, 8)
             }),
             Create("UIStroke", {
                 Thickness = 1,
-                Color = Color3.fromRGB(50, 50, 55)
+                Color = self.Themes[self.SelectedTheme].Stroke
             })
         })
-
+        
         local NotifIcon = Create("ImageLabel", {
             Image = NotificationConfig.Image,
             BackgroundTransparency = 1,
@@ -2758,10 +2266,10 @@ function CryzenLib:MakeNotification(NotificationConfig)
             ImageColor3 = AccentColor,
             Parent = NotifBase
         })
-
+        
         local NotifTitle = Create("TextLabel", {
             Text = NotificationConfig.Title,
-            TextColor3 = Color3.fromRGB(240, 240, 240),
+            TextColor3 = self.Themes[self.SelectedTheme].Text,
             TextXAlignment = Enum.TextXAlignment.Left,
             BackgroundTransparency = 1,
             TextSize = 16,
@@ -2770,10 +2278,10 @@ function CryzenLib:MakeNotification(NotificationConfig)
             Position = UDim2.new(0, 45, 0, 20),
             Parent = NotifBase
         })
-
+        
         local NotifContent = Create("TextLabel", {
             Text = NotificationConfig.Content,
-            TextColor3 = Color3.fromRGB(200, 200, 200),
+            TextColor3 = self.Themes[self.SelectedTheme].TextDark,
             TextXAlignment = Enum.TextXAlignment.Left,
             BackgroundTransparency = 1,
             TextSize = 14,
@@ -2782,7 +2290,7 @@ function CryzenLib:MakeNotification(NotificationConfig)
             Position = UDim2.new(0, 45, 0, 40),
             Parent = NotifBase
         })
-
+        
         -- Add accent bar
         local AccentBar = Create("Frame", {
             Size = UDim2.new(0, 3, 1, -10),
@@ -2795,7 +2303,7 @@ function CryzenLib:MakeNotification(NotificationConfig)
                 CornerRadius = UDim.new(0, 3)
             })
         })
-
+        
         -- Add close button
         local CloseButton = Create("ImageButton", {
             Size = UDim2.new(0, 16, 0, 16),
@@ -2803,11 +2311,11 @@ function CryzenLib:MakeNotification(NotificationConfig)
             AnchorPoint = Vector2.new(1, 0),
             BackgroundTransparency = 1,
             Image = "rbxassetid://7733717447",
-            ImageColor3 = Color3.fromRGB(200, 200, 200),
+            ImageColor3 = self.Themes[self.SelectedTheme].TextDark,
             Rotation = 45,
             Parent = NotifBase
         })
-
+        
         -- Add progress bar
         local ProgressBar = Create("Frame", {
             Size = UDim2.new(1, 0, 0, 2),
@@ -2816,20 +2324,20 @@ function CryzenLib:MakeNotification(NotificationConfig)
             BorderSizePixel = 0,
             Parent = NotifBase
         })
-
+        
         -- Animate notification
         NotificationFrame.Size = UDim2.new(0, 300, 0, 80)
         TweenService:Create(NotifBase, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2.new(0, 0, 0, 0)}):Play()
-
+        
         -- Progress bar animation
         TweenService:Create(ProgressBar, TweenInfo.new(NotificationConfig.Time, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {Size = UDim2.new(0, 0, 0, 2)}):Play()
-
+        
         CloseButton.MouseButton1Click:Connect(function()
             TweenService:Create(NotifBase, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2.new(1, 0, 0, 0)}):Play()
             wait(0.3)
             NotificationFrame:Destroy()
         end)
-
+        
         task.delay(NotificationConfig.Time - 0.5, function()
             if NotifBase and NotifBase.Parent then
                 TweenService:Create(NotifBase, TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2.new(1, 0, 0, 0)}):Play()
@@ -2850,7 +2358,7 @@ function CryzenLib:Destroy()
             Size = UDim2.new(0, 480, 0, 0),
             BackgroundTransparency = 1
         }):Play()
-
+        
         task.delay(0.5, function()
             Cryzen:Destroy()
         end)
