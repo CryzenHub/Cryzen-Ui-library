@@ -1,269 +1,282 @@
-CryzenHub UI Library v2.3 - Usage Guide
+## How to Use CryzenHub UI Library V2.3 (Fluent Design Edition)
 
-Getting Started
+### Basic Setup
 
-First, load the library:
+```lua
+-- Load the library
+local CryzenLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/username/CryzenHub/main/source.lua"))()
 
-local CryzenLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/CryzenHub/Cryzen-Ui-library/refs/heads/main/source.lua"))()
-
-Creating a Window
-
+-- Create a window
 local Window = CryzenLib:MakeWindow({
-    Name = "CryzenHub Example",
-    IntroText = "CryzenHub v2.3",
+    Name = "CryzenHub - Game Name", -- Title of your script hub
+    Theme = "Fluent", -- Choose theme: Fluent, Dark, Light, Midnight, Aqua
+    IntroEnabled = true, -- Enable intro animation
+    IntroText = "CryzenHub",
     IntroIcon = "rbxassetid://10618644218",
-    Icon = "rbxassetid://10618644218",
-    IntroEnabled = true,
-    CloseCallback = function()
-        print("Window closed")
-    end,
-    Theme = "Default", -- Default, Dark, Light, Midnight, Oceanic
-    SaveConfig = true,
-    ConfigFolder = "CryzenHubConfig",
-    UseNewLoadingScreen = true,
-    LoadingTitle = "CryzenHub",
-    LoadingSubtitle = "Loading awesome features..."
+    Icon = "rbxassetid://10618644218", -- Hub icon (optional)
+    SaveConfig = true, -- Enable configuration saving
+    ConfigFolder = "CryzenHubConfig" -- Folder to save configs
 })
-
-Setting Up Key System (Optional)
-
-CryzenLib.KeySystem = true
-CryzenLib.KeySettings = {
-    Title = "CryzenHub Key System",
-    Subtitle = "Key Verification",
-    Note = "Get your key from our Discord server",
-    Key = "EXAMPLE-KEY-12345",
-    SaveKey = true,
-    GrabKeyFromSite = false,
-    KeyLink = "https://discord.gg/yourserver",
-    FileName = "CryzenKey",
-    MaxAttempts = 5,
-    RejectMessage = "Invalid key, please try again."
-}
-
-Creating Tabs and Sections
 
 -- Create a tab
 local MainTab = Window:MakeTab({
-    Name = "Main Features",
-    Icon = "rbxassetid://7733960981",
-    PremiumOnly = false
+    Name = "Main",
+    Icon = "rbxassetid://7733964368", -- Tab icon (optional)
+    PremiumOnly = false -- Set to true to make this tab premium only
 })
 
--- Add a section to the tab
-local Section = MainTab:AddSection({
-    Name = "Basic Controls"
+-- Create a section in the tab
+local MainSection = MainTab:AddSection({
+    Name = "Main Features"
 })
 
-Adding Elements
-
-Button
-
-local MyButton = Section:AddButton({
+-- Add elements to the section
+MainSection:AddButton({
     Name = "Click Me",
     Callback = function()
         print("Button clicked!")
-    end,
-    Icon = "rbxassetid://7733964370" -- Optional icon
+    end
 })
 
--- You can update the button text later
-MyButton:Set("New Button Text")
-
-Toggle
-
-local MyToggle = Section:AddToggle({
+-- Add a toggle
+local Toggle = MainSection:AddToggle({
     Name = "Toggle Feature",
-    Default = false,
-    Save = true,
-    Flag = "myToggleFeature",
+    Default = false, -- Default state
+    Save = true, -- Save toggle state
+    Flag = "toggleFeature", -- Unique identifier for saving
     Callback = function(Value)
         print("Toggle is now:", Value)
     end
 })
 
--- You can set the value programmatically
-MyToggle:Set(true)
-
-Slider
-
-local MySlider = Section:AddSlider({
+-- Add a slider
+local Slider = MainSection:AddSlider({
     Name = "Walkspeed",
-    Min = 16,
-    Max = 500,
-    Default = 16,
-    Increment = 1,
-    ValueName = "studs/s",
+    Min = 16, -- Minimum value
+    Max = 500, -- Maximum value
+    Default = 16, -- Default value
+    Increment = 1, -- Step size
+    ValueName = "speed", -- Unit name
     Save = true,
-    Flag = "walkspeedValue",
+    Flag = "walkspeedSlider",
     Callback = function(Value)
         game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
     end
 })
 
--- Set the slider value
-MySlider:Set(100)
-
-Dropdown
-
-local MyDropdown = Section:AddDropdown({
+-- Add a dropdown
+local Dropdown = MainSection:AddDropdown({
     Name = "Select Option",
-    Default = "Option 1",
     Options = {"Option 1", "Option 2", "Option 3"},
+    Default = "",
     Save = true,
-    Flag = "selectedOption",
-    Callback = function(Value)
-        print("Selected:", Value)
+    Flag = "dropdownOption",
+    Callback = function(Option)
+        print("Selected:", Option)
     end
 })
 
--- Update dropdown options
-MyDropdown:Refresh({"New Option 1", "New Option 2", "New Option 3"}, true) -- true to clear old options
+-- Add theme and settings tabs
+local ThemeTab = Window:AddThemeTab() -- Creates a theme customization tab
+local SettingsTab = Window:AddSettingsTab() -- Creates a settings tab with UI toggle
+```
 
--- Set a specific value
-MyDropdown:Set("New Option 2")
+### Adding a Home Page
 
-Colorpicker
-
-local MyColorpicker = Section:AddColorpicker({
-    Name = "UI Color",
-    Default = Color3.fromRGB(255, 0, 0),
-    Save = true,
-    Flag = "uiColor",
-    Callback = function(Value)
-        print("Color selected:", Value)
-    end
-})
-
--- Set a specific color
-MyColorpicker:Set(Color3.fromRGB(0, 255, 0))
-
-Textbox
-
-local MyTextbox = Section:AddTextbox({
-    Name = "Enter Text",
-    Default = "Default text",
-    TextDisappear = false,
-    Callback = function(Value)
-        print("Text entered:", Value)
-    end
-})
-
-Keybind
-
-local MyKeybind = Section:AddBind({
-    Name = "Keybind",
-    Default = Enum.KeyCode.E,
-    Hold = false,
-    Save = true,
-    Flag = "actionKey",
-    Callback = function()
-        print("Keybind pressed!")
-    end
-})
-
--- Set a specific key
-MyKeybind:Set(Enum.KeyCode.F)
-
-Label
-
-local MyLabel = Section:AddLabel({
-    Text = "This is a label"
-})
-
--- Update label text
-MyLabel:Set("Updated label text")
-
--- Change label color
-MyLabel:SetColor(Color3.fromRGB(255, 0, 0))
-
-Paragraph
-
-local MyParagraph = Section:AddParagraph({
-    Title = "Important Information",
-    Content = "This is a longer text that provides detailed information about a feature or functionality. It will automatically wrap to fit the available space."
-})
-
--- Update paragraph content
-MyParagraph:SetTitle("New Title")
-MyParagraph:SetContent("New content text goes here...")
-
-Adding Home Tab Content
-
+```lua
+-- Add a custom home page
 Window:AddHome({
     Welcome = {
         Title = "Welcome to CryzenHub",
-        Content = "Thanks for using our UI library!"
+        Content = "Thank you for using our script!"
     },
     Buttons = {
         {
             Title = "Join Discord",
-            Icon = "rbxassetid://7733964370",
+            Icon = "rbxassetid://7733658504",
             Callback = function()
                 setclipboard("https://discord.gg/yourserver")
                 CryzenLib:MakeNotification({
                     Title = "Discord Link Copied",
                     Content = "Discord invite link copied to clipboard!",
-                    Time = 3,
-                    Type = "Info"
+                    Time = 5,
+                    Type = "Success"
                 })
             end
         },
         {
-            Title = "Copy Script",
+            Title = "Check Updates",
+            Icon = "rbxassetid://7733715400",
             Callback = function()
-                setclipboard("loadstring(game:HttpGet('https://raw.githubusercontent.com/Cryzen-Hub/CryzenHub/main/loader.lua'))()")
+                CryzenLib:MakeNotification({
+                    Title = "Checking Updates",
+                    Content = "You are using the latest version!",
+                    Time = 5,
+                    Type = "Info"
+                })
             end
         }
     },
     ShowCredits = true -- Show credits section
 })
+```
 
-Adding Theme and Settings Tabs
+### Using the Key System
 
--- Add built-in theme customization tab
-local ThemeTab = Window:AddThemeTab()
-
--- Add built-in settings tab
-local SettingsTab = Window:AddSettingsTab()
-
-Creating Notifications
-
-CryzenLib:MakeNotification({
-    Title = "Script Loaded",
-    Content = "CryzenHub has been successfully loaded!",
-    Time = 5,
-    Type = "Success" -- Info, Success, Error, Warning
+```lua
+-- Set up key system (do this before creating window)
+CryzenLib:SetKey({
+    Title = "CryzenHub Key System",
+    Subtitle = "Key Verification",
+    Note = "Get the key from our Discord server",
+    Key = "YourSecretKey123", -- Your secret key
+    SaveKey = true, -- Save key for future use
+    KeyLink = "https://discord.gg/yourserver", -- Discord invite or key website
+    GrabKeyFromSite = false, -- Set to true to fetch key from KeyLink
+    MaxAttempts = 5,
+    RejectMessage = "Invalid key! Please try again.",
+    Callback = function() 
+        print("Key verified successfully!")
+    end
 })
 
-Other Useful Functions
+-- Then create your window
+local Window = CryzenLib:MakeWindow({
+    Name = "CryzenHub"
+    -- other options...
+})
+```
 
--- Change theme
-Window:SetTheme("Dark")
+### Creating Notifications
 
--- Destroy the UI
-CryzenLib:Destroy()
+```lua
+-- Create a notification
+CryzenLib:MakeNotification({
+    Title = "Notification Title",
+    Content = "This is a notification message",
+    Time = 5, -- Duration in seconds
+    Type = "Info" -- Info, Success, Error, Warning
+})
 
-Key Features in v2.3
+-- Example success notification
+CryzenLib:MakeNotification({
+    Title = "Success!",
+    Content = "Operation completed successfully",
+    Time = 3,
+    Type = "Success"
+})
 
-Enhanced Mobile Support: Better touch controls and responsive design for mobile devices
-Improved Performance: Optimized animations and rendering
-New Loading Screen: Optional animated loading screen with progress bar
-Advanced Key System: Multiple verification methods and persistent key storage
-Enhanced Notifications: Better looking notifications with progress bars and icons
-Improved Theme Customization: More theme options and custom color support
-Better Config Saving: More reliable configuration saving and loading
-UI Animations: Smoother transitions and animations throughout the UI
-Premium Features: Support for premium-only features
-Improved Element Design: Cleaner, more modern look for all UI elements
+-- Example error notification
+CryzenLib:MakeNotification({
+    Title = "Error",
+    Content = "Something went wrong!",
+    Time = 3,
+    Type = "Error"
+})
 
-Tips for Best Usage
+-- Example warning notification
+CryzenLib:MakeNotification({
+    Title = "Warning",
+    Content = "This action might be risky",
+    Time = 3,
+    Type = "Warning"
+})
+```
 
-Use Flags for Important Values: Flags allow you to access values from anywhere in your script
-Enable Config Saving: This will remember user settings between sessions
-Use Icons: Icons make your UI more intuitive and visually appealing
-Organize with Tabs and Sections: Keep your UI organized by grouping related features
-Add Home Tab Content: Provide a welcome screen with useful information and quick access buttons
-Use Appropriate Notification Types: Different notification types (Success, Error, etc.) help users understand the context
-Test on Both PC and Mobile: Ensure your UI works well on all platforms
-Add Key Verification: If you want to restrict access to your script
+### Manipulating UI Elements After Creation
+
+```lua
+-- Update toggle value
+Toggle:Set(true)
+
+-- Update slider value
+Slider:Set(100)
+
+-- Update dropdown options
+Dropdown:Refresh({"New Option 1", "New Option 2"}, true) -- true to clear previous options
+Dropdown:Set("New Option 1") -- Set selected option
+
+-- Access saved values
+local toggleValue = CryzenLib.Flags["toggleFeature"].Value
+local sliderValue = CryzenLib.Flags["walkspeedSlider"].Value
+local dropdownValue = CryzenLib.Flags["dropdownOption"].Value
+```
+
+### Creating Advanced UI Elements
+
+```lua
+-- Create a keybind
+local Bind = MainSection:AddBind({
+    Name = "Speed Boost",
+    Default = Enum.KeyCode.LeftShift,
+    Hold = true, -- Hold mode (true) or toggle mode (false)
+    Save = true,
+    Flag = "speedBoostKey",
+    Callback = function(Value)
+        if Value then
+            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 100
+        else
+            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 16
+        end
+    end
+})
+
+-- Create a textbox
+MainSection:AddTextbox({
+    Name = "Player Name",
+    Default = "",
+    TextDisappear = false, -- Whether text disappears after losing focus
+    Callback = function(Value)
+        print("Entered text:", Value)
+    end
+})
+
+-- Create a color picker
+local ColorPicker = MainSection:AddColorpicker({
+    Name = "ESP Color",
+    Default = Color3.fromRGB(255, 0, 0),
+    Save = true,
+    Flag = "espColor",
+    Callback = function(Value)
+        print("Selected color:", Value)
+    end
+})
+
+-- Create a label
+local Label = MainSection:AddLabel("This is a label")
+-- Update label text
+Label:Set("Updated label text")
+-- Change label color
+Label:SetColor(Color3.fromRGB(0, 255, 0))
+
+-- Create a paragraph
+local Paragraph = MainSection:AddParagraph("Title", "This is a longer text that explains something in detail.")
+-- Update paragraph
+Paragraph:SetTitle("New Title")
+Paragraph:SetContent("Updated content text")
+```
+
+### Mobile Support
+
+The library automatically detects mobile devices and provides a mobile-friendly interface with a toggle button to show/hide the UI.
+
+### Troubleshooting Common Issues
+
+1. **If you get "attempt to call nil value" error:**
+   - Make sure you're using the correct function names
+   - Check that you're creating elements in the right order (Window → Tab → Section → Element)
+   - Verify your key system is properly set up if you're using it
+
+2. **If UI elements don't appear:**
+   - Check for errors in the output
+   - Ensure you're not trying to create elements before the library is fully loaded
+
+3. **If the UI looks incorrect:**
+   - Try using a different theme
+   - Make sure your game allows custom UIs
+
+4. **If configuration saving doesn't work:**
+   - Ensure you've set `SaveConfig = true` in your window configuration
+   - Check that you've added the `Save = true` and `Flag = "uniqueName"` parameters to elements
+
+This updated version of CryzenHub UI Library features a sleek Fluent Design-inspired interface with improved animations, better mobile support, and fixed error handling to prevent the "attempt to call nil value" error.
