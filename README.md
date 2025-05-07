@@ -4,7 +4,7 @@
 
 ```lua
 -- Load the library
-local CryzenLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/username/CryzenHub/main/source.lua"))()
+local CryzenLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/CryzenHub/Cryzen-Ui-library/refs/heads/main/source"))()
 
 -- Create a window
 local Window = CryzenLib:MakeWindow({
