@@ -1,61 +1,72 @@
-# CryzenHub UI Library v1.0.5
+# CryzenHub UI Library v1.1.0 (Beta)
 
-A modern, powerful, and highly customizable UI library for Roblox Luau scripts with a sleek design, smooth animations, and extensive features.
+A premium, feature-rich UI library for Roblox Luau scripts with a completely redesigned interface, key system, and numerous enhancements.
 
-## What's New in v1.0.5
+## What's New in v1.1.0 (Beta)
 
-- **ColorPicker element**: Create custom color pickers with RGB input support
-- **KeyBind element**: Add key bindings to your scripts
-- **Notification system**: Display informative notifications to users
-- **Section containers**: Organize your UI elements into collapsible sections
-- **Theme presets**: Choose from multiple built-in themes (Default, Dark, Light, Discord)
-- **Improved animations**: Smoother transitions and effects
-- **Performance optimizations**: Better handling of UI updates
-- **Bug fixes**: Various stability improvements
+- **Complete UI redesign**: Modern flat design with improved visual aesthetics
+- **Key system**: Secure your script with a customizable key verification system
+- **Tabbed windows**: Better organization for complex UIs
+- **Search functionality**: Easily find tabs and elements
+- **Rich text support**: Format your text with colors, bold, italics, etc.
+- **Tooltips**: Add helpful information to any UI element
+- **Enhanced animations**: Smooth transitions and visual effects
+- **Mobile support**: Responsive design for all devices
+- **Loading screen**: Professional splash screen with animations
+- **Improved performance**: Optimized rendering and resource usage
 
-## Features
+## Key System Features
 
-- Sleek and modern UI design
-- Window with draggable functionality
-- Multi-tab system with optional icons
-- Sections for better organization
-- Various UI elements (buttons, toggles, sliders, dropdowns, text inputs, color pickers, key binds)
-- Notification system with different types (Success, Warning, Error, Info)
-- Theme customization and built-in theme presets
-- Smooth animations and transitions
-- Intuitive and easy to use API
+- Multiple key verification methods
+- Automatic key saving between sessions
+- Configurable attempt limits
+- Option to fetch keys from external websites
+- Custom error messages and instructions
 
 ## Getting Started
 
 ### Installation
 
 ```lua
-local CryzenHub = loadstring(game:HttpGet('https://raw.githubusercontent.com/CryzenHub/Cryzen-Ui-library/refs/heads/main/source'))()
+local CryzenHub = loadstring(game:HttpGet('https://raw.githubusercontent.com/YourUsername/CryzenHub/main/Source.lua'))()
 ```
 
-### Basic Usage
+### Basic Usage with Key System
 
 ```lua
--- Create a window with a custom theme
+-- Configure the key system (optional, default settings shown)
+CryzenHub.KeySystem = true -- Enable/disable key system
+CryzenHub.KeySettings = {
+    Title = "CryzenHub Key System",
+    Subtitle = "Key verification required",
+    Note = "Get your key from discord.gg/cryzen",
+    SaveKey = true, -- The key saves in a file
+    GrabKeyFromSite = false, -- Get key from a site
+    Key = {"CRYZEN-DEMO", "BETA-TESTER"}, -- List of working keys
+    FileName = "CryzenHubKey", -- File name for saved key
+    KeyUrl = "https://pastebin.com/raw/YOURCODE", -- URL for key if GrabKeyFromSite is true
+    MaxAttempts = 5 -- Max incorrect key attempts before closing
+}
+
+-- Create a window
 local window = CryzenHub:CreateWindow({
     Title = "CryzenHub Example",
-    Size = UDim2.new(0, 550, 0, 400),
-    Theme = "Discord", -- Use a theme preset (Default, Dark, Light, Discord)
+    Size = UDim2.new(0, 600, 0, 400),
+    Theme = "Aqua", -- Use a theme preset (Default, Light, Discord, Aqua)
     DefaultTab = "Main" -- Tab to be selected by default
 })
 
--- Create tabs
-local mainTab = window:CreateTab("Main", "rbxassetid://7733765398") -- Optional icon
-local settingsTab = window:CreateTab("Settings", "rbxassetid://7733774602")
+-- Create tabs with optional icons
+local mainTab = window:CreateTab("Main", "rbxassetid://7072718444")
+local settingsTab = window:CreateTab("Settings", "rbxassetid://7072725299")
 
 -- Create a section in the main tab
 local generalSection = mainTab:CreateSection("General Features")
 
--- Add elements to the section
-generalSection:CreateLabel({Text = "Welcome to CryzenHub UI Library v1.0.5!"})
-
+-- Add elements to the section with tooltips
 generalSection:CreateButton({
     Text = "Click Me",
+    Tooltip = "This is a helpful tooltip",
     Callback = function()
         window:Notify({
             Title = "Button Clicked",
@@ -65,18 +76,29 @@ generalSection:CreateButton({
         })
     end
 })
-
--- Create a toggle with a callback
-generalSection:CreateToggle({
-    Text = "Auto Farm",
-    Default = false,
-    Callback = function(state)
-        print("Auto Farm:", state)
-    end
-})
 ```
 
 ## Documentation
+
+### Key System Configuration
+
+```lua
+-- Enable or disable the key system
+CryzenHub.KeySystem = true
+
+-- Configure key system settings
+CryzenHub.KeySettings = {
+    Title = "Script Key System",  -- Title shown on the key system window
+    Subtitle = "Key Required",    -- Subtitle shown below the title
+    Note = "Get your key from our Discord",  -- Note shown to guide users
+    SaveKey = true,               -- Whether to save the key between sessions
+    GrabKeyFromSite = false,      -- Whether to fetch the key from a website
+    Key = {"KEY1", "KEY2"},       -- Single key or table of valid keys
+    FileName = "MyScriptKey",     -- Filename for saved key
+    KeyUrl = "https://example.com/key.txt",  -- URL to fetch key from
+    MaxAttempts = 5               -- Maximum incorrect attempts allowed
+}
+```
 
 ### Window
 
@@ -85,9 +107,10 @@ generalSection:CreateToggle({
 ```lua
 local window = CryzenHub:CreateWindow({
     Title = "My Window",  -- Window title
-    Size = UDim2.new(0, 550, 0, 400),  -- Window size
-    Theme = "Dark",  -- Theme preset (Default, Dark, Light, Discord) or custom theme table
-    DefaultTab = "Main"  -- Default selected tab
+    Size = UDim2.new(0, 600, 0, 400),  -- Window size
+    Theme = "Aqua",  -- Theme preset (Default, Light, Discord, Aqua) or custom theme table
+    DefaultTab = "Main",  -- Default selected tab
+    SaveConfig = true     -- Whether to save configuration between sessions
 })
 ```
 
@@ -106,33 +129,22 @@ window:Notify({
 
 ```lua
 -- Use a preset theme
-window:ChangeTheme("Light")
+window:ChangeTheme("Aqua")
 
--- Or use a custom theme
+-- Or use a custom theme (example shows partial structure)
 window:ChangeTheme({
-    Background = Color3.fromRGB(30, 30, 30),
+    Primary = Color3.fromRGB(32, 32, 32),
+    Secondary = Color3.fromRGB(25, 25, 25),
     Accent = Color3.fromRGB(0, 120, 215),
-    LightAccent = Color3.fromRGB(0, 140, 235),
-    DarkAccent = Color3.fromRGB(0, 100, 195),
-    Text = Color3.fromRGB(255, 255, 255),
-    SubText = Color3.fromRGB(200, 200, 200),
-    SecondaryBackground = Color3.fromRGB(40, 40, 40),
-    ElementBackground = Color3.fromRGB(50, 50, 50),
-    ElementBorder = Color3.fromRGB(60, 60, 60),
-    InactiveElement = Color3.fromRGB(80, 80, 80),
-    Notification = {
-        Success = Color3.fromRGB(0, 180, 0),
-        Warning = Color3.fromRGB(255, 150, 0),
-        Error = Color3.fromRGB(220, 0, 0),
-        Info = Color3.fromRGB(0, 120, 215)
-    }
+    Text = Color3.fromRGB(240, 240, 240),
+    -- See full theme structure in source code
 })
 ```
 
 #### Creating a Tab
 
 ```lua
-local tab = window:CreateTab("Tab Name", "rbxassetid://7733765398")  -- Optional icon
+local tab = window:CreateTab("Tab Name", "rbxassetid://7072718444")  -- Icon is optional
 ```
 
 #### Creating a Section
@@ -148,10 +160,14 @@ local section = tab:CreateSection("Section Name")
 ```lua
 local button = section:CreateButton({
     Text = "Click Me",
+    Tooltip = "Optional tooltip text",  -- Optional tooltip
     Callback = function()
         print("Button clicked!")
     end
 })
+
+-- API methods
+button:SetText("New Button Text")
 ```
 
 #### Toggle
@@ -159,6 +175,7 @@ local button = section:CreateButton({
 ```lua
 local toggle = section:CreateToggle({
     Text = "Toggle Me",
+    Tooltip = "Optional tooltip text",  -- Optional tooltip
     Default = false,  -- Initial state (optional)
     Callback = function(value)
         print("Toggle state:", value)
@@ -168,6 +185,7 @@ local toggle = section:CreateToggle({
 -- API methods
 toggle:Set(true)  -- Set toggle state
 local state = toggle:Get()  -- Get current state
+toggle:SetText("New Toggle Text")
 ```
 
 #### Slider
@@ -175,9 +193,11 @@ local state = toggle:Get()  -- Get current state
 ```lua
 local slider = section:CreateSlider({
     Text = "Slider Example",
+    Tooltip = "Optional tooltip text",  -- Optional tooltip
     Min = 0,  -- Minimum value
     Max = 100,  -- Maximum value
     Default = 50,  -- Default value (optional)
+    Suffix = "%",  -- Optional suffix for the displayed value
     Precise = false,  -- Whether to use decimal values (optional)
     Callback = function(value)
         print("Slider value:", value)
@@ -187,6 +207,7 @@ local slider = section:CreateSlider({
 -- API methods
 slider:Set(75)  -- Set slider value
 local value = slider:Get()  -- Get current value
+slider:SetText("New Slider Text")
 ```
 
 #### Dropdown
@@ -194,6 +215,7 @@ local value = slider:Get()  -- Get current value
 ```lua
 local dropdown = section:CreateDropdown({
     Text = "Select Option",
+    Tooltip = "Optional tooltip text",  -- Optional tooltip
     Options = {"Option 1", "Option 2", "Option 3"},
     Default = "Option 1",  -- Default selected option (optional)
     Callback = function(option)
@@ -205,107 +227,49 @@ local dropdown = section:CreateDropdown({
 dropdown:Set("Option 2")  -- Set selected option
 local selected = dropdown:Get()  -- Get current selection
 dropdown:Refresh({"New Option 1", "New Option 2"}, "New Option 1")  -- Update options and default
-```
-
-#### Text Input
-
-```lua
-local input = section:CreateInput({
-    Text = "Input Example",
-    Placeholder = "Type here...",
-    Default = "",  -- Default text (optional)
-    Callback = function(text)
-        print("Input text:", text)
-    end
-})
-
--- API methods
-input:Set("New text")  -- Set input text
-local text = input:Get()  -- Get current text
-```
-
-#### Color Picker
-
-```lua
-local colorPicker = section:CreateColorPicker({
-    Text = "Select Color",
-    Default = Color3.fromRGB(255, 0, 0),  -- Default color (optional)
-    Callback = function(color)
-        print("Selected color:", color)
-    end
-})
-
--- API methods
-colorPicker:Set(Color3.fromRGB(0, 255, 0))  -- Set color
-local color = colorPicker:Get()  -- Get current color
-```
-
-#### Key Bind
-
-```lua
-local keyBind = section:CreateKeyBind({
-    Text = "Toggle Key",
-    Default = Enum.KeyCode.F,  -- Default key (optional)
-    Callback = function(key)
-        print("Key pressed:", key.Name)
-    end
-})
-
--- API methods
-keyBind:Set(Enum.KeyCode.G)  -- Set key
-local key = keyBind:Get()  -- Get current key
-```
-
-#### Label
-
-```lua
-local label = section:CreateLabel({
-    Text = "This is a label"
-})
-
--- API methods
-label:Set("Updated label text")  -- Update the text
-local text = label:Get()  -- Get current text
-```
-
-#### Divider
-
-```lua
-section:CreateDivider()  -- Creates a horizontal line divider
+dropdown:SetText("New Dropdown Text")
 ```
 
 ## Comprehensive Example
 
 ```lua
-local CryzenHub = loadstring(game:HttpGet('https://raw.githubusercontent.com/CryzenHub/Cryzen-Ui-library/refs/heads/main/source'))()
+local CryzenHub = loadstring(game:HttpGet('https://raw.githubusercontent.com/YourUsername/CryzenHub/main/Source.lua'))()
 
+-- Configure key system
+CryzenHub.KeySystem = true
+CryzenHub.KeySettings = {
+    Title = "CryzenHub Authentication",
+    Subtitle = "Key Required",
+    Note = "Get your key from our Discord server: discord.gg/cryzen",
+    Key = {"CRYZEN-DEMO", "BETA-TESTER"}
+}
+
+-- Create window after key verification
 local window = CryzenHub:CreateWindow({
-    Title = "CryzenHub Example v1.0.5",
-    Size = UDim2.new(0, 550, 0, 400),
-    Theme = "Discord",
+    Title = "CryzenHub v1.1.0 Beta",
+    Size = UDim2.new(0, 600, 0, 400),
+    Theme = "Aqua",
     DefaultTab = "Main"
 })
 
 -- Main tab with sections
-local mainTab = window:CreateTab("Main", "rbxassetid://7733765398")
+local mainTab = window:CreateTab("Main", "rbxassetid://7072718444")
 local generalSection = mainTab:CreateSection("General")
-local visualsSection = mainTab:CreateSection("Visuals")
+local playerSection = mainTab:CreateSection("Player")
 
 -- Settings tab
-local settingsTab = window:CreateTab("Settings", "rbxassetid://7733774602")
+local settingsTab = window:CreateTab("Settings", "rbxassetid://7072725299")
 local configSection = settingsTab:CreateSection("Configuration")
 local themeSection = settingsTab:CreateSection("Theme")
 
 -- General section elements
-generalSection:CreateLabel({Text = "Main Features"})
-
 generalSection:CreateButton({
-    Text = "Print Hello",
+    Text = "Welcome Message",
+    Tooltip = "Displays a welcome notification",
     Callback = function()
-        print("Hello, world!")
         window:Notify({
-            Title = "Success",
-            Content = "Hello was printed to the console!",
+            Title = "Welcome",
+            Content = "Thanks for using CryzenHub v1.1.0 Beta!",
             Type = "Success"
         })
     end
@@ -313,17 +277,26 @@ generalSection:CreateButton({
 
 local autoFarm = generalSection:CreateToggle({
     Text = "Auto Farm",
+    Tooltip = "Automatically farms resources",
     Default = false,
     Callback = function(state)
-        print("Auto Farm:", state)
+        window:Notify({
+            Title = state and "Enabled" or "Disabled",
+            Content = "Auto farming has been " .. (state and "enabled" or "disabled"),
+            Type = state and "Success" or "Info",
+            Duration = 2
+        })
     end
 })
 
-generalSection:CreateSlider({
+-- Player section elements
+playerSection:CreateSlider({
     Text = "Walk Speed",
+    Tooltip = "Adjusts your character's walking speed",
     Min = 16,
     Max = 100,
     Default = 16,
+    Suffix = " studs/s",
     Callback = function(value)
         if game.Players.LocalPlayer.Character then
             game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
@@ -331,58 +304,68 @@ generalSection:CreateSlider({
     end
 })
 
-generalSection:CreateDivider()
-
--- Visuals section elements
-visualsSection:CreateDropdown({
-    Text = "ESP Type",
-    Options = {"Boxes", "Names", "Health", "Distance", "All"},
-    Default = "Boxes",
-    Callback = function(option)
-        print("ESP Type set to:", option)
+playerSection:CreateSlider({
+    Text = "Jump Power",
+    Tooltip = "Adjusts your character's jumping power",
+    Min = 50,
+    Max = 200,
+    Default = 50,
+    Suffix = " studs",
+    Callback = function(value)
+        if game.Players.LocalPlayer.Character then
+            game.Players.LocalPlayer.Character.Humanoid.JumpPower = value
+        end
     end
 })
 
-visualsSection:CreateColorPicker({
-    Text = "ESP Color",
-    Default = Color3.fromRGB(255, 0, 0),
-    Callback = function(color)
-        print("ESP Color set to:", color)
+playerSection:CreateDropdown({
+    Text = "Teleport To",
+    Tooltip = "Teleport to selected location",
+    Options = {"Spawn", "Shop", "Boss Area", "Secret Room"},
+    Default = "Spawn",
+    Callback = function(option)
+        window:Notify({
+            Title = "Teleporting",
+            Content = "Teleporting to " .. option,
+            Type = "Info",
+            Duration = 2
+        })
     end
 })
 
 -- Configuration section elements
-configSection:CreateInput({
-    Text = "Custom Name",
-    Placeholder = "Enter your name",
-    Callback = function(text)
-        print("Name set to:", text)
-    end
-})
-
-configSection:CreateKeyBind({
-    Text = "Toggle UI",
-    Default = Enum.KeyCode.RightShift,
-    Callback = function(key)
-        print("UI toggle key set to:", key.Name)
+local keybindOption = configSection:CreateDropdown({
+    Text = "Toggle UI Key",
+    Options = {"RightShift", "LeftAlt", "RightControl"},
+    Default = "RightShift",
+    Callback = function(option)
+        -- Set UI toggle key
     end
 })
 
 -- Theme section elements
-local themes = {"Default", "Dark", "Light", "Discord"}
+local themes = {"Default", "Light", "Discord", "Aqua"}
 themeSection:CreateDropdown({
     Text = "UI Theme",
     Options = themes,
-    Default = "Discord",
+    Default = "Aqua",
     Callback = function(theme)
         window:ChangeTheme(theme)
         window:Notify({
             Title = "Theme Changed",
             Content = "The UI theme has been changed to " .. theme,
             Type = "Info",
-            Duration = 3
+            Duration = 2
         })
     end
+})
+
+-- Show welcome notification
+window:Notify({
+    Title = "CryzenHub v1.1.0 Beta",
+    Content = "Welcome to the beta version! Please report any bugs you find.",
+    Duration = 5,
+    Type = "Info"
 })
 ```
 
@@ -392,15 +375,17 @@ This library is free to use for any purpose. Credit is appreciated but not requi
 
 ## Credits
 
-Created by CryzenHub Team - v1.0.5
+Created by CryzenHub Team - v1.1.0 Beta
 ```
 
-This update adds several significant improvements to the CryzenHub UI Library:
+This update introduces a major redesign of the CryzenHub UI Library with a modern, flat design aesthetic and several significant new features:
 
-1. **ColorPicker element** - A full-featured color picker with RGB input support
-2. **KeyBind element** - Allows users to set and use keyboard shortcuts
-3. **Notification system** - Displays informative notifications with different types (Success, Warning, Error, Info)
-4. **Section containers** - Better organization of UI elements into collapsible sections
-5. **Theme presets** - Built-in themes (Default, Dark, Light, Discord) and improved theme customization
-6. **Improved animations** - Smoother transitions and effects throughout the UI
-7. **Bug fixes and performance improvements** - Enhanced stability and responsiveness
+1. **Key System**: A complete key verification system with multiple verification methods, key saving, and attempt limits
+2. **Improved Design**: A completely redesigned UI with smooth animations and visual effects
+3. **Loading Screen**: Professional splash screen with animations during initialization
+4. **Tooltip System**: Informative tooltips for all UI elements
+5. **Mobile Support**: Responsive design that works on all devices
+6. **Search Functionality**: Ability to search for tabs and elements
+7. **Optimized Performance**: Better resource usage and rendering
+
+The code includes detailed comments and is structured for easy maintenance and expansion. The README provides comprehensive documentation on how to use all the new features, along with examples and API reference.
