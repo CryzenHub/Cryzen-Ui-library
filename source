@@ -3,18 +3,13 @@
     A premium UI library for Roblox Lua (Luau)
     
     Changelog v1.1.0 Beta:
-    - Complete UI redesign with modern flat style
-    - Added key system with server verification
-    - Added tabbed windows support
-    - Added search functionality for elements
-    - Added rich text support for labels
-    - Added tooltips for all elements
-    - Added animations and transitions
-    - Added UI scaling and responsiveness
-    - Improved performance with optimized rendering
-    - Added custom scrollbar design
-    - Added support for mobile devices
-    - Added loading screen and splash animation
+    - Fixed slider dragging issues on PC and mobile
+    - Improved mobile support with touch-friendly UI elements
+    - Redesigned dropdown menu with better mobile compatibility
+    - New custom key system UI design
+    - Added mobile menu toggle button
+    - Optimized animations for better performance
+    - Fixed various UI scaling issues
 ]]
 
 local CryzenHub = {
@@ -65,6 +60,7 @@ local PreloadAssets = {
     "rbxassetid://7072724538", -- Warning icon
     "rbxassetid://7072719752", -- Error icon
     "rbxassetid://7072718642", -- Success icon
+    "rbxassetid://8997386990", -- Hamburger menu icon
 }
 
 -- Preload assets
@@ -241,6 +237,15 @@ local function rippleEffect(button, rippleColor, centerRipple)
     end)
 end
 
+-- Get input position for both mouse and touch
+local function getInputPosition(input)
+    if input.UserInputType == Enum.UserInputType.Touch then
+        return input.Position
+    else
+        return Vector2.new(Mouse.X, Mouse.Y)
+    end
+end
+
 -- Key system functions
 local function saveKeyToFile(key)
     if CryzenHub.KeySettings.SaveKey and writefile then
@@ -283,7 +288,7 @@ local function validateKey(key)
     end
 end
 
--- Create the key system UI
+-- Create the key system UI (custom design)
 function CryzenHub:CreateKeySystem()
     if not self.KeySystem then
         return true -- Skip key system if disabled
@@ -321,18 +326,30 @@ function CryzenHub:CreateKeySystem()
         KeySystemGui.Parent = CoreGui
     end
     
+    -- Create a blurred background effect
+    local BlurBackground = createInstance("Frame", {
+        Name = "BlurBackground",
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+        BackgroundTransparency = 0.5,
+        BorderSizePixel = 0,
+        Parent = KeySystemGui
+    })
+    
+    -- Main key system frame with a modern design
     local MainFrame = createInstance("Frame", {
         Name = "MainFrame",
-        Size = UDim2.new(0, 350, 0, 0), -- Start with 0 height for animation
-        Position = UDim2.new(0.5, -175, 0.5, -100),
+        Size = UDim2.new(0, 370, 0, 0), -- Start with 0 height for animation
+        Position = UDim2.new(0.5, -185, 0.5, -130),
         BackgroundColor3 = themeColors.Primary,
         BorderSizePixel = 0,
         Parent = KeySystemGui,
-        ClipsDescendants = true
+        ClipsDescendants = true,
+        AnchorPoint = Vector2.new(0.5, 0.5)
     })
     
     local UICorner = createInstance("UICorner", {
-        CornerRadius = UDim.new(0, 8),
+        CornerRadius = UDim.new(0, 10),
         Parent = MainFrame
     })
     
@@ -341,7 +358,7 @@ function CryzenHub:CreateKeySystem()
         AnchorPoint = Vector2.new(0.5, 0.5),
         BackgroundTransparency = 1,
         Position = UDim2.new(0.5, 0, 0.5, 0),
-        Size = UDim2.new(1, 35, 1, 35),
+        Size = UDim2.new(1, 40, 1, 40),
         ZIndex = 0,
         Image = "rbxassetid://5554236805",
         ImageColor3 = themeColors.Shadow.Dark,
@@ -351,78 +368,90 @@ function CryzenHub:CreateKeySystem()
         Parent = MainFrame
     })
     
-    local TitleBar = createInstance("Frame", {
-        Name = "TitleBar",
-        Size = UDim2.new(1, 0, 0, 40),
+    -- Header with logo
+    local HeaderFrame = createInstance("Frame", {
+        Name = "HeaderFrame",
+        Size = UDim2.new(1, 0, 0, 70),
         Position = UDim2.new(0, 0, 0, 0),
         BackgroundColor3 = themeColors.Accent,
         BorderSizePixel = 0,
         Parent = MainFrame
     })
     
-    local TitleCorner = createInstance("UICorner", {
-        CornerRadius = UDim.new(0, 8),
-        Parent = TitleBar
+    local HeaderCorner = createInstance("UICorner", {
+        CornerRadius = UDim.new(0, 10),
+        Parent = HeaderFrame
     })
     
-    local FixTitleCorners = createInstance("Frame", {
-        Name = "FixTitleCorners",
+    local FixHeaderCorners = createInstance("Frame", {
+        Name = "FixHeaderCorners",
         Size = UDim2.new(1, 0, 0, 10),
         Position = UDim2.new(0, 0, 1, -5),
         BackgroundColor3 = themeColors.Accent,
         BorderSizePixel = 0,
-        Parent = TitleBar
+        Parent = HeaderFrame
     })
     
-    local TitleText = createInstance("TextLabel", {
-        Name = "TitleText",
-        Size = UDim2.new(1, -20, 1, 0),
-        Position = UDim2.new(0, 10, 0, 0),
+    local LogoImage = createInstance("ImageLabel", {
+        Name = "LogoImage",
+        Size = UDim2.new(0, 40, 0, 40),
+        Position = UDim2.new(0, 15, 0.5, -20),
+        BackgroundTransparency = 1,
+        Image = "rbxassetid://7072725299", -- Placeholder logo
+        Parent = HeaderFrame
+    })
+    
+    local TitleLabel = createInstance("TextLabel", {
+        Name = "TitleLabel",
+        Size = UDim2.new(1, -130, 0, 30),
+        Position = UDim2.new(0, 70, 0, 10),
         BackgroundTransparency = 1,
         Text = CryzenHub.KeySettings.Title,
         TextColor3 = themeColors.Text,
-        TextSize = 18,
-        Font = Enum.Font.GothamSemibold,
+        TextSize = 20,
+        Font = Enum.Font.GothamBold,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = TitleBar
+        Parent = HeaderFrame
+    })
+    
+    local SubtitleLabel = createInstance("TextLabel", {
+        Name = "SubtitleLabel",
+        Size = UDim2.new(1, -130, 0, 20),
+        Position = UDim2.new(0, 70, 0, 40),
+        BackgroundTransparency = 1,
+        Text = CryzenHub.KeySettings.Subtitle,
+        TextColor3 = themeColors.Text,
+        TextTransparency = 0.3,
+        TextSize = 14,
+        Font = Enum.Font.Gotham,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = HeaderFrame
     })
     
     local CloseButton = createInstance("ImageButton", {
         Name = "CloseButton",
         Size = UDim2.new(0, 24, 0, 24),
-        Position = UDim2.new(1, -30, 0, 8),
+        Position = UDim2.new(1, -34, 0, 10),
         BackgroundTransparency = 1,
         Image = "rbxassetid://7072718412", -- Close icon
         ImageColor3 = themeColors.Text,
-        Parent = TitleBar
+        Parent = HeaderFrame
     })
     
+    -- Content area
     local ContentFrame = createInstance("Frame", {
         Name = "ContentFrame",
-        Size = UDim2.new(1, -40, 1, -60),
-        Position = UDim2.new(0, 20, 0, 50),
+        Size = UDim2.new(1, -40, 1, -90),
+        Position = UDim2.new(0, 20, 0, 80),
         BackgroundTransparency = 1,
         BorderSizePixel = 0,
         Parent = MainFrame
     })
     
-    local SubtitleLabel = createInstance("TextLabel", {
-        Name = "SubtitleLabel",
-        Size = UDim2.new(1, 0, 0, 20),
-        Position = UDim2.new(0, 0, 0, 0),
-        BackgroundTransparency = 1,
-        Text = CryzenHub.KeySettings.Subtitle,
-        TextColor3 = themeColors.Text,
-        TextSize = 16,
-        Font = Enum.Font.Gotham,
-        TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = ContentFrame
-    })
-    
     local NoteLabel = createInstance("TextLabel", {
         Name = "NoteLabel",
         Size = UDim2.new(1, 0, 0, 40),
-        Position = UDim2.new(0, 0, 0, 30),
+        Position = UDim2.new(0, 0, 0, 0),
         BackgroundTransparency = 1,
         Text = CryzenHub.KeySettings.Note,
         TextColor3 = themeColors.SubText,
@@ -433,24 +462,35 @@ function CryzenHub:CreateKeySystem()
         Parent = ContentFrame
     })
     
-    local KeyInputFrame = createInstance("Frame", {
-        Name = "KeyInputFrame",
-        Size = UDim2.new(1, 0, 0, 40),
-        Position = UDim2.new(0, 0, 0, 80),
+    -- Modern input field with icon
+    local KeyInputContainer = createInstance("Frame", {
+        Name = "KeyInputContainer",
+        Size = UDim2.new(1, 0, 0, 50),
+        Position = UDim2.new(0, 0, 0, 50),
         BackgroundColor3 = themeColors.Secondary,
         BorderSizePixel = 0,
         Parent = ContentFrame
     })
     
     local KeyInputCorner = createInstance("UICorner", {
-        CornerRadius = UDim.new(0, 6),
-        Parent = KeyInputFrame
+        CornerRadius = UDim.new(0, 8),
+        Parent = KeyInputContainer
+    })
+    
+    local KeyIcon = createInstance("ImageLabel", {
+        Name = "KeyIcon",
+        Size = UDim2.new(0, 20, 0, 20),
+        Position = UDim2.new(0, 15, 0.5, -10),
+        BackgroundTransparency = 1,
+        Image = "rbxassetid://7072719338", -- Key/info icon
+        ImageColor3 = themeColors.SubText,
+        Parent = KeyInputContainer
     })
     
     local KeyInput = createInstance("TextBox", {
         Name = "KeyInput",
-        Size = UDim2.new(1, -20, 1, 0),
-        Position = UDim2.new(0, 10, 0, 0),
+        Size = UDim2.new(1, -50, 1, 0),
+        Position = UDim2.new(0, 45, 0, 0),
         BackgroundTransparency = 1,
         Text = "",
         PlaceholderText = "Enter key here...",
@@ -459,13 +499,13 @@ function CryzenHub:CreateKeySystem()
         TextSize = 16,
         Font = Enum.Font.Gotham,
         ClearTextOnFocus = false,
-        Parent = KeyInputFrame
+        Parent = KeyInputContainer
     })
     
     local StatusLabel = createInstance("TextLabel", {
         Name = "StatusLabel",
         Size = UDim2.new(1, 0, 0, 20),
-        Position = UDim2.new(0, 0, 0, 130),
+        Position = UDim2.new(0, 0, 0, 110),
         BackgroundTransparency = 1,
         Text = "",
         TextColor3 = themeColors.SubText,
@@ -475,43 +515,62 @@ function CryzenHub:CreateKeySystem()
         Parent = ContentFrame
     })
     
-    local ButtonsFrame = createInstance("Frame", {
-        Name = "ButtonsFrame",
-        Size = UDim2.new(1, 0, 0, 40),
-        Position = UDim2.new(0, 0, 0, 160),
-        BackgroundTransparency = 1,
+    -- Submit button with modern design
+    local SubmitButton = createInstance("Frame", {
+        Name = "SubmitButton",
+        Size = UDim2.new(1, 0, 0, 45),
+        Position = UDim2.new(0, 0, 0, 140),
+        BackgroundColor3 = themeColors.Accent,
         BorderSizePixel = 0,
         Parent = ContentFrame
     })
     
-    local SubmitButton = createInstance("TextButton", {
-        Name = "SubmitButton",
-        Size = UDim2.new(0, 120, 0, 40),
-        Position = UDim2.new(1, -120, 0, 0),
-        BackgroundColor3 = themeColors.Accent,
+    local SubmitButtonCorner = createInstance("UICorner", {
+        CornerRadius = UDim.new(0, 8),
+        Parent = SubmitButton
+    })
+    
+    local SubmitRipple = createInstance("Frame", {
+        Name = "SubmitRipple",
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1,
+        ClipsDescendants = true,
         BorderSizePixel = 0,
-        Text = "Submit",
+        Parent = SubmitButton
+    })
+    
+    local SubmitLabel = createInstance("TextLabel", {
+        Name = "SubmitLabel",
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1,
+        Text = "Verify Key",
         TextColor3 = themeColors.Text,
         TextSize = 16,
         Font = Enum.Font.GothamSemibold,
-        Parent = ButtonsFrame
+        Parent = SubmitButton
     })
     
-    local SubmitButtonCorner = createInstance("UICorner", {
-        CornerRadius = UDim.new(0, 6),
+    local SubmitClickRegion = createInstance("TextButton", {
+        Name = "SubmitClickRegion",
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1,
+        Text = "",
         Parent = SubmitButton
     })
     
     -- Animation
-    MainFrame.Size = UDim2.new(0, 350, 0, 0)
-    tween(MainFrame, {Size = UDim2.new(0, 350, 0, 250)}, 0.4, Enum.EasingStyle.Quint)
+    MainFrame.Size = UDim2.new(0, 370, 0, 0)
+    BlurBackground.BackgroundTransparency = 1
+    
+    tween(BlurBackground, {BackgroundTransparency = 0.5}, 0.3, Enum.EasingStyle.Quint)
+    tween(MainFrame, {Size = UDim2.new(0, 370, 0, 290)}, 0.4, Enum.EasingStyle.Quint)
     
     -- Handle key verification
     local attempts = 0
     local keyVerified = false
     
-    SubmitButton.MouseButton1Click:Connect(function()
-        rippleEffect(SubmitButton, themeColors.Text, true)
+    SubmitClickRegion.MouseButton1Click:Connect(function()
+        rippleEffect(SubmitRipple, themeColors.Text, true)
         
         if KeyInput.Text == "" then
             StatusLabel.Text = "Please enter a key."
@@ -531,7 +590,8 @@ function CryzenHub:CreateKeySystem()
             end
             
             -- Animate close
-            tween(MainFrame, {Size = UDim2.new(0, 350, 0, 0)}, 0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.In, 0.5, function()
+            tween(MainFrame, {Size = UDim2.new(0, 370, 0, 0)}, 0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.In, 0.5)
+            tween(BlurBackground, {BackgroundTransparency = 1}, 0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.In, 0.5, function()
                 KeySystemGui:Destroy()
             end)
         else
@@ -540,15 +600,17 @@ function CryzenHub:CreateKeySystem()
             StatusLabel.TextColor3 = themeColors.Notification.Error
             
             if remainingAttempts <= 0 then
-                tween(MainFrame, {Size = UDim2.new(0, 350, 0, 0)}, 0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.In, 1, function()
+                tween(MainFrame, {Size = UDim2.new(0, 370, 0, 0)}, 0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.In, 1)
+                tween(BlurBackground, {BackgroundTransparency = 1}, 0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.In, 1, function()
                     KeySystemGui:Destroy()
                 end)
             end
-        }
+        end
     end)
     
     CloseButton.MouseButton1Click:Connect(function()
-        tween(MainFrame, {Size = UDim2.new(0, 350, 0, 0)}, 0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.In, 0, function()
+        tween(MainFrame, {Size = UDim2.new(0, 370, 0, 0)}, 0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
+        tween(BlurBackground, {BackgroundTransparency = 1}, 0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.In, 0, function()
             KeySystemGui:Destroy()
         end)
     end)
@@ -602,15 +664,22 @@ function CryzenHub:CreateWindow(config)
         Parent = ScreenGui
     })
     
-    local LoadingLogo = createInstance("ImageLabel", {
-        Name = "LoadingLogo",
+    local LoadingLogoContainer = createInstance("Frame", {
+        Name = "LoadingLogoContainer",
         Size = UDim2.new(0, 150, 0, 150),
         Position = UDim2.new(0.5, -75, 0.5, -75),
+        BackgroundTransparency = 1,
+        Parent = LoadingFrame
+    })
+    
+    local LoadingLogo = createInstance("ImageLabel", {
+        Name = "LoadingLogo",
+        Size = UDim2.new(1, 0, 1, 0),
         BackgroundTransparency = 1,
         Image = "rbxassetid://7072725299", -- Placeholder logo
         ImageColor3 = themeColors.Accent,
         ImageTransparency = 0,
-        Parent = LoadingFrame
+        Parent = LoadingLogoContainer
     })
     
     local LoadingText = createInstance("TextLabel", {
@@ -625,8 +694,18 @@ function CryzenHub:CreateWindow(config)
         Parent = LoadingFrame
     })
     
-    -- Animate loading screen
-    tween(LoadingLogo, {Rotation = 360}, 1.5, Enum.EasingStyle.Cubic, Enum.EasingDirection.InOut)
+    -- Animate loading screen - more sophisticated animation
+    local loadingTween = tween(LoadingLogoContainer, {Rotation = 360}, 1.5, Enum.EasingStyle.Cubic, Enum.EasingDirection.InOut)
+    
+    -- Pulse animation
+    spawn(function()
+        for i = 1, 3 do
+            tween(LoadingLogo, {Size = UDim2.new(1.1, 0, 1.1, 0)}, 0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+            wait(0.5)
+            tween(LoadingLogo, {Size = UDim2.new(1, 0, 1, 0)}, 0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+            wait(0.5)
+        end
+    end)
     
     -- Main UI
     local MainFrame = createInstance("Frame", {
@@ -637,11 +716,12 @@ function CryzenHub:CreateWindow(config)
         BorderSizePixel = 0,
         Visible = false,
         Parent = ScreenGui,
-        ClipsDescendants = true
+        ClipsDescendants = true,
+        AnchorPoint = Vector2.new(0.5, 0.5)
     })
     
     local UICorner = createInstance("UICorner", {
-        CornerRadius = UDim.new(0, 8),
+        CornerRadius = UDim.new(0, 10),
         Parent = MainFrame
     })
     
@@ -670,7 +750,7 @@ function CryzenHub:CreateWindow(config)
     })
     
     local TitleCorner = createInstance("UICorner", {
-        CornerRadius = UDim.new(0, 8),
+        CornerRadius = UDim.new(0, 10),
         Parent = TitleBar
     })
     
@@ -740,6 +820,18 @@ function CryzenHub:CreateWindow(config)
         Parent = TitleBar
     })
     
+    -- Mobile menu toggle button (only visible on mobile)
+    local MobileMenuButton = createInstance("ImageButton", {
+        Name = "MobileMenuButton",
+        Size = UDim2.new(0, 24, 0, 24),
+        Position = UDim2.new(1, -136, 0, 8),
+        BackgroundTransparency = 1,
+        Image = "rbxassetid://8997386990", -- Hamburger menu icon
+        ImageColor3 = themeColors.Text,
+        Visible = DeviceData.IsMobile,
+        Parent = TitleBar
+    })
+    
     -- Container for tabs and content
     local TabContainer = createInstance("Frame", {
         Name = "TabContainer",
@@ -751,7 +843,7 @@ function CryzenHub:CreateWindow(config)
     })
     
     local TabContainerCorner = createInstance("UICorner", {
-        CornerRadius = UDim.new(0, 6),
+        CornerRadius = UDim.new(0, 8),
         Parent = TabContainer
     })
     
@@ -866,29 +958,21 @@ function CryzenHub:CreateWindow(config)
         Parent = NotificationContainer
     })
     
-    -- Make the window draggable
+    -- Make the window draggable (improved for both mobile and PC)
     local isDragging = false
     local dragInput
     local dragStart
     local startPosition
     
-    TitleBar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            isDragging = true
-            dragStart = input.Position
-            startPosition = MainFrame.Position
-        end
-    end)
-    
-    TitleBar.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            isDragging = false
-        end
-    end)
-    
-    UserInputService.InputChanged:Connect(function(input)
-        if input == dragInput and isDragging then
-            local delta = input.Position - dragStart
+    local function updateDrag(input)
+        if isDragging then
+            local delta
+            if input.UserInputType == Enum.UserInputType.Touch then
+                delta = input.Position - dragStart
+            else
+                delta = input.Position - dragStart
+            end
+            
             MainFrame.Position = UDim2.new(
                 startPosition.X.Scale, 
                 startPosition.X.Offset + delta.X, 
@@ -896,11 +980,31 @@ function CryzenHub:CreateWindow(config)
                 startPosition.Y.Offset + delta.Y
             )
         end
+    end
+    
+    TitleBar.InputBegan:Connect(function(input)
+        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+            isDragging = true
+            dragStart = input.Position
+            startPosition = MainFrame.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    isDragging = false
+                end
+            end)
+        end
     end)
     
-    UserInputService.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+    TitleBar.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
             dragInput = input
+        end
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and isDragging then
+            updateDrag(input)
         end
     end)
     
@@ -926,6 +1030,20 @@ function CryzenHub:CreateWindow(config)
     -- Settings button functionality (to be implemented)
     SettingsButton.MouseButton1Click:Connect(function()
         -- Open settings panel
+    end)
+    
+    -- Mobile menu toggle functionality
+    local mobileMenuVisible = true
+    MobileMenuButton.MouseButton1Click:Connect(function()
+        mobileMenuVisible = not mobileMenuVisible
+        
+        if mobileMenuVisible then
+            tween(TabContainer, {Position = UDim2.new(0, 0, 0, 45)}, 0.3, Enum.EasingStyle.Quint)
+            tween(ContentContainer, {Size = UDim2.new(1, -150, 1, -50), Position = UDim2.new(0, 145, 0, 45)}, 0.3, Enum.EasingStyle.Quint)
+        else
+            tween(TabContainer, {Position = UDim2.new(-1, 0, 0, 45)}, 0.3, Enum.EasingStyle.Quint)
+            tween(ContentContainer, {Size = UDim2.new(1, -10, 1, -50), Position = UDim2.new(0, 5, 0, 45)}, 0.3, Enum.EasingStyle.Quint)
+        end
     end)
     
     -- Window API
@@ -967,7 +1085,7 @@ function CryzenHub:CreateWindow(config)
         })
         
         local NotificationCorner = createInstance("UICorner", {
-            CornerRadius = UDim.new(0, 6),
+            CornerRadius = UDim.new(0, 8),
             Parent = Notification
         })
         
@@ -981,7 +1099,7 @@ function CryzenHub:CreateWindow(config)
         })
         
         local NotificationBarCorner = createInstance("UICorner", {
-            CornerRadius = UDim.new(0, 6),
+            CornerRadius = UDim.new(0, 8),
             Parent = NotificationBar
         })
         
@@ -1093,6 +1211,7 @@ function CryzenHub:CreateWindow(config)
         CloseButton.ImageColor3 = themeColors.Text
         MinimizeButton.ImageColor3 = themeColors.Text
         SettingsButton.ImageColor3 = themeColors.Text
+        MobileMenuButton.ImageColor3 = themeColors.Text
         
         -- Update tab buttons
         for _, tab in pairs(tabs) do
@@ -1229,6 +1348,13 @@ function CryzenHub:CreateWindow(config)
             
             tabPage.Visible = true
             currentTab = tabPage
+            
+            -- Auto-close mobile menu when selecting a tab on mobile
+            if DeviceData.IsMobile and mobileMenuVisible then
+                mobileMenuVisible = false
+                tween(TabContainer, {Position = UDim2.new(-1, 0, 0, 45)}, 0.3, Enum.EasingStyle.Quint)
+                tween(ContentContainer, {Size = UDim2.new(1, -10, 1, -50), Position = UDim2.new(0, 5, 0, 45)}, 0.3, Enum.EasingStyle.Quint)
+            end
         end)
         
         -- Tab hover effects
@@ -1276,7 +1402,7 @@ function CryzenHub:CreateWindow(config)
             })
             
             local sectionCorner = createInstance("UICorner", {
-                CornerRadius = UDim.new(0, 6),
+                CornerRadius = UDim.new(0, 8),
                 Parent = sectionFrame
             })
             
@@ -1393,7 +1519,7 @@ function CryzenHub:CreateWindow(config)
                 })
                 
                 local buttonCorner = createInstance("UICorner", {
-                    CornerRadius = UDim.new(0, 4),
+                    CornerRadius = UDim.new(0, 6),
                     Parent = buttonFrame
                 })
                 
@@ -1468,6 +1594,17 @@ function CryzenHub:CreateWindow(config)
                     button.MouseMoved:Connect(function()
                         tooltipFrame.Position = UDim2.fromOffset(Mouse.X + 15, Mouse.Y + 15)
                     end)
+                    
+                    -- For mobile support
+                    button.InputBegan:Connect(function(input)
+                        if input.UserInputType == Enum.UserInputType.Touch then
+                            tooltipFrame.Position = UDim2.fromOffset(input.Position.X + 15, input.Position.Y + 15)
+                            tooltipFrame.Visible = true
+                            delay(2, function()
+                                tooltipFrame.Visible = false
+                            end)
+                        end
+                    end)
                 end
                 
                 -- Button animations and functionality
@@ -1519,7 +1656,7 @@ function CryzenHub:CreateWindow(config)
                 })
                 
                 local toggleCorner = createInstance("UICorner", {
-                    CornerRadius = UDim.new(0, 4),
+                    CornerRadius = UDim.new(0, 6),
                     Parent = toggleFrame
                 })
                 
@@ -1613,6 +1750,17 @@ function CryzenHub:CreateWindow(config)
                     toggleButton.MouseMoved:Connect(function()
                         tooltipFrame.Position = UDim2.fromOffset(Mouse.X + 15, Mouse.Y + 15)
                     end)
+                    
+                    -- For mobile support
+                    toggleButton.InputBegan:Connect(function(input)
+                        if input.UserInputType == Enum.UserInputType.Touch then
+                            tooltipFrame.Position = UDim2.fromOffset(input.Position.X + 15, input.Position.Y + 15)
+                            tooltipFrame.Visible = true
+                            delay(2, function()
+                                tooltipFrame.Visible = false
+                            end)
+                        end
+                    end)
                 end
                 
                 local toggled = default
@@ -1662,7 +1810,7 @@ function CryzenHub:CreateWindow(config)
                 return toggleAPI
             end
             
-            -- Slider element
+            -- Slider element with fixed dragging for both PC and mobile
             function sectionAPI:CreateSlider(config)
                 config = config or {}
                 local text = config.Text or "Slider"
@@ -1683,7 +1831,7 @@ function CryzenHub:CreateWindow(config)
                 })
                 
                 local sliderCorner = createInstance("UICorner", {
-                    CornerRadius = UDim.new(0, 4),
+                    CornerRadius = UDim.new(0, 6),
                     Parent = sliderFrame
                 })
                 
@@ -1804,14 +1952,27 @@ function CryzenHub:CreateWindow(config)
                     sliderButton.MouseMoved:Connect(function()
                         tooltipFrame.Position = UDim2.fromOffset(Mouse.X + 15, Mouse.Y + 15)
                     end)
+                    
+                    -- For mobile support
+                    sliderButton.InputBegan:Connect(function(input)
+                        if input.UserInputType == Enum.UserInputType.Touch then
+                            tooltipFrame.Position = UDim2.fromOffset(input.Position.X + 15, input.Position.Y + 15)
+                            tooltipFrame.Visible = true
+                            delay(2, function()
+                                tooltipFrame.Visible = false
+                            end)
+                        end
+                    end)
                 end
                 
                 local value = default
                 
-                local function updateSlider(input)
-                    local sizeX = math.clamp((input.Position.X - sliderBackground.AbsolutePosition.X) / sliderBackground.AbsoluteSize.X, 0, 1)
-                    local newValue = min + ((max - min) * sizeX)
+                -- Function to update slider based on input position
+                local function updateSlider(inputPosition)
+                    local sliderPosition = (inputPosition.X - sliderBackground.AbsolutePosition.X) / sliderBackground.AbsoluteSize.X
+                    sliderPosition = math.clamp(sliderPosition, 0, 1)
                     
+                    local newValue = min + ((max - min) * sliderPosition)
                     if not precise then
                         newValue = math.floor(newValue)
                     else
@@ -1820,37 +1981,56 @@ function CryzenHub:CreateWindow(config)
                     
                     value = newValue
                     sliderValueLabel.Text = tostring(value) .. suffix
-                    tween(sliderFill, {Size = UDim2.new(sizeX, 0, 1, 0)}, 0.1, Enum.EasingStyle.Quint)
-                    tween(sliderCircle, {Position = UDim2.new(sizeX, -7, 0.5, -7)}, 0.1, Enum.EasingStyle.Quint)
+                    tween(sliderFill, {Size = UDim2.new(sliderPosition, 0, 1, 0)}, 0.1, Enum.EasingStyle.Quint)
+                    tween(sliderCircle, {Position = UDim2.new(sliderPosition, -7, 0.5, -7)}, 0.1, Enum.EasingStyle.Quint)
                     callback(value)
                 end
                 
-                sliderButton.MouseButton1Down:Connect(function()
-                    local connection
-                    connection = UserInputService.InputChanged:Connect(function(input)
-                        if input.UserInputType == Enum.UserInputType.MouseMovement then
-                            updateSlider(input)
-                        end
-                    end)
-                    
-                    UserInputService.InputEnded:Connect(function(input)
-                        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                            if connection then
-                                connection:Disconnect()
-                            end
-                        end
-                    end)
-                    
+                -- Improved slider dragging for both PC and mobile
+                local isDragging = false
+                
+                sliderBackground.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        isDragging = true
+                        updateSlider(input.Position)
+                    end
+                end)
+                
+                sliderCircle.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        isDragging = true
+                    end
+                end)
+                
+                UserInputService.InputChanged:Connect(function(input)
+                    if isDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                        updateSlider(input.Position)
+                    end
+                end)
+                
+                UserInputService.InputEnded:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                        isDragging = false
+                    end
+                end)
+                
+                -- Additional support for direct slider button clicking
+                sliderButton.MouseButton1Down:Connect(function(x, y)
+                    isDragging = true
                     rippleEffect(sliderFrame, themeColors.Accent, true)
-                    updateSlider(UserInputService:GetMouseLocation())
+                    updateSlider(Vector2.new(Mouse.X, Mouse.Y))
                 end)
                 
                 sliderButton.MouseEnter:Connect(function()
-                    tween(sliderFrame, {BackgroundColor3 = themeColors.Hover}, 0.3, Enum.EasingStyle.Quint)
+                    if not isDragging then
+                        tween(sliderFrame, {BackgroundColor3 = themeColors.Hover}, 0.3, Enum.EasingStyle.Quint)
+                    end
                 end)
                 
                 sliderButton.MouseLeave:Connect(function()
-                    tween(sliderFrame, {BackgroundColor3 = themeColors.Tertiary}, 0.3, Enum.EasingStyle.Quint)
+                    if not isDragging then
+                        tween(sliderFrame, {BackgroundColor3 = themeColors.Tertiary}, 0.3, Enum.EasingStyle.Quint)
+                    end
                 end)
                 
                 local sliderAPI = {
@@ -1864,10 +2044,10 @@ function CryzenHub:CreateWindow(config)
                         end
                         
                         value = newValue
-                        local sizeX = (value - min) / (max - min)
+                        local sliderPosition = (value - min) / (max - min)
                         sliderValueLabel.Text = tostring(value) .. suffix
-                        tween(sliderFill, {Size = UDim2.new(sizeX, 0, 1, 0)}, 0.1, Enum.EasingStyle.Quint)
-                        tween(sliderCircle, {Position = UDim2.new(sizeX, -7, 0.5, -7)}, 0.1, Enum.EasingStyle.Quint)
+                        tween(sliderFill, {Size = UDim2.new(sliderPosition, 0, 1, 0)}, 0.1, Enum.EasingStyle.Quint)
+                        tween(sliderCircle, {Position = UDim2.new(sliderPosition, -7, 0.5, -7)}, 0.1, Enum.EasingStyle.Quint)
                         callback(value)
                     end,
                     Get = function(self)
@@ -1891,9 +2071,7 @@ function CryzenHub:CreateWindow(config)
                 return sliderAPI
             end
             
-            -- Add more UI elements here...
-            
-            -- Dropdown element
+            -- Redesigned dropdown element with better mobile support
             function sectionAPI:CreateDropdown(config)
                 config = config or {}
                 local text = config.Text or "Dropdown"
@@ -1912,13 +2090,13 @@ function CryzenHub:CreateWindow(config)
                 })
                 
                 local dropdownCorner = createInstance("UICorner", {
-                    CornerRadius = UDim.new(0, 4),
+                    CornerRadius = UDim.new(0, 6),
                     Parent = dropdownFrame
                 })
                 
                 local dropdownLabel = createInstance("TextLabel", {
                     Name = "DropdownLabel",
-                    Size = UDim2.new(1, -30, 1, 0),
+                    Size = UDim2.new(1, -30, 0, 36),
                     Position = UDim2.new(0, 10, 0, 0),
                     BackgroundTransparency = 1,
                     Text = text,
@@ -1948,25 +2126,44 @@ function CryzenHub:CreateWindow(config)
                     Parent = dropdownFrame
                 })
                 
-                local dropdownSelectedValue = createInstance("TextLabel", {
-                    Name = "DropdownSelectedValue",
-                    Size = UDim2.new(1, -50, 1, 0),
-                    Position = UDim2.new(0, 10, 1, 0),
-                    BackgroundTransparency = 1,
-                    Text = default or "",
-                    TextColor3 = themeColors.SubText,
-                    TextSize = 14,
-                    Font = Enum.Font.Gotham,
-                    TextXAlignment = Enum.TextXAlignment.Left,
+                -- Selected value display
+                local dropdownSelectedDisplay = createInstance("Frame", {
+                    Name = "DropdownSelectedDisplay",
+                    Size = UDim2.new(1, 0, 0, 36),
+                    Position = UDim2.new(0, 0, 0, 36),
+                    BackgroundColor3 = themeColors.Secondary,
+                    BackgroundTransparency = 0.5,
+                    BorderSizePixel = 0,
+                    Visible = false,
                     Parent = dropdownFrame
                 })
                 
-                local dropdownContent = createInstance("Frame", {
+                local dropdownSelectedValue = createInstance("TextLabel", {
+                    Name = "DropdownSelectedValue",
+                    Size = UDim2.new(1, -20, 1, 0),
+                    Position = UDim2.new(0, 10, 0, 0),
+                    BackgroundTransparency = 1,
+                    Text = default or "None",
+                    TextColor3 = themeColors.Accent,
+                    TextSize = 14,
+                    Font = Enum.Font.GothamSemibold,
+                    TextXAlignment = Enum.TextXAlignment.Left,
+                    Parent = dropdownSelectedDisplay
+                })
+                
+                -- Dropdown content (redesigned to be more mobile-friendly)
+                local dropdownContent = createInstance("ScrollingFrame", {
                     Name = "DropdownContent",
                     Size = UDim2.new(1, 0, 0, 0),
-                    Position = UDim2.new(0, 0, 0, 36),
-                    BackgroundColor3 = themeColors.Tertiary,
+                    Position = UDim2.new(0, 0, 0, 72),
+                    BackgroundColor3 = themeColors.Secondary,
                     BorderSizePixel = 0,
+                    ScrollBarThickness = 4,
+                    ScrollBarImageColor3 = themeColors.Accent,
+                    CanvasSize = UDim2.new(0, 0, 0, 0),
+                    AutomaticCanvasSize = Enum.AutomaticSize.Y,
+                    ClipsDescendants = true,
+                    Visible = false,
                     Parent = dropdownFrame
                 })
                 
@@ -1974,6 +2171,15 @@ function CryzenHub:CreateWindow(config)
                     FillDirection = Enum.FillDirection.Vertical,
                     HorizontalAlignment = Enum.HorizontalAlignment.Left,
                     SortOrder = Enum.SortOrder.LayoutOrder,
+                    Padding = UDim.new(0, 2),
+                    Parent = dropdownContent
+                })
+                
+                local dropdownContentPadding = createInstance("UIPadding", {
+                    PaddingTop = UDim.new(0, 2),
+                    PaddingLeft = UDim.new(0, 2),
+                    PaddingRight = UDim.new(0, 2),
+                    PaddingBottom = UDim.new(0, 2),
                     Parent = dropdownContent
                 })
                 
@@ -2018,57 +2224,113 @@ function CryzenHub:CreateWindow(config)
                     dropdownButton.MouseMoved:Connect(function()
                         tooltipFrame.Position = UDim2.fromOffset(Mouse.X + 15, Mouse.Y + 15)
                     end)
+                    
+                    -- For mobile support
+                    dropdownButton.InputBegan:Connect(function(input)
+                        if input.UserInputType == Enum.UserInputType.Touch then
+                            tooltipFrame.Position = UDim2.fromOffset(input.Position.X + 15, input.Position.Y + 15)
+                            tooltipFrame.Visible = true
+                            delay(2, function()
+                                tooltipFrame.Visible = false
+                            end)
+                        end
+                    end)
                 end
                 
-                -- Create option buttons
+                -- Create option buttons with improved styling
                 for i, option in ipairs(options) do
-                    local optionButton = createInstance("TextButton", {
+                    local optionButton = createInstance("Frame", {
                         Name = option.."Option",
-                        Size = UDim2.new(1, 0, 0, 30),
-                        BackgroundTransparency = 1,
-                        Text = option,
-                        TextColor3 = themeColors.SubText,
-                        TextSize = 14,
-                        Font = Enum.Font.Gotham,
-                        TextXAlignment = Enum.TextXAlignment.Left,
-                        Position = UDim2.new(0, 10, 0, 0),
+                        Size = UDim2.new(1, -4, 0, 36),
+                        BackgroundColor3 = themeColors.Tertiary,
+                        BorderSizePixel = 0,
                         Parent = dropdownContent
                     })
                     
-                    optionButton.MouseEnter:Connect(function()
-                        tween(optionButton, {BackgroundTransparency = 0.9, TextColor3 = themeColors.Text}, 0.2, Enum.EasingStyle.Quint)
+                    local optionButtonCorner = createInstance("UICorner", {
+                        CornerRadius = UDim.new(0, 4),
+                        Parent = optionButton
+                    })
+                    
+                    local optionLabel = createInstance("TextLabel", {
+                        Name = "OptionLabel",
+                        Size = UDim2.new(1, -10, 1, 0),
+                        Position = UDim2.new(0, 10, 0, 0),
+                        BackgroundTransparency = 1,
+                        Text = option,
+                        TextColor3 = themeColors.Text,
+                        TextSize = 14,
+                        Font = Enum.Font.Gotham,
+                        TextXAlignment = Enum.TextXAlignment.Left,
+                        Parent = optionButton
+                    })
+                    
+                    local optionButtonClick = createInstance("TextButton", {
+                        Name = "OptionButtonClick",
+                        Size = UDim2.new(1, 0, 1, 0),
+                        BackgroundTransparency = 1,
+                        Text = "",
+                        Parent = optionButton
+                    })
+                    
+                    -- Hover effect
+                    optionButtonClick.MouseEnter:Connect(function()
+                        tween(optionButton, {BackgroundColor3 = themeColors.Hover}, 0.2, Enum.EasingStyle.Quint)
                     end)
                     
-                    optionButton.MouseLeave:Connect(function()
-                        tween(optionButton, {BackgroundTransparency = 1, TextColor3 = themeColors.SubText}, 0.2, Enum.EasingStyle.Quint)
+                    optionButtonClick.MouseLeave:Connect(function()
+                        tween(optionButton, {BackgroundColor3 = themeColors.Tertiary}, 0.2, Enum.EasingStyle.Quint)
+                    end)
+                    
+                    -- Option selection
+                    optionButtonClick.MouseButton1Click:Connect(function()
+                        dropdownSelectedValue.Text = option
+                        callback(option)
+                        closeDropdown()
                     end)
                 end
                 
                 local isOpen = false
                 local selected = default
                 
-                local function updateDropdown()
+                -- Update dropdown content size based on options
+                local function updateDropdownContentSize()
+                    local optionsHeight = math.min(#options * 40, 200) -- Max height of 200 pixels
+                    dropdownContent.Size = UDim2.new(1, 0, 0, optionsHeight)
+                end
+                
+                -- Open/close the dropdown
+                local function toggleDropdown()
                     isOpen = not isOpen
-                    
-                    local contentSize = 0
-                    for i, _ in ipairs(options) do
-                        contentSize = contentSize + 30
-                    end
+                    updateDropdownContentSize()
                     
                     if isOpen then
+                        dropdownSelectedDisplay.Visible = true
+                        dropdownContent.Visible = true
+                        
                         tween(dropdownArrow, {Rotation = 180}, 0.3, Enum.EasingStyle.Quint)
-                        tween(dropdownFrame, {Size = UDim2.new(1, 0, 0, 36 + contentSize)}, 0.3, Enum.EasingStyle.Quint)
+                        tween(dropdownFrame, {Size = UDim2.new(1, 0, 0, 72 + dropdownContent.Size.Y.Offset)}, 0.3, Enum.EasingStyle.Quint)
                     else
                         tween(dropdownArrow, {Rotation = 0}, 0.3, Enum.EasingStyle.Quint)
-                        tween(dropdownFrame, {Size = UDim2.new(1, 0, 0, 36)}, 0.3, Enum.EasingStyle.Quint)
+                        tween(dropdownFrame, {Size = UDim2.new(1, 0, 0, 36)}, 0.3, Enum.EasingStyle.Quint, nil, nil, function()
+                            dropdownSelectedDisplay.Visible = false
+                            dropdownContent.Visible = false
+                        end)
                     end
                     
                     updateSectionSize()
                 end
                 
+                -- Close dropdown function
+                function closeDropdown()
+                    if isOpen then
+                        toggleDropdown()
+                    end
+                end
+                
                 dropdownButton.MouseButton1Click:Connect(function()
                     rippleEffect(dropdownFrame, themeColors.Accent, true)
-                    updateDropdown()
+                    toggleDropdown()
                 end)
                 
                 dropdownButton.MouseEnter:Connect(function()
@@ -2079,18 +2341,7 @@ function CryzenHub:CreateWindow(config)
                     tween(dropdownFrame, {BackgroundColor3 = themeColors.Tertiary}, 0.3, Enum.EasingStyle.Quint)
                 end)
                 
-                -- Handle option selection
-                for _, child in ipairs(dropdownContent:GetChildren()) do
-                    if child:IsA("TextButton") then
-                        child.MouseButton1Click:Connect(function()
-                            selected = child.Text
-                            dropdownSelectedValue.Text = selected
-                            updateDropdown()
-                            callback(selected)
-                        end)
-                    end
-                end
-                
+                -- Set initial selection if default is provided
                 if default then
                     dropdownSelectedValue.Text = default
                     callback(default)
@@ -2112,40 +2363,63 @@ function CryzenHub:CreateWindow(config)
                         options = newOptions or options
                         
                         -- Clear existing options
-                        for _, child in ipairs(dropdownContent:GetChildren()) do
-                            if child:IsA("TextButton") then
+                        for _, child in pairs(dropdownContent:GetChildren()) do
+                            if child:IsA("Frame") then
                                 child:Destroy()
                             end
                         end
                         
                         -- Add new options
                         for i, option in ipairs(options) do
-                            local optionButton = createInstance("TextButton", {
+                            local optionButton = createInstance("Frame", {
                                 Name = option.."Option",
-                                Size = UDim2.new(1, 0, 0, 30),
-                                BackgroundTransparency = 1,
-                                Text = option,
-                                TextColor3 = themeColors.SubText,
-                                TextSize = 14,
-                                Font = Enum.Font.Gotham,
-                                TextXAlignment = Enum.TextXAlignment.Left,
-                                Position = UDim2.new(0, 10, 0, 0),
+                                Size = UDim2.new(1, -4, 0, 36),
+                                BackgroundColor3 = themeColors.Tertiary,
+                                BorderSizePixel = 0,
                                 Parent = dropdownContent
                             })
                             
-                            optionButton.MouseEnter:Connect(function()
-                                tween(optionButton, {BackgroundTransparency = 0.9, TextColor3 = themeColors.Text}, 0.2, Enum.EasingStyle.Quint)
+                            local optionButtonCorner = createInstance("UICorner", {
+                                CornerRadius = UDim.new(0, 4),
+                                Parent = optionButton
+                            })
+                            
+                            local optionLabel = createInstance("TextLabel", {
+                                Name = "OptionLabel",
+                                Size = UDim2.new(1, -10, 1, 0),
+                                Position = UDim2.new(0, 10, 0, 0),
+                                BackgroundTransparency = 1,
+                                Text = option,
+                                TextColor3 = themeColors.Text,
+                                TextSize = 14,
+                                Font = Enum.Font.Gotham,
+                                TextXAlignment = Enum.TextXAlignment.Left,
+                                Parent = optionButton
+                            })
+                            
+                            local optionButtonClick = createInstance("TextButton", {
+                                Name = "OptionButtonClick",
+                                Size = UDim2.new(1, 0, 1, 0),
+                                BackgroundTransparency = 1,
+                                Text = "",
+                                Parent = optionButton
+                            })
+                            
+                            -- Hover effect
+                            optionButtonClick.MouseEnter:Connect(function()
+                                tween(optionButton, {BackgroundColor3 = themeColors.Hover}, 0.2, Enum.EasingStyle.Quint)
                             end)
                             
-                            optionButton.MouseLeave:Connect(function()
-                                tween(optionButton, {BackgroundTransparency = 1, TextColor3 = themeColors.SubText}, 0.2, Enum.EasingStyle.Quint)
+                            optionButtonClick.MouseLeave:Connect(function()
+                                tween(optionButton, {BackgroundColor3 = themeColors.Tertiary}, 0.2, Enum.EasingStyle.Quint)
                             end)
                             
-                            optionButton.MouseButton1Click:Connect(function()
+                            -- Option selection
+                            optionButtonClick.MouseButton1Click:Connect(function()
+                                dropdownSelectedValue.Text = option
                                 selected = option
-                                dropdownSelectedValue.Text = selected
-                                updateDropdown()
-                                callback(selected)
+                                callback(option)
+                                closeDropdown()
                             end)
                         end
                         
@@ -2156,13 +2430,12 @@ function CryzenHub:CreateWindow(config)
                             callback(newDefault)
                         end
                         
+                        -- Update dropdown content size
+                        updateDropdownContentSize()
+                        
                         -- If dropdown is open, refresh its size
                         if isOpen then
-                            local contentSize = 0
-                            for i, _ in ipairs(options) do
-                                contentSize = contentSize + 30
-                            end
-                            dropdownFrame.Size = UDim2.new(1, 0, 0, 36 + contentSize)
+                            dropdownFrame.Size = UDim2.new(1, 0, 0, 72 + dropdownContent.Size.Y.Offset)
                             updateSectionSize()
                         end
                     end,
@@ -2170,12 +2443,14 @@ function CryzenHub:CreateWindow(config)
                         dropdownFrame.BackgroundColor3 = colors.Tertiary
                         dropdownLabel.TextColor3 = colors.Text
                         dropdownArrow.ImageColor3 = colors.Text
-                        dropdownSelectedValue.TextColor3 = colors.SubText
-                        dropdownContent.BackgroundColor3 = colors.Tertiary
+                        dropdownSelectedValue.TextColor3 = colors.Accent
+                        dropdownSelectedDisplay.BackgroundColor3 = colors.Secondary
+                        dropdownContent.BackgroundColor3 = colors.Secondary
                         
-                        for _, child in ipairs(dropdownContent:GetChildren()) do
-                            if child:IsA("TextButton") then
-                                child.TextColor3 = colors.SubText
+                        for _, child in pairs(dropdownContent:GetChildren()) do
+                            if child:IsA("Frame") then
+                                child.BackgroundColor3 = colors.Tertiary
+                                child.OptionLabel.TextColor3 = colors.Text
                             end
                         end
                     end,
