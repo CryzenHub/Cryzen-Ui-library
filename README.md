@@ -2,9 +2,19 @@
 
 A premium, feature-rich UI library for Roblox Luau scripts with a completely redesigned interface, key system, and numerous enhancements.
 
-## What's New in v1.1.0 (Beta)
+## What's New in v1.1.0 (Beta) Updated
 
-- **Complete UI redesign**: Modern flat design with improved visual aesthetics
+- **Fixed slider dragging issues**: Improved slider functionality on both PC and mobile
+- **Enhanced mobile support**: Better touch interactions and responsive design
+- **Redesigned dropdown menu**: More touch-friendly with improved visuals
+- **Mobile menu toggle**: Easily access tabs on mobile devices
+- **Custom key system UI**: Sleek verification system with modern design
+- **Improved animations**: Smoother transitions and visual effects
+- **Bug fixes**: Various stability and performance improvements
+
+## Key Features
+
+- **Modern flat design**: Clean, professional UI with consistent styling
 - **Key system**: Secure your script with a customizable key verification system
 - **Tabbed windows**: Better organization for complex UIs
 - **Search functionality**: Easily find tabs and elements
@@ -14,14 +24,6 @@ A premium, feature-rich UI library for Roblox Luau scripts with a completely red
 - **Mobile support**: Responsive design for all devices
 - **Loading screen**: Professional splash screen with animations
 - **Improved performance**: Optimized rendering and resource usage
-
-## Key System Features
-
-- Multiple key verification methods
-- Automatic key saving between sessions
-- Configurable attempt limits
-- Option to fetch keys from external websites
-- Custom error messages and instructions
 
 ## Getting Started
 
@@ -230,6 +232,17 @@ dropdown:Refresh({"New Option 1", "New Option 2"}, "New Option 1")  -- Update op
 dropdown:SetText("New Dropdown Text")
 ```
 
+## Mobile Support
+
+CryzenHub now features improved mobile support:
+
+- **Mobile Menu Toggle**: A hamburger menu button to show/hide the tab sidebar
+- **Touch-Friendly Elements**: Larger hit areas for buttons and controls
+- **Responsive Layout**: UI adapts to different screen sizes
+- **Improved Tooltips**: Touch-compatible tooltip system
+- **Enhanced Sliders**: Better touch input handling for sliders
+- **Redesigned Dropdowns**: More touch-friendly dropdown menus
+
 ## Comprehensive Example
 
 ```lua
@@ -378,14 +391,32 @@ This library is free to use for any purpose. Credit is appreciated but not requi
 Created by CryzenHub Team - v1.1.0 Beta
 ```
 
-This update introduces a major redesign of the CryzenHub UI Library with a modern, flat design aesthetic and several significant new features:
+I've updated the CryzenHub UI Library with several important fixes and improvements:
 
-1. **Key System**: A complete key verification system with multiple verification methods, key saving, and attempt limits
-2. **Improved Design**: A completely redesigned UI with smooth animations and visual effects
-3. **Loading Screen**: Professional splash screen with animations during initialization
-4. **Tooltip System**: Informative tooltips for all UI elements
-5. **Mobile Support**: Responsive design that works on all devices
-6. **Search Functionality**: Ability to search for tabs and elements
-7. **Optimized Performance**: Better resource usage and rendering
+1. **Fixed Slider Issues**: 
+   - Completely reworked the slider dragging functionality to fix issues where it gets stuck
+   - Added proper support for both mouse and touch input
+   - Improved handling of input begin/end events to prevent dragging issues
 
-The code includes detailed comments and is structured for easy maintenance and expansion. The README provides comprehensive documentation on how to use all the new features, along with examples and API reference.
+2. **Enhanced Mobile Support**:
+   - Added a mobile menu toggle button with a hamburger icon
+   - Implemented responsive layout that adapts to different screen sizes
+   - Made all UI elements more touch-friendly with larger hit areas
+   - Added specific touch input handling for all interactive elements
+
+3. **Redesigned Dropdown**:
+   - Completely redesigned the dropdown with a clearer visual structure
+   - Added a separate display area for the selected value
+   - Improved scrolling for long option lists
+   - Better styling and animations for mobile users
+
+4. **New Key System UI**:
+   - Created a custom key system design that doesn't copy Rayfield
+   - Added a blurred background effect for better focus
+   - Improved layout with logo, header section, and modern input field
+   - Enhanced animations for a more professional appearance
+
+5. **Improved Dragging**:
+   - Fixed window dragging on both PC and mobile
+   - Added support for touch input in the dragging system
+   - Improved the dragging logic to be more reliable
